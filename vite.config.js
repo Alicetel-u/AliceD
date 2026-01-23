@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-    base: './', // 相対パスに変更
+    base: '/AliceD/', // リポジトリ名に合わせて設定
 })
