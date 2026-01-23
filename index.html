@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rabbit Dash: Lion Lop Adventure</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+  <div id="app">
+    <div id="ui-layer">
+      <div id="hud-left" style="display: flex; flex-direction: column; gap: 8px;">
+        <div id="stage-name"
+          style="background: rgba(0, 0, 0, 0.4); padding: 4px 12px; border-radius: 15px; color: #fff; font-size: 16px; width: fit-content; border: 2px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(4px); pointer-events: auto; font-weight: bold;">
+          Loading...
+        </div>
+        <div id="health-bar">
+          <div class="heart">❤️</div>
+          <div class="heart">❤️</div>
+          <div class="heart">❤️</div>
+        </div>
+        <div id="speed-meter"
+          style="background: rgba(0, 0, 0, 0.4); padding: 5px 15px; border-radius: 20px; color: #f1c40f; font-size: 18px; width: fit-content; border: 2px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(4px); pointer-events: auto;">
+          ⚡ SPEED Lv<span id="speed-level">0</span>
+        </div>
+      </div>
+      <div id="mute-btn"
+        style="position: absolute; top: 20px; right: 20px; font-size: 32px; cursor: pointer; pointer-events: auto; user-select: none;">
+        🔊</div>
+      <div id="collection-hub"
+        style="position: absolute; top: 70px; right: 20px; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; pointer-events: auto;">
+        <div id="collection-toggle" class="stock-icon"
+          style="background: #ff9f43; cursor: pointer; border-radius: 10px; width: 45px; height: 45px; box-shadow: 0 4px 0 #e67e22;">
+          🎒
+        </div>
+        <div id="item-stock" style="display: flex; flex-wrap: wrap; gap: 5px; justify-content: flex-end; width: 100px;">
+          <!-- Stocked items will appear here -->
+        </div>
+      </div>
+    </div>
+    <!-- Dialogue UI Overlay -->
+    <div id="dialogue-overlay" class="hidden">
+      <div id="dialogue-container">
+        <!-- Student/Player Side (Left) -->
+        <div class="portrait-container left">
+          <img id="portrait-left" src="" alt="Player" class="portrait-img hidden" />
+        </div>
+
+        <!-- Dialogue Box (Center/Bottom) -->
+        <div id="dialogue-box">
+          <div id="dialogue-name-label">???</div>
+          <div id="dialogue-text">...</div>
+          <div id="dialogue-next-indicator">▼</div>
+        </div>
+
+        <!-- Enemy/Boss Side (Right) -->
+        <div class="portrait-container right">
+          <img id="portrait-right" src="" alt="Enemy" class="portrait-img hidden" />
+        </div>
+      </div>
+    </div>
+
+    <!-- BGM Overlay -->
+    <div id="bgm-overlay" class="hidden">
+      <div class="bgm-content">
+        <div class="bgm-icon-container">
+          <div class="bgm-icon">♪</div>
+          <div class="bgm-equalizer">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+          </div>
+        </div>
+        <div class="bgm-info">
+          <div class="bgm-label">NOW PLAYING</div>
+          <div class="bgm-title-scroller">
+            <div class="bgm-title" id="bgm-title-text">Title</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stage Title Overlay (New) -->
+    <div id="stage-title-overlay" class="hidden">
+      <div class="stage-title-container">
+        <div class="stage-label">STAGE <span id="overlay-stage-num">1</span></div>
+        <div class="stage-name-main" id="overlay-stage-name">Loading...</div>
+        <div class="stage-decoration-line"></div>
+      </div>
+    </div>
+
+    <!-- Debug Room Overlay -->
+    <div id="debug-room-overlay" class="hidden"
+      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2900; background: #2c3e50; display: none; flex-direction: column; align-items: center; justify-content: center; color: white;">
+      <h1
+        style="color: #3498db; font-size: 40px; margin-bottom: 40px; border-bottom: 2px solid #34495e; padding-bottom: 10px;">
+        🛠️ DEBUG ROOM</h1>
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 80%; max-width: 600px;">
+        <button id="room-btn-dialogue" class="game-btn" style="height: 100px; font-size: 20px; background: #e67e22;">💬
+          Dialogue Editor</button>
+        <button id="room-btn-preview" class="game-btn" style="height: 100px; font-size: 20px; background: #9b59b6;">▶️
+          Previews</button>
+        <button class="game-btn"
+          style="height: 100px; font-size: 20px; background: #7f8c8d; opacity: 0.5; cursor: not-allowed;">(Coming
+          Soon)</button>
+        <button id="room-btn-back" class="game-btn" style="height: 100px; font-size: 20px; background: #c0392b;">🔙 Back
+          to Title</button>
+      </div>
+    </div>
+
+    <!-- Preview Selection Modal -->
+    <div id="preview-select-modal" class="modal hidden"
+      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3100; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center;">
+      <div class="modal-content"
+        style="background: #2c3e50; padding: 30px; border-radius: 10px; width: 400px; text-align: center; border: 2px solid #3498db; color: white;">
+        <h2
+          style="margin-top: 0; color: #3498db; border-bottom: 1px solid #7f8c8d; padding-bottom: 10px; margin-bottom: 20px;">
+          Select Preview</h2>
+
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+          <button id="preview-btn-ending-alice" class="game-btn"
+            style="padding: 15px; font-size: 18px; background: #ff9f43; width: 100%;">🐰 Alice Ending</button>
+          <button id="preview-btn-ending-kanon" class="game-btn"
+            style="padding: 15px; font-size: 18px; background: #a29bfe; width: 100%;">✝️ Kanon Ending</button>
+          <button id="preview-btn-result" class="game-btn"
+            style="padding: 15px; font-size: 18px; background: #f1c40f; color: black; width: 100%;">🏆 Result
+            Screen</button>
+        </div>
+
+        <button id="preview-btn-close" class="game-btn"
+          style="margin-top: 25px; background: #c0392b; padding: 10px 30px;">Close</button>
+      </div>
+    </div>
+
+    <!-- Dialogue Debug Editor (Simple Text Version) -->
+    <div id="dialogue-editor-modal" class="hidden"
+      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3000; background: rgba(0,0,0,0.85); display: none; flex-direction: column; align-items: center; justify-content: center; pointer-events: auto;">
+      <div class="editor-panel"
+        style="background: #2c3e50; padding: 20px; border-radius: 10px; width: 95%; height: 95%; max-width: none; color: white; border: 2px solid #3498db; box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-family: sans-serif; display: flex; flex-direction: column;">
+
+        <div
+          style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #7f8c8d; padding-bottom: 10px;">
+          <h2 style="margin: 0; color: #3498db; font-size: 28px;">📝 会話テキスト編集</h2>
+          <button id="editor-btn-close" class="game-btn"
+            style="background: #e74c3c; font-size: 18px; padding: 8px 25px;">❌ 閉じる</button>
+        </div>
+
+        <!-- Controls -->
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+          <!-- Row 1: Selectors -->
+          <div style="display: flex; gap: 10px;">
+            <select id="editor-id-select"
+              style="flex: 2; padding: 12px; font-size: 22px; border-radius: 4px; color: black; font-weight: bold;">
+              <option value="">(編集する会話シーンを選択)</option>
+            </select>
+
+            <select id="editor-viewpoint-select"
+              style="flex: 1; padding: 12px; font-size: 22px; border-radius: 4px; color: black; font-weight: bold; background: #e1f5fe;">
+              <option value="ALICE">🐰 Alice (アリス)</option>
+              <option value="KANON">✝️ Kanon (カノン)</option>
+            </select>
+          </div>
+
+          <!-- Row 2: Actions -->
+          <div style="display: flex; gap: 10px;">
+            <button id="editor-btn-play" class="game-btn"
+              style="background: #2ecc71; font-size: 18px; padding: 10px 20px; flex: 1;">▶ 再生確認</button>
+            <button id="editor-btn-save" class="game-btn"
+              style="background: #f1c40f; color: black; font-size: 18px; padding: 10px 20px; flex: 1;">💾 適用保存</button>
+            <button id="editor-btn-copy" class="game-btn"
+              style="background: #9b59b6; font-size: 18px; padding: 10px 20px; flex: 1;">📋 データコピー</button>
+          </div>
+        </div>
+
+        <!-- Editor Rows Area -->
+        <div id="editor-rows-container"
+          style="flex: 1; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; border: 1px solid #7f8c8d;">
+          <div style="text-align: center; color: #bdc3c7; margin-top: 50px;">シーンを選択してください</div>
+        </div>
+
+        <div style="margin-top: 10px; font-size: 12px; color: #95a5a6; text-align: right;">
+          ※ 変更はリロードするとリセットされます（永続化は実装されていません）
+        </div>
+      </div>
+    </div>
+
+
+    <div id="gacha-modal" class="hidden">
+      <div class="modal-content">
+        <h2>🛠️ ガラクタコレクションガチャ 🛠️</h2>
+
+        <div id="gacha-result-area">
+          <div class="gacha-capsule">?</div>
+        </div>
+        <div class="modal-buttons">
+          <button id="btn-close-gacha" class="secondary-btn">閉じる</button>
+        </div>
+        <div id="collection-list">
+          <h3>獲得済みコレクション</h3>
+          <div id="items-container"></div>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="home-gacha-panel" class="home-panel hidden">
+      <div class="panel-header">GACHA</div>
+      <div class="panel-content" style="display: flex; flex-direction: column; justify-content: center; gap: 20px;">
+        <div style="text-align: center; color: white;">
+          <div style="font-size: 60px; margin-bottom: 10px;">🎁</div>
+          <p>不思議なガラクタを集めて<br>ステータスを強化しよう！</p>
+        </div>
+      </div>
+      <div style="margin-top: auto;">
+        <button class="home-gacha-btn" id="btn-home-gacha" style="width: 100%;">
+          <span>ガチャを回す</span>
+          <div class="currency-display">
+            <span>🥕</span>
+            <span id="home-currency">0</span>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <div id="home-collection-panel" class="home-panel hidden">
+      <div class="panel-header">COLLECTION</div>
+      <div class="panel-content">
+        <div class="mini-collection-grid" id="home-mini-collection">
+          <!-- Items injected by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Music Room Panel (New) -->
+    <div id="music-room-panel" class="hidden">
+      <div class="music-room-container">
+        <div class="music-room-header">
+          <h1>MUSIC ROOM</h1>
+          <div class="close-btn" id="btn-close-music">×</div>
+        </div>
+        <div class="music-player-display">
+          <div class="cd-art" id="music-cd-art">
+            <span class="music-note">♪</span>
+          </div>
+          <div class="now-playing-info">
+            <div class="np-label">NOW PLAYING</div>
+            <div class="np-title" id="music-np-title">---</div>
+            <div class="np-artist" id="music-np-artist">---</div>
+            <div class="music-controls">
+              <button id="btn-music-stop" class="control-btn">■</button>
+              <button id="btn-music-play" class="control-btn hidden">▶</button>
+            </div>
+          </div>
+          <div class="visualizer-bars">
+            <div class="v-bar"></div>
+            <div class="v-bar"></div>
+            <div class="v-bar"></div>
+            <div class="v-bar"></div>
+            <div class="v-bar"></div>
+            <div class="v-bar"></div>
+            <div class="v-bar"></div>
+            <div class="v-bar"></div>
+          </div>
+        </div>
+        <div class="track-list-container">
+          <div class="track-section-title">BATTLE TRACKS</div>
+          <div class="track-list battle-list" id="music-list-battle">
+            <!-- JS Injected -->
+          </div>
+          <div class="track-section-title">WORLD TRACKS</div>
+          <div class="track-list world-list" id="music-list-world">
+            <!-- JS Injected -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <canvas id="game-canvas"></canvas>
+    <div id="debug-container" style="position: absolute; bottom: 20px; left: 20px;">
+      <div id="btn-debug-toggle">⚙️</div>
+      <div id="debug-menu">
+        <button id="btn-debug-next-stage" class="game-btn debug-btn next-btn">⏭️ NEXT STAGE</button>
+        <button id="btn-debug-warp" class="game-btn debug-btn warp-btn">🚀 BOSSワープ</button>
+        <div style="grid-column: span 2; display: flex; gap: 5px; flex-wrap: wrap;">
+          <button id="btn-debug-warp-st2" class="game-btn debug-btn"
+            style="flex: 1; min-width: 40px; background: #00cec9;">ST2</button>
+          <button id="btn-debug-warp-st3" class="game-btn debug-btn"
+            style="flex: 1; min-width: 40px; background: #00cec9;">ST3</button>
+          <button id="btn-debug-warp-st4" class="game-btn debug-btn"
+            style="flex: 1; min-width: 40px; background: #00cec9;">ST4</button>
+          <button id="btn-debug-warp-st5" class="game-btn debug-btn"
+            style="flex: 1; min-width: 40px; background: #00cec9;">ST5</button>
+        </div>
+        <button id="btn-debug-boss-damage" class="game-btn debug-btn damage-btn">⚔️ ボスHP -5</button>
+        <button id="btn-debug-barrier-break" class="game-btn debug-btn barrier-btn">💥 バリア破壊+100</button>
+      </div>
+    </div>
+    <div id="loading-screen" class="visible">
+      <div class="logo-wrapper">
+        <img src="./assets/img/game_logo.png" alt="ALICETEL" id="splash-logo">
+      </div>
+      <div id="loading-bar-container" class="hidden">
+        <div id="carrot-wrapper">
+          <div id="bunny-runner">🐰</div>
+          <div id="carrot-bar-outer">
+            <div id="carrot-bar-fill"></div>
+            <div id="carrot-leaf">🌿</div>
+          </div>
+        </div>
+        <div id="loading-info">
+          <div id="loading-status">CARROT HARVESTING...</div>
+          <div id="loading-percentage">0%</div>
+        </div>
+        <div id="loading-system-log">Preparing the field...</div>
+      </div>
+    </div>
+    <div id="debug-room-btn"
+      style="position: absolute; bottom: 30px; right: 30px; cursor: pointer; opacity: 0.7; transition: opacity 0.3s; z-index: 2005; display: flex; flex-direction: column; align-items: center; gap: 5px;">
+      <div
+        style="font-size: 24px; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 50%; border: 2px solid white;">
+        🛠️</div>
+      <span style="color: white; font-size: 12px; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">DEBUG
+        ROOM</span>
+    </div>
+    <div id="white-fade-overlay"></div>
+  </div>
+  <script type="module" src="./src/main.js"></script>
+</body>
+
+</html>
