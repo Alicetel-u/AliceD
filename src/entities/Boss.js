@@ -1,4 +1,4 @@
-import { BossBehaviors } from '../data/BossBehaviors';
+import { BossBehaviors } from '../data/BossBehaviors.js';
 
 export class Boss {
     constructor(x, y, tileSize, config) {

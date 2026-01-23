@@ -13,7 +13,16 @@ export class Assets {
         const tryLoad = (src, attempt = 1) => {
           const img = new Image();
           img.crossOrigin = "anonymous";
-          img.src = src;
+
+          // Viteのbase pathを考慮したパス解決
+          let finalSrc = src;
+          if (src.startsWith('./assets/') || src.startsWith('assets/')) {
+            const baseUrl = import.meta.env.BASE_URL || './';
+            const cleanSrc = src.replace(/^\.\//, ''); // Remove leading ./
+            finalSrc = baseUrl + cleanSrc;
+          }
+
+          img.src = finalSrc;
 
           img.onload = () => {
             try {
