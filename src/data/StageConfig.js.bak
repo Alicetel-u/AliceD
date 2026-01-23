@@ -1,0 +1,182 @@
+export const StageConfig = {
+    1: {
+        id: 1,
+        name: "うさぎの森",
+        theme: {
+            backgroundType: "image",
+            backgroundImage: "bg_hills",
+            backgroundColor: "#54a0ff",
+            groundTile: "grass_block",
+            dirtTile: "dirt_block",
+            platformTile: "crate"
+        },
+        generation: {
+            length: 400,
+            holes: 0.02,
+            platforms: 0.15,
+            features: {
+                springs: 0.08,
+                enemies: 0.08,
+                flyers: 0.14,
+                carrots: 0.04
+            }
+        },
+        physics: {
+            gravity: 1500,
+            friction: 0.9
+        },
+        boss: {
+            name: "月の守護者：モチツキ・タイタン",
+            image: "boss_mochitsuki",
+            imageWeak: "boss_weak",
+            cutin: "boss_cutin",
+            hp: 3,
+            bgm: "BOSS_WAR"
+        },
+        bgm: "GAME"
+    },
+    2: {
+        id: 2,
+        name: "神秘の修道院",
+        theme: {
+            backgroundType: "image",
+            backgroundImage: "bg_monastery",
+            backgroundColor: "#2c3e50",
+            groundTile: "stone_block",
+            dirtTile: "dark_stone_block",
+            platformTile: "wood_plank"
+        },
+        generation: {
+            length: 450,
+            holes: 0.10, // Moderate holes
+            platforms: 0.35,
+            features: {
+                springs: 0.06,
+                enemies: 0.12, // More enemies than Stage 1
+                flyers: 0.15,
+                carrots: 0.03
+            }
+        },
+        physics: {
+            gravity: 1600,
+            friction: 0.92
+        },
+        boss: {
+            name: "修道会の影：シスターS",
+            image: "boss_sister_s",
+            imageWeak: "boss_sister_k",
+            cutin: "boss_sister_cutin",
+            hp: 5,
+            bgm: "BOSS_SISTER"
+        },
+        bgm: "SISTER"
+    },
+    3: {
+        id: 3,
+        name: "わんぱくおもちゃ箱",
+        theme: {
+            backgroundType: "image",
+            backgroundImage: "bg_toybox",
+            backgroundColor: "#ff9ff3",
+            groundTile: "toy_block_primary",
+            dirtTile: "toy_block_secondary",
+            platformTile: "toy_box_crate"
+        },
+        generation: {
+            length: 500,
+            holes: 0.14, // More holes
+            platforms: 0.45, // Lots of toys to jump on
+            features: {
+                springs: 0.12,
+                enemies: 0.15, // Chaotic
+                flyers: 0.18,
+                carrots: 0.05
+            }
+        },
+        physics: {
+            gravity: 1400, // Slightly lower gravity for "bouncy" feel
+            friction: 0.95
+        },
+        boss: {
+            name: "玩具の王：キング・レゴロ",
+            image: "boss_toy_king",
+            imageWeak: "boss_toy_king_weak",
+            cutin: "boss_toy_king_cutin",
+            hp: 6,
+            bgm: "BOSS_TOY"
+        },
+        bgm: "TOY"
+    },
+    4: {
+        id: 4,
+        name: "静寂のホスピタル",
+        theme: {
+            backgroundType: "image",
+            backgroundImage: "bg_hospital",
+            backgroundColor: "#d1ccc0",
+            groundTile: "hospital_tile_floor",
+            dirtTile: "hospital_tile_wall",
+            platformTile: "stretcher_bed"
+        },
+        generation: {
+            length: 550,
+            holes: 0.18, // Dangerous
+            platforms: 0.35,
+            features: {
+                springs: 0.05,
+                enemies: 0.18, // Many enemies
+                flyers: 0.22, // Air attacks
+                carrots: 0.04
+            }
+        },
+        physics: {
+            gravity: 1600,
+            friction: 0.9
+        },
+        boss: {
+            name: "白衣の悪魔：ナース・ベラ",
+            image: "boss_nurse",
+            imageWeak: "boss_nurse_weak",
+            cutin: "boss_nurse_cutin",
+            hp: 7,
+            bgm: "BOSS_NURSE"
+        },
+        bgm: "HOSPITAL"
+    },
+    5: {
+        id: 5,
+        name: "天国への階段",
+        theme: {
+            backgroundType: "image",
+            backgroundImage: "bg_heaven",
+            backgroundColor: "#f5f6fa",
+            groundTile: "temple_tile_floor",
+            dirtTile: "temple_tile_wall",
+            platformTile: "golden_pillar"
+        },
+        generation: {
+            length: 600, // Longer final challenge
+            holes: 0.20, // High risk of falling
+            platforms: 0.25,
+            features: {
+                springs: 0.1,
+                enemies: 0.10, // Fewer enemies, focus on platforming
+                flyers: 0.25, // Angels
+                carrots: 0.05
+            }
+        },
+        physics: {
+            gravity: 1200, // Light and airy
+            friction: 0.95
+        },
+        boss: {
+            name: "万物の始原：デウス・エクス",
+            image: "boss_god",
+            imageWeak: "boss_reaper", // Transforms to Reaper after barrier break
+            cutin: "boss_god_cutin",
+            hp: 10,
+            bgm: "BOSS_FINAL"
+        },
+        bgm: "NONE"
+    }
+};
