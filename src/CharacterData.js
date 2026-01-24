@@ -82,7 +82,7 @@ export const CHARACTERS = [
         spriteFile: 'KANONmotion.png',
         titleImage: 'title_kanon.png',
         transparencyKey: null,
-        description: 'クールで知的なうさぎ',
+        description: 'クールで知的な電子少女',
         theme: {
             primaryColor: '#FF69B4',
             secondaryColor: '#DDA0DD',

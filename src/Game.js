@@ -391,9 +391,7 @@ export class Game {
                 }
             },
             draw: () => {
-                if (this.state === 'WAIT_FOR_INPUT' || this.state !== 'HOME') {
-                    this.drawGameUI();
-                }
+                this.drawGameUI();
             }
         });
     }
@@ -635,7 +633,9 @@ export class Game {
             uiLayer.style.display = isIngame ? 'flex' : 'none';
         }
         if (debugContainer) {
-            debugContainer.style.display = isIngame ? 'block' : 'none';
+            const isVisible = this.debugManager ? this.debugManager.isVisible : false;
+            // SHOW if (ingame OR explicitly visible via secret trigger)
+            debugContainer.style.display = (isIngame || isVisible) ? 'block' : 'none';
         }
 
         // 1. Click to Start Screen
@@ -1169,11 +1169,6 @@ export class Game {
                 this.input.reset();
                 return;
             }
-
-            // Removed: Resetting BGM on every click conflicts with Music Room
-            // if (this.state === 'HOME') {
-            //     this.audio.playTitleBGM();
-            // }
         };
         window.addEventListener('keydown', activateAudio);
         window.addEventListener('click', activateAudio);

@@ -140,10 +140,10 @@ html {
 
 #carrot-bar-outer {
   width: 100%;
-  height: 24px;
+  height: 30px;
   background: #eee;
   border: 4px solid #d35400;
-  border-radius: 12px 30px 30px 12px;
+  border-radius: 20px;
   position: relative;
   overflow: hidden;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -153,7 +153,7 @@ html {
   width: 0%;
   height: 100%;
   background: linear-gradient(180deg, #ff9f43, #e67e22);
-  border-radius: 8px 0 0 8px;
+  border-radius: 15px;
   transition: width 0.4s cubic-bezier(0.1, 0.5, 0.1, 1);
   box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.1);
 }
@@ -184,12 +184,13 @@ html {
 }
 
 #loading-percentage {
-  font-size: 20px;
+  font-size: 22px;
   background: #ff9f43;
   color: white;
-  padding: 2px 10px;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 8px 18px;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(255, 159, 67, 0.3);
+  font-weight: 900;
 }
 
 #loading-system-log {
@@ -1673,6 +1674,7 @@ html {
   box-sizing: border-box;
   letter-spacing: 2px;
 }
+
 /* --- Intro Sequence Styles --- */
 
 .intro-screen {
@@ -1693,7 +1695,8 @@ html {
 .intro-screen.hidden {
   opacity: 0 !important;
   pointer-events: none !important;
-  display: none !important; /* Ensure it is gone */
+  display: none !important;
+  /* Ensure it is gone */
 }
 
 /* Start Screen */
@@ -1736,15 +1739,15 @@ html {
   animation: blink 1s infinite alternate;
   cursor: pointer;
   padding: 20px;
-  background: rgba(0,0,0,0.3);
+  background: rgba(0, 0, 0, 0.3);
   border-radius: 50px;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(5px);
   transition: all 0.2s;
 }
 
 .start-prompt:hover {
-  background: rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.2);
   transform: scale(1.05);
 }
 
@@ -1774,7 +1777,7 @@ html {
   transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   font-family: 'Zen Maru Gothic', sans-serif;
   font-weight: bold;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   position: relative;
   overflow: hidden;
 }
@@ -1786,7 +1789,7 @@ html {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
   transition: left 0.5s;
 }
 
@@ -1814,12 +1817,23 @@ html {
 }
 
 @keyframes pulseNeon {
-  from { text-shadow: 0 0 10px #ff9f43, 0 0 20px #ff9f43, 0 0 10px #ff6b6b; }
-  to { text-shadow: 0 0 20px #ff9f43, 0 0 40px #ff9f43, 0 0 20px #ff6b6b; }
+  from {
+    text-shadow: 0 0 10px #ff9f43, 0 0 20px #ff9f43, 0 0 10px #ff6b6b;
+  }
+
+  to {
+    text-shadow: 0 0 20px #ff9f43, 0 0 40px #ff9f43, 0 0 20px #ff6b6b;
+  }
 }
 
 @keyframes blink {
-  from { opacity: 1; text-shadow: 0 0 10px white; }
-  to { opacity: 0.5; text-shadow: none; }
-}
+  from {
+    opacity: 1;
+    text-shadow: 0 0 10px white;
+  }
 
+  to {
+    opacity: 0.5;
+    text-shadow: none;
+  }
+}

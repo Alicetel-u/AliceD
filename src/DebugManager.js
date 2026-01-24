@@ -8,6 +8,9 @@ export class DebugManager {
         this.showHitboxes = false; // ヒットボックス表示フラグ
         this.enabled = true; // デバッグ機能自体の有効化フラグ
         this.isGodMode = false; // デフォルトで無敵モードOFF
+        this.isVisible = false; // デバッグツールの表示状態
+        this.debugClickCount = 0;
+        this.lastDebugClickTime = 0;
 
         // HTML要素の参照
         this.elements = {
@@ -51,6 +54,8 @@ export class DebugManager {
 
             // Preview Elements (Removed in simple editor, but keeping references safe or null)
             previewText: null,
+            trigger: document.getElementById('debug-trigger'),
+            container: document.getElementById('debug-container')
         };
 
         this.currentEditorId = null;
@@ -59,6 +64,37 @@ export class DebugManager {
     }
 
     init() {
+        // --- SECRET TRIGGER LOGIC (Bottom-Left 3 Clicks) ---
+        if (this.elements.trigger) {
+            this.elements.trigger.addEventListener('click', (e) => {
+                const now = Date.now();
+                if (now - this.lastDebugClickTime > 3000) {
+                    this.debugClickCount = 0; // Reset if too slow (3s)
+                }
+
+                this.debugClickCount++;
+                this.lastDebugClickTime = now;
+
+                console.log(`[Debug] Secret trigger clicked: ${this.debugClickCount}/3`);
+
+                if (this.debugClickCount >= 3) {
+                    this.isVisible = !this.isVisible;
+                    this.debugClickCount = 0;
+                    console.log(`[Debug] Debug visibility toggled: ${this.isVisible}`);
+
+                    // Force update container display immediately
+                    const container = document.getElementById('debug-container');
+                    if (container) {
+                        container.style.display = this.isVisible ? 'block' : 'none';
+                    }
+                    if (this.elements.debugRoomEntry) {
+                        this.elements.debugRoomEntry.style.display = this.isVisible ? 'flex' : 'none';
+                    }
+                }
+                e.stopPropagation();
+            });
+        }
+
         if (!this.elements.toggle || !this.elements.menu) return;
 
         // --- DEBUG ROOM LOGIC ---
@@ -852,8 +888,9 @@ ${json}
 
         // Title Screen Debug Button Visibility
         if (this.elements.debugRoomEntry) {
-            // Only show on Title Screen (WAIT_FOR_INPUT, TITLE, HOME) or Loading
-            if (this.game.state === 'WAIT_FOR_INPUT' || this.game.state === 'TITLE' || this.game.state === 'HOME' || this.game.state === 'LOADING') {
+            // Only show on Title Screen (WAIT_FOR_INPUT, TITLE, HOME) or Loading if isVisible is true
+            const isTitleState = (this.game.state === 'WAIT_FOR_INPUT' || this.game.state === 'TITLE' || this.game.state === 'HOME' || this.game.state === 'LOADING');
+            if (isTitleState && this.isVisible) {
                 this.elements.debugRoomEntry.style.display = 'flex';
             } else {
                 this.elements.debugRoomEntry.style.display = 'none';

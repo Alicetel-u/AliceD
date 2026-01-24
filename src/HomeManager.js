@@ -372,23 +372,27 @@ export class HomeManager {
             this.ctx.lineWidth = 1;
             this.ctx.stroke();
 
-            // キャラクター名（鮮明な1重の文字）
+            // キャラクター名（かわいい丸文字・ぷっくりデザイン）
             this.ctx.textAlign = 'center';
-            this.ctx.font = 'bold 32px "Outfit", sans-serif';
+            this.ctx.font = 'bold 36px "Zen Maru Gothic", "Kosugi Maru", sans-serif';
             if (isHovered) {
-                // わずかなアウトラインで文字を立たせる（ズレなし）
-                this.ctx.strokeStyle = 'rgba(0,0,0,0.1)';
-                this.ctx.lineWidth = 2;
-                this.ctx.strokeText(char.name, Math.floor(dx + drawW / 2), textY);
+                // ホバー時は白文字に柔らかい影を付けて浮かせる
+                this.ctx.shadowColor = 'rgba(0,0,0,0.15)';
+                this.ctx.shadowBlur = 10;
+                this.ctx.shadowOffsetY = 4;
                 this.ctx.fillStyle = '#FFF';
             } else {
+                this.ctx.shadowBlur = 0;
+                this.ctx.shadowOffsetY = 0;
                 this.ctx.fillStyle = theme.primaryColor;
             }
             this.ctx.fillText(char.name, Math.floor(dx + drawW / 2), textY);
 
-            // 説明文
-            this.ctx.font = '600 15px "Outfit", sans-serif';
-            this.ctx.fillStyle = isHovered ? 'rgba(0,0,0,0.6)' : '#666';
+            // 説明文（優しくて読みやすい丸ゴシック）
+            this.ctx.shadowBlur = 0;
+            this.ctx.shadowOffsetY = 0;
+            this.ctx.font = '700 17px "Zen Maru Gothic", "Kosugi Maru", sans-serif';
+            this.ctx.fillStyle = isHovered ? 'rgba(0,0,0,0.65)' : '#666';
             this.ctx.fillText(char.description, Math.floor(dx + drawW / 2), textY + 45);
 
             // READYガイド
