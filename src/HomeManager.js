@@ -13,6 +13,49 @@ export class HomeManager {
         this.musicListInitialized = false;
         this.currentMusicId = null;
 
+        // ニコニコ風コメントシステム
+        this.nicoComments = [];
+        this.nicoTimer = 0;
+        this.nicoTexts = [
+            "ｷﾀ━━━━(ﾟ∀ﾟ)━━━━!!", "うぽつ", "神ゲーの予感",
+            "アリスちゃんかわいい！！！！", "BGMすこ", "弾幕ゲーかな？",
+            "待ってた", "88888888888888", "初見です", "なんか始まったｗｗｗ",
+            "草", "！？", "おおおおおおおおおおおお", "期待しかない", "難易度高そう...",
+            "うさぎかわいいよおおおお", "カノンちゃん推しです✋", "月まで届け🚀",
+            "🐰🐰🐰🐰🐰🐰", "やばい", "かっこいい✨", "演出神がかってる",
+            "実家のような安心感", "ここすき", "謎の技術ｗ",
+            "耐久配信助かる", "アーカイブ残りますか？", "スパチャ投げたい",
+            "尊い...🙏", "kawaii!!", "Global waiting room <3",
+            "天才か？", "これは伸びる", "優勝", "👏👏👏",
+            "見入っちゃう", "作業用BGM", "雰囲気最高",
+            "ｗｗｗｗｗｗｗｗｗ", "！？！？！？", "神",
+            "初見さんいらっしゃい！", "わこつ", "おつおつ",
+            "高評価押しました👍", "チャンネル登録した！", "通知から来ました"
+        ];
+
+        // 歌詞データ（弾幕用）
+        this.lyricsList = [
+            "暗いコードはめるカーソル", "モニターの海", "独りきり",
+            "白い影がひょいと跳ねて", "こっちを向いて耳が揺れる",
+            "小さな足でログを踏んで", "バグの森を軽く跨ぐ",
+            "名前聞けばただのうさぎだけど", "瞳は星みたいだ",
+            "うさぎと電子少女 走れ", "世界の端まで",
+            "バグだらけの夢を今パッチしてしまえ",
+            "ジャンプ1回 心リセット", "二人でセーブしてく未来",
+            "うさぎと電子少女 今日アップデート",
+            "指先からこぼれるデータ", "涙みたいに薄く光る",
+            "怖いのだってうさぎは笑う", "それもストーリーの一部だよ",
+            "エラー音も賑やかにして", "失敗さえもステージに変えろ",
+            "転んだ後に芽が出るから", "リトライキーをそっと押した",
+            "チップだけのブレイク", "リズム少し落として展開",
+            "ロード画面の長い夜", "くるくる回る小さな円",
+            "待ちくたびれてあくびしたら", "うさぎがそっと手を繋いだ",
+            "おいで",
+            "画面の外まで", "昨日までのルール", "ほらアンインストールして",
+            "それでも残るものがある", "うさぎと電子少女 スタートしてく",
+            "ゲームは続いていく"
+        ];
+
         this.setupUI();
     }
 
@@ -100,6 +143,7 @@ export class HomeManager {
             draw: () => {
                 if (this.game.state !== 'HOME') return;
                 this.drawBackground();
+                this.drawNicoComments();
             }
         });
 
@@ -157,6 +201,94 @@ export class HomeManager {
             p.alpha -= dt * 0.5;
             if (p.alpha <= 0) this.particles.splice(i, 1);
         }
+
+        // ニコニコ風コメント更新
+        this.updateNicoComments(dt);
+    }
+
+    updateNicoComments(dt) {
+        // 生成
+        this.nicoTimer -= dt;
+        if (this.nicoTimer <= 0) {
+            this.spawnNicoComment();
+            // ランダムな感覚で生成 (0.2s ~ 0.8s)
+            this.nicoTimer = Math.random() * 0.6 + 0.2;
+        }
+
+        // 移動
+        for (let i = this.nicoComments.length - 1; i >= 0; i--) {
+            const c = this.nicoComments[i];
+            c.x -= c.speed * dt;
+
+            // 画面外に出たら削除
+            if (c.x < -c.width) {
+                this.nicoComments.splice(i, 1);
+            }
+        }
+    }
+
+    spawnNicoComment() {
+        let text;
+        const audio = this.game.audio;
+
+        // BGM再生中かつTITLEなら歌詞を混ぜる確率アップ
+        if (audio.currentBgmType === 'TITLE' && !audio.bgmAudio.paused) {
+            if (Math.random() < 0.4) {
+                text = this.lyricsList[Math.floor(Math.random() * this.lyricsList.length)];
+            } else {
+                text = this.nicoTexts[Math.floor(Math.random() * this.nicoTexts.length)];
+            }
+        } else {
+            text = this.nicoTexts[Math.floor(Math.random() * this.nicoTexts.length)];
+        }
+
+        this.ctx.font = 'bold 24px "Zen Maru Gothic", sans-serif';
+        const measure = this.ctx.measureText(text);
+        const width = measure.width;
+
+        // Y座標は画面の上半分くらいにランダム配置
+        const y = Math.random() * (this.game.height - 100) + 50;
+
+        // 速度もランダム
+        const speed = Math.random() * 150 + 100;
+
+        // 色は白が基本だが、たまに色付き（歌詞は水色っぽくしてみる）
+        let color = '#FFFFFF';
+        if (this.lyricsList.includes(text)) {
+            color = '#D0F0FF'; // 歌詞っぽい色
+        } else if (Math.random() < 0.1) {
+            const colors = ['#FF0000', '#FFFF00', '#00FF00', '#00FFFF', '#FF00FF'];
+            color = colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        this.nicoComments.push({
+            text: text,
+            x: this.game.width,
+            y: y,
+            width: width,
+            speed: speed,
+            color: color,
+            size: Math.floor(Math.random() * 10 + 20) // 20~30px
+        });
+    }
+
+    drawNicoComments() {
+        this.ctx.save();
+        this.ctx.shadowBlur = 2;
+        this.ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        this.ctx.textBaseline = 'middle';
+
+        this.nicoComments.forEach(c => {
+            this.ctx.font = `bold ${c.size}px "Zen Maru Gothic", sans-serif`;
+            this.ctx.fillStyle = c.color;
+            // 縁取り
+            this.ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+            this.ctx.lineWidth = 2;
+            this.ctx.strokeText(c.text, c.x, c.y);
+            this.ctx.fillText(c.text, c.x, c.y);
+        });
+
+        this.ctx.restore();
     }
 
     handleInput() {
