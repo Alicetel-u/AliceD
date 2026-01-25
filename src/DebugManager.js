@@ -155,6 +155,35 @@ export class DebugManager {
             createEndBtn('btn-debug-ending-alice', '🎬 Alice Ending', '#ff6b81', 'ALICE_TRUE');
             createEndBtn('btn-debug-ending-kanon', '🎬 Kanon Ending', '#a29bfe', 'KANON_TRUE');
             createEndBtn('btn-debug-result', '🏆 Force Result', '#0984e3', 'RESULT');
+
+            // --- Enable Enemy Config Button (Bottom Left Slot) ---
+            // Assuming the layout is a grid or flex, we try to place it effectively.
+            // If the user specific "bottom-left coming soon slot", it might be an empty div in the HTML.
+            // We'll search for 'debug-room-coming-soon' ID or just append to the content and style it carefully.
+
+            const comingSoonSlot = document.getElementById('debug-room-coming-soon');
+            const targetContainer = comingSoonSlot || content;
+
+            const enemyBtn = document.createElement('button');
+            enemyBtn.id = 'btn-debug-enemy-config';
+            enemyBtn.innerText = '👾 Enemy Config';
+            // Style to look like other room buttons if possible, or distinctive
+            enemyBtn.style.cssText = `margin: 5px; padding: 10px 20px; background: #8e44ad; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%;`;
+
+            if (comingSoonSlot) {
+                // Clear "Coming Soon" text
+                comingSoonSlot.innerHTML = '';
+                comingSoonSlot.appendChild(enemyBtn);
+                comingSoonSlot.style.opacity = "1"; // Ensure it's visible if it was faded
+                comingSoonSlot.style.pointerEvents = "all";
+            } else {
+                // Fallback append
+                content.appendChild(enemyBtn);
+            }
+
+            enemyBtn.onclick = () => {
+                this.openEnemyConfig();
+            };
         }
         if (this.elements.roomBtnDialogue) {
             this.elements.roomBtnDialogue.addEventListener('click', (e) => {
@@ -797,6 +826,245 @@ ${json}
             alert(`データをコピーしました！（AI指示形式）\n\n対象ID: ${targetId}\n視点: ${viewpoint}\n\nこの内容でファイルを更新するか、\nAIチャットに貼り付けて修正指示を出してください。`);
         }).catch(err => {
             console.error('Copy failed:', err);
+            alert("コピーに失敗しました。");
+        });
+    }
+
+    // --- Enemy Config Feature ---
+    openEnemyConfig() {
+        // Initialize Config Data if not exists
+        if (!this.enemyConfigData) {
+            this.enemyConfigData = {};
+            // Default setup for 5 stages
+            for (let i = 1; i <= 5; i++) {
+                this.enemyConfigData[i] = {
+                    ground: 'fuwamoko',
+                    air: 'enemy_cloud',
+                    groundName: 'Default (fuwamoko)',
+                    airName: 'Default (enemy_cloud)'
+                };
+            }
+        }
+
+        let modal = document.getElementById('debug-enemy-config-modal');
+        if (!modal) {
+            modal = this.createEnemyConfigModal();
+        }
+
+        // Reset to Stage 1
+        this.currentConfigStage = this.game.stage || 1;
+        this.updateEnemyConfigUI(modal);
+
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+        // Hide room overlay
+        if (this.elements.debugRoomOverlay) this.elements.debugRoomOverlay.style.display = 'none';
+
+        // Block Input
+        this.updateInputBlockState();
+    }
+
+    updateEnemyConfigUI(modal) {
+        // Highlight active tab
+        const tabs = modal.querySelectorAll('.stage-tab');
+        tabs.forEach(t => {
+            if (parseInt(t.dataset.stage) === this.currentConfigStage) {
+                t.style.background = '#3498db';
+                t.style.color = 'white';
+            } else {
+                t.style.background = '#ecf0f1';
+                t.style.color = '#2c3e50';
+            }
+        });
+
+        // Update Inputs/Previews
+        const data = this.enemyConfigData[this.currentConfigStage];
+        this.updateEnemyPreview(modal, 'ground', data.ground, data.groundName);
+        this.updateEnemyPreview(modal, 'air', data.air, data.airName);
+    }
+
+    updateEnemyPreview(modal, type, assetKey, fileName) {
+        const img = modal.querySelector(`#preview-${type}`);
+        const label = modal.querySelector(`#filename-${type}`);
+
+        // Asset lookup
+        // Note: assetKey might be a custom key like 'custom_st1_ground'
+        const asset = this.game.assets.images[assetKey];
+        if (img) {
+            if (asset && asset.src) {
+                img.src = asset.src;
+            } else {
+                // Fallback attempt?
+                img.src = '';
+            }
+        }
+        if (label) label.innerText = fileName || assetKey;
+    }
+
+    createEnemyConfigModal() {
+        const modal = document.createElement('div');
+        modal.id = 'debug-enemy-config-modal';
+        modal.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100001; display: none; justify-content: center; align-items: center; flex-direction: column;";
+
+        const content = document.createElement('div');
+        content.style.cssText = "background: #fff; padding: 20px; border-radius: 10px; width: 700px; max-width: 95%; color: #000; text-align: center; box-shadow: 0 0 30px rgba(0,0,0,0.8); display: flex; flex-direction: column; gap: 15px;";
+
+        // Header
+        const header = document.createElement('div');
+        header.style.cssText = "display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px;";
+        header.innerHTML = '<h2 style="margin:0;">👾 Enemy Config Editor</h2>';
+
+        const exportBtn = document.createElement('button');
+        exportBtn.innerText = "📋 Export JSON";
+        exportBtn.style.cssText = "background: #2ecc71; color: white; border: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; cursor: pointer;";
+        exportBtn.onclick = () => this.exportEnemyConfigJSON();
+        header.appendChild(exportBtn);
+        content.appendChild(header);
+
+        // Stage Tabs
+        const tabContainer = document.createElement('div');
+        tabContainer.style.cssText = "display: flex; gap: 10px; justify-content: center; margin-bottom: 10px;";
+        for (let i = 1; i <= 5; i++) {
+            const tab = document.createElement('button');
+            tab.className = 'stage-tab';
+            tab.dataset.stage = i;
+            tab.innerText = `Stage ${i}`;
+            tab.style.cssText = "padding: 10px 15px; border: 1px solid #bdc3c7; border-radius: 5px; cursor: pointer; font-weight: bold; transition: all 0.2s;";
+            tab.onclick = () => {
+                this.currentConfigStage = i;
+                this.updateEnemyConfigUI(modal);
+            };
+            tabContainer.appendChild(tab);
+        }
+        content.appendChild(tabContainer);
+
+        // Grid (Ground / Air)
+        const grid = document.createElement('div');
+        grid.style.cssText = "display: grid; grid-template-columns: 1fr 1fr; gap: 20px;";
+
+        const createUploader = (type, title) => {
+            const wrapper = document.createElement('div');
+            wrapper.style.cssText = "border: 2px solid #f0f0f0; padding: 15px; border-radius: 8px; background: #fafafa;";
+
+            const h3 = document.createElement('h3');
+            h3.innerText = title;
+            h3.style.margin = "0 0 10px 0; color: #7f8c8d;";
+            wrapper.appendChild(h3);
+
+            // Preview
+            const img = document.createElement('img');
+            img.id = `preview-${type}`;
+            img.style.cssText = "width: 150px; height: 150px; object-fit: contain; border: 1px dashed #bdc3c7; background: #fff; margin-bottom: 5px;";
+            wrapper.appendChild(img);
+
+            // Filename Label
+            const fname = document.createElement('div');
+            fname.id = `filename-${type}`;
+            fname.style.fontSize = "12px";
+            fname.style.color = "#95a5a6";
+            fname.style.marginBottom = "10px";
+            fname.style.wordBreak = "break-all";
+            fname.innerText = "(No file selected)";
+            wrapper.appendChild(fname);
+
+            // Controls
+            const btnBox = document.createElement('div');
+
+            const fileBtn = document.createElement('button');
+            fileBtn.innerText = "📂 Select Image";
+            fileBtn.style.cssText = "width: 100%; padding: 10px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;";
+
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.style.display = 'none';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    this.handleEnemyImageUpload(type, file);
+                }
+            };
+            fileBtn.onclick = () => input.click();
+            btnBox.appendChild(fileBtn);
+            wrapper.appendChild(btnBox);
+            wrapper.appendChild(input); // Hidden
+
+            return wrapper;
+        };
+
+        grid.appendChild(createUploader('ground', '🦔 Ground Enemy (Walker)'));
+        grid.appendChild(createUploader('air', '🦅 Air Enemy (Flyer)'));
+
+        content.appendChild(grid);
+
+        // Close
+        const closeBtn = document.createElement('button');
+        closeBtn.innerText = "Close";
+        closeBtn.style.cssText = "margin-top: 15px; padding: 10px 40px; background: #95a5a6; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; align-self: center;";
+        closeBtn.onclick = () => {
+            modal.style.display = 'none';
+            if (this.elements.debugRoomOverlay) {
+                this.elements.debugRoomOverlay.style.display = 'flex';
+                this.updateInputBlockState();
+            }
+        };
+        content.appendChild(closeBtn);
+
+        modal.appendChild(content);
+        document.body.appendChild(modal);
+        return modal;
+    }
+
+    handleEnemyImageUpload(type, file) { // type: 'ground' or 'air'
+        const stage = this.currentConfigStage;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const dataUrl = e.target.result;
+            const customKey = `custom_st${stage}_${type}_${Date.now()}`; // Unique key
+
+            // 1. Create Image and Register to Assets
+            const newImg = new Image();
+            newImg.src = dataUrl;
+            this.game.assets.images[customKey] = newImg;
+
+            // 2. Update Data
+            this.enemyConfigData[stage][type] = customKey;
+            this.enemyConfigData[stage][`${type}Name`] = file.name;
+
+            // 3. Update UI
+            const modal = document.getElementById('debug-enemy-config-modal');
+            this.updateEnemyConfigUI(modal);
+
+            // 4. Update Current Stage Logic immediately?
+            if (this.game.stage === stage) {
+                if (!this.game.currentStageConfig.enemies) this.game.currentStageConfig.enemies = {};
+                this.game.currentStageConfig.enemies[type] = customKey;
+                console.log(`[Debug] Applied enemy config for CURRENT stage ${stage}: ${type} -> ${customKey}`);
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+
+    exportEnemyConfigJSON() {
+        if (!this.enemyConfigData) return;
+
+        // Simplify for export
+        const exportData = {};
+        for (let i = 1; i <= 5; i++) {
+            const d = this.enemyConfigData[i];
+            exportData[i] = {
+                ground: d.groundName || d.ground,
+                air: d.airName || d.air
+            };
+        }
+
+        const json = JSON.stringify(exportData, null, 4);
+        const text = `各ステージの雑魚敵の変更\n\n\`\`\`json\n${json}\n\`\`\``;
+
+        navigator.clipboard.writeText(text).then(() => {
+            alert("設定をクリップボードにコピーしました！\n（各ステージの雑魚敵の変更）");
+        }).catch(err => {
+            console.error(err);
             alert("コピーに失敗しました。");
         });
     }

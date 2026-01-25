@@ -1,7 +1,11 @@
 export class DrillEnemy {
-    constructor(x, y, tileSize) {
-        this.width = tileSize * 2.25;
-        this.height = tileSize * 2.25;
+    constructor(x, y, tileSize, stage = 1) {
+        let sizeMultiplier = 3.5; // Default large (224px)
+        if (stage === 1) sizeMultiplier = 2.5; // 160px
+        else if (stage === 2) sizeMultiplier = 3.0; // 192px
+
+        this.width = tileSize * sizeMultiplier;
+        this.height = tileSize * sizeMultiplier;
 
         // Adjust position to align bottom with tile and center horizontally
         this.x = x + (tileSize - this.width) / 2;
@@ -86,10 +90,11 @@ export class DrillEnemy {
         }
     }
 
-    draw(ctx, assets, camera) {
+    draw(ctx, assets, camera, config) {
         if (this.dead) return;
 
-        const img = assets.getImage('fuwamoko');
+        const imgKey = (config && config.enemies && config.enemies.ground) ? config.enemies.ground : 'fuwamoko';
+        const img = assets.getImage(imgKey);
         const dx = Math.floor(this.x - camera.x);
         const dy = Math.floor(this.y - camera.y);
 

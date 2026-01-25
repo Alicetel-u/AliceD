@@ -485,11 +485,11 @@ export class Game {
             this.level.draw(this.ctx, this.assets, this.camera);
 
             // 3. Enemies - Legacy
-            this.enemies.forEach(enemy => enemy.draw(this.ctx, this.assets, this.camera)); // Migrated
+            this.enemies.forEach(enemy => enemy.draw(this.ctx, this.assets, this.camera, this.currentStageConfig)); // Migrated
 
             if (this.springs) this.springs.forEach(s => s.draw(this.ctx, this.assets, this.camera)); // Migrated
             if (this.rings) this.rings.forEach(r => r.draw(this.ctx, this.assets, this.camera)); // Migrated
-            if (this.clouds) this.clouds.forEach(c => c.draw(this.ctx, this.assets, this.camera)); // Migrated
+            if (this.clouds) this.clouds.forEach(c => c.draw(this.ctx, this.assets, this.camera, this.currentStageConfig)); // Migrated
             if (this.movingPlatforms) this.movingPlatforms.forEach(mp => mp.draw(this.ctx, this.camera)); // Migrated
             if (this.fallingPlatforms) this.fallingPlatforms.forEach(fp => fp.draw(this.ctx, this.camera)); // Migrated
 
@@ -1125,6 +1125,13 @@ export class Game {
                 });
             }
         }
+
+        // Load Enemy Assets
+        if (stage.enemies) {
+            if (stage.enemies.ground) assetSet.add(stage.enemies.ground);
+            if (stage.enemies.air) assetSet.add(stage.enemies.air);
+        }
+
         if (stage.boss) {
             if (stage.boss.image) assetSet.add(stage.boss.image);
             if (stage.boss.imageWeak) assetSet.add(stage.boss.imageWeak);
@@ -1816,8 +1823,8 @@ export class Game {
 
         // ... Object Instantiation (Enemies, Springs, etc.) ...
         this.enemies = this.level.enemySpawns.map(spawn => {
-            if (spawn.type === 'flyer') return new CloudEnemy(spawn.x, spawn.y);
-            else return new DrillEnemy(spawn.x, spawn.y, this.tileSize);
+            if (spawn.type === 'flyer') return new CloudEnemy(spawn.x, spawn.y, this.stage);
+            else return new DrillEnemy(spawn.x, spawn.y, this.tileSize, this.stage);
         });
         this.springs = this.level.springSpawns.map(spawn => new Spring(spawn.x, spawn.y));
         this.rings = this.level.ringSpawns.map(spawn => new SpeedRing(spawn.x, spawn.y, spawn.type));

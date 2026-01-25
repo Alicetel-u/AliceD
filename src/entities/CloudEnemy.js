@@ -1,10 +1,18 @@
 export class CloudEnemy {
-    constructor(x, y) {
+    constructor(x, y, stage = 1) {
         this.x = x;
         this.y = y;
         this.baseY = y; // Anchor Y position
-        this.width = 160;
-        this.height = 160;
+
+        let size = 160;
+        if (stage === 2) size = 192;
+        else if (stage === 3) size = 224;
+        else if (stage === 5) size = 288; // Even bigger for St5
+        // Stage 4 stays 160, Stage 1 stays 160
+
+        this.width = size;
+        this.height = size;
+
         this.dead = false;
         this.timer = Math.random() * 100; // Random initial phase
         this.type = 'flyer';
@@ -19,10 +27,11 @@ export class CloudEnemy {
         this.y = this.baseY + offset;
     }
 
-    draw(ctx, assets, camera) {
+    draw(ctx, assets, camera, config) {
         if (this.dead) return;
 
-        const img = assets.getImage('enemy_cloud');
+        const imgKey = (config && config.enemies && config.enemies.air) ? config.enemies.air : 'enemy_cloud';
+        const img = assets.getImage(imgKey);
 
         // Simple culling
         if (this.x < camera.x - 200 || this.x > camera.x + camera.width + 200) return;

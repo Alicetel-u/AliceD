@@ -42,6 +42,7 @@ export const StageConfig = {
             }
         },
         physics: { gravity: 1500, friction: 0.9 },
+        enemies: { ground: 'fuwamoko', air: 'enemy_cloud' },
         boss: {
             name: "月の守護者：モチツキ・タイタン", image: "boss_mochitsuki", imageWeak: "boss_weak",
             cutin: "boss_cutin", hp: 5, bgm: "BOSS_WAR",
@@ -70,6 +71,7 @@ export const StageConfig = {
             }
         },
         physics: { gravity: 1600, friction: 0.92 },
+        enemies: { ground: 'enemy_st2_ground.png', air: 'enemy_st2_air.png' },
         boss: {
             name: "深淵の幻影：シスター？？？", image: "boss_sister_s", imageWeak: "boss_sister_k",
             cutin: "boss_sister_cutin", hp: 6, bgm: "BOSS_SISTER",
@@ -105,6 +107,7 @@ export const StageConfig = {
             }
         },
         physics: { gravity: 1300, friction: 0.95 },
+        enemies: { ground: 'enemy_st3_ground.png', air: 'enemy_st3_air.png' },
         boss: {
             name: "玩具の王：キング・レゴロ", image: "boss_toy_king", imageWeak: "boss_toy_king_weak",
             cutin: "boss_toy_king_cutin", hp: 7, bgm: "BOSS_TOY",
@@ -135,6 +138,7 @@ export const StageConfig = {
             }
         },
         physics: { gravity: 1750, friction: 0.88 },
+        enemies: { ground: 'enemy_st4_ground.png', air: 'enemy_st4_air.png' },
         boss: {
             name: "絶望に至る病：KANON", image: "boss_nurse", imageWeak: "boss_nurse_weak",
             cutin: "boss_nurse_cutin", hp: 8, bgm: "BOSS_NURSE",
@@ -170,6 +174,7 @@ export const StageConfig = {
             }
         },
         physics: { gravity: 1200, friction: 0.95 }, // Normal gravity
+        enemies: { ground: 'enemy_st5_ground.png', air: 'enemy_st5_air.png' },
         boss: {
             name: "万物の始原：デウス・エクス", image: "boss_god", imageWeak: "boss_reaper",
             cutin: "boss_god_cutin", hp: 9, bgm: "BOSS_FINAL",
