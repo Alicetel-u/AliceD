@@ -107,7 +107,7 @@ export const StageConfig = {
             }
         },
         physics: { gravity: 1300, friction: 0.95 },
-        enemies: { ground: 'enemy_st3_ground.webp', air: 'enemy_st3_air.png' },
+        enemies: { ground: 'enemy_st3_ground.webp', air: 'enemy_st3_air.webp' },
         boss: {
             name: "玩具の王：キング・レゴロ", image: "boss_toy_king", imageWeak: "boss_toy_king_weak",
             cutin: "boss_toy_king_cutin", hp: 7, bgm: "BOSS_TOY",
