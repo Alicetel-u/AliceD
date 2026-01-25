@@ -343,8 +343,9 @@ export class ResultSection {
             ctx.shadowColor = (this.data.charId === 'kanon') ? this.c_purple : this.c_pink;
             ctx.shadowBlur = 30; // Reduced from 50
 
-            // Position character left-of-center
-            const dx = (w - dw) / 2 - w * 0.15;
+            // Position character in Left Area (30% from left)
+            // Center of character aligns with w * 0.3
+            const dx = (w * 0.35) - (dw / 2);
             const dy = (h - dh) / 2;
             ctx.drawImage(charImg, dx, dy, dw, dh);
             ctx.shadowBlur = 0;
@@ -370,9 +371,10 @@ export class ResultSection {
         ];
 
         // Adjust card size to fit screen
-        const cardW = Math.min(480, w * 0.45);
+        const cardW = Math.min(500, w * 0.40);
         const cardH = 130;
-        const startX = Math.max(w - cardW - 40, w * 0.5);
+        // Position in Right Area (Starts from 62% of width)
+        const startX = w * 0.62;
         let cardY = 220;
 
         messages.forEach((msg, idx) => {
@@ -395,9 +397,9 @@ export class ResultSection {
         ctx.translate(this.panelOffset, 0);
 
         const scoreY = Math.min(cardY + 30, h - 220);
-        const scoreBoxW = Math.min(480, w * 0.45);
+        const scoreBoxW = Math.min(500, w * 0.40);
         const scoreBoxH = 170;
-        const scoreBoxX = Math.max(w - scoreBoxW - 40, w * 0.5);
+        const scoreBoxX = w * 0.62;
 
         // Score box with luxury frame
         ctx.fillStyle = 'rgba(20, 15, 40, 0.9)';
