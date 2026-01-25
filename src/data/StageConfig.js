@@ -174,7 +174,7 @@ export const StageConfig = {
             }
         },
         physics: { gravity: 1200, friction: 0.95 }, // Normal gravity
-        enemies: { ground: 'enemy_st5_ground.png', air: 'enemy_st5_air.png' },
+        enemies: { ground: 'enemy_st5_ground.png', air: 'enemy_st5_air.webp' },
         boss: {
             name: "万物の始原：デウス・エクス", image: "boss_god", imageWeak: "boss_reaper",
             cutin: "boss_god_cutin", hp: 9, bgm: "BOSS_FINAL",
