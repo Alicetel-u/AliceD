@@ -140,7 +140,7 @@ export const StageConfig = {
         physics: { gravity: 1750, friction: 0.88 },
         enemies: { ground: 'enemy_st4_ground.png', air: 'enemy_st4_air.png' },
         boss: {
-            name: "絶望に至る病：KANON", image: "boss_nurse", imageWeak: "boss_nurse_weak",
+            name: "絶望に至る病：KANON", image: "boss_hospital_new.webp", imageWeak: "boss_nurse_weak",
             cutin: "boss_nurse_cutin", hp: 8, bgm: "BOSS_NURSE",
             ai: {
                 attackInterval: 2.5,

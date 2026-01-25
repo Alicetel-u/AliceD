@@ -1,5 +1,6 @@
 import { DialogueData } from './data/DialogueData.js';
 import { EndingData } from './data/EndingData.js';
+import { StageConfig } from './data/StageConfig.js';
 
 export class DebugManager {
     constructor(game) {
@@ -835,13 +836,17 @@ ${json}
         // Initialize Config Data if not exists
         if (!this.enemyConfigData) {
             this.enemyConfigData = {};
-            // Default setup for 5 stages
+            // Pull initial values from StageConfig
             for (let i = 1; i <= 5; i++) {
+                const config = StageConfig[i];
+                const ground = (config && config.enemies) ? config.enemies.ground : 'fuwamoko';
+                const air = (config && config.enemies) ? config.enemies.air : 'enemy_cloud';
+
                 this.enemyConfigData[i] = {
-                    ground: 'fuwamoko',
-                    air: 'enemy_cloud',
-                    groundName: 'Default (fuwamoko)',
-                    airName: 'Default (enemy_cloud)'
+                    ground: ground,
+                    air: air,
+                    groundName: ground,
+                    airName: air
                 };
             }
         }
