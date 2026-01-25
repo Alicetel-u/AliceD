@@ -187,7 +187,10 @@ export class BossSection {
 
                 const barrierKey = `STAGE${this.game.stage}_BARRIER_BREAK`;
                 if (this.game.dialogueManager.hasDialogue(barrierKey)) {
-                    this.game.startDialogue(barrierKey);
+                    this.game.isPaused = true;
+                    this.game.startDialogue(barrierKey, () => {
+                        this.game.isPaused = false;
+                    });
                 }
 
                 console.log("BOSS STOPPED ON GROUND! CONTINUE AUTO-RUN.");
