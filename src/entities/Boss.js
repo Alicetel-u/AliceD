@@ -199,7 +199,7 @@ export class Boss {
         }
 
         // --- Common Effects ---
-        this.updateEffects(env);
+        this.updateEffects(env, dt);
 
         // --- ENFORCE SCREEN BOUNDS (Invisible Walls) ---
         this.enforceScreenBounds(camera, screenWidth);
@@ -457,9 +457,11 @@ export class Boss {
         }
     }
 
-    updateEffects(env) {
+    updateEffects(env, dt) {
         if (!this.isInvulnerable && !this.defeated && env) {
-            if (Math.random() < 0.25) {
+            // Convert per-frame 0.25 chance @ 60fps to time-based probability
+            // (1 - (1-0.25)^(1/60)) * 60 approx 15 particles per second
+            if (Math.random() < 15 * dt) {
                 const isSmoke = Math.random() < 0.4;
                 env.particles.push({
                     x: this.x + Math.random() * this.width,

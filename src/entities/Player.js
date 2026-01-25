@@ -356,7 +356,7 @@ export class Player {
                 this.vx *= Math.pow(0.8, dt * 60);
             }
 
-            if (this.grounded && Math.abs(this.vx) > 100 && Math.random() < 0.2) {
+            if (this.grounded && Math.abs(this.vx) > 100 && Math.random() < 12 * dt) {
                 this.spawnDust(this.x, this.y + this.height);
             }
         } else {
@@ -370,7 +370,7 @@ export class Player {
                 baseMultiplier += (effectiveSpeedLevel * 0.1);
 
                 // Visual feedback for speedup
-                if (Math.random() < 0.3) {
+                if (Math.random() < 18 * dt) {
                     this.particles.push(new Particle(
                         this.x + Math.random() * this.width,
                         this.y + Math.random() * this.height,
@@ -387,7 +387,7 @@ export class Player {
             this.vx = finalSpeed;
             this.facingRight = true;
 
-            if (this.grounded && Math.random() < 0.2) {
+            if (this.grounded && Math.random() < 12 * dt) {
                 this.spawnDust(this.x, this.y + this.height);
             }
         }
@@ -398,7 +398,7 @@ export class Player {
             this.vx *= 0.5;
 
             // Visuals (Bubbles)
-            if (Math.random() < 0.2) {
+            if (Math.random() < 12 * dt) {
                 this.particles.push(new Particle(
                     this.x + Math.random() * this.width,
                     this.y + this.height,
