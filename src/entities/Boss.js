@@ -358,6 +358,34 @@ export class Boss {
     updateDarkWaves(dt, player, env) {
         for (let i = this.waves.length - 1; i >= 0; i--) {
             const w = this.waves[i];
+
+            // --- Warning Phase Handling ---
+            if (w.isWarning) {
+                w.warningTimer -= dt;
+
+                // TIGHT TRACKING (Cannot be outrun horizontally)
+                const currentCenterX = w.x + w.width / 2;
+                const targetCenterX = player.x + player.width / 2;
+                const nextCenterX = currentCenterX + (targetCenterX - currentCenterX) * (dt * 20.0);
+                w.x = nextCenterX - w.width / 2;
+
+                if (w.warningTimer <= 0) {
+                    w.isWarning = false; // Activate
+                    w.life = 0.5; // Short active duration
+                    if (player.game && player.game.audio) player.game.audio.playLaser();
+                    if (player.game && player.game.camera) player.game.camera.shake(0.3, 20);
+                }
+                continue; // Skip collision during warning
+            }
+
+            // --- Active Tracking (Also tracks while firing to ensure "Must Jump") ---
+            if (w.type === 'JUDGMENT_RAY' || w.type === 'GOD_LASER_BEAM') {
+                const currentCenterX = w.x + w.width / 2;
+                const targetCenterX = player.x + player.width / 2;
+                const nextCenterX = currentCenterX + (targetCenterX - currentCenterX) * (dt * 10.0);
+                w.x = nextCenterX - w.width / 2;
+            }
+
             w.x += w.vx * dt;
             w.life -= dt;
 
@@ -373,10 +401,14 @@ export class Boss {
             ) {
                 // --- SAFEGUARD: Explicitly check Attack Type ---
                 if (w.type === 'JUDGMENT_RAY') {
-                    // STAGE 5: Vertical Ray - Avoid by Jumping
-                    if (player.grounded) {
-                        player.game.takeDamage(this, 0.2, true);
+                    // STAGE 5: Vertical Ray - Avoid by Jumping (Ground Hit Only)
+                    if (!player.grounded) {
+                        // Safe in Air!
+                    } else {
+                        // Grounded = Hit!
+                        player.game.takeDamage(this, 0.05, true, 1);
                         this._spawnZapEffect(env, player);
+                        if (player.game.camera.shake) player.game.camera.shake(0.1, 5);
                     }
                 } else if (w.type === 'SISTER_WAVE') {
                     // STAGE 2: Horizontal Wave - Hit touches hitbox
@@ -770,6 +802,32 @@ export class Boss {
             const wy = w.y - camera.y;
 
             ctx.save();
+
+            // --- Warning Render ---
+            if (w.isWarning) {
+                const pulse = Math.sin(Date.now() / 50) * 0.5 + 0.5;
+                const warnWidth = w.width * (0.1 + pulse * 0.05); // Narrow pulsating line
+                const centerX = wx + w.width / 2;
+
+                // 1. Warning Line
+                ctx.fillStyle = `rgba(255, 0, 0, ${0.3 + pulse * 0.4})`;
+                ctx.fillRect(centerX - warnWidth / 2, wy, warnWidth, w.height);
+
+                // 2. Core Line
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(centerX - 1, wy, 2, w.height);
+
+                // 3. Warning Text
+                if (Math.floor(Date.now() / 100) % 2 === 0) {
+                    ctx.fillStyle = '#ff0000';
+                    ctx.font = 'bold 16px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillText("! DANGER !", centerX, wy + camera.height / 2);
+                }
+
+                ctx.restore();
+                return; // Skip drawing active wave
+            }
 
             const isLaserType = w.isLaser || w.type === 'SISTER_WAVE' || w.type === 'JUDGMENT_RAY';
 
