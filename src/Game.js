@@ -134,6 +134,10 @@ export class Game {
         // Load Progress
         this.loadProgress();
 
+        // Force Easy Mode OFF on startup (User Request)
+        this.easyMode = false;
+        localStorage.setItem('aliceD_easyMode', 'false');
+
         // Initialize Gacha (AFTER loading score)
         this.gacha = new GachaSystem(this);
 

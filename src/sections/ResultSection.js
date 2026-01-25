@@ -204,11 +204,15 @@ export class ResultSection {
                 break;
 
             case 'COUNTUP':
-                const duration = 1.5;
+                const duration = 2.0; // Slightly longer
                 const t3 = Math.min(this.timer / duration, 1.0);
-                this.displayTotal = Math.floor(this.targetTotal * t3);
+                // Ease out (fast start, slow end)
+                const easeScore = 1 - Math.pow(1 - t3, 3);
+
+                this.displayTotal = Math.floor(this.targetTotal * easeScore);
 
                 if (t3 >= 1.0) {
+                    this.displayTotal = this.targetTotal; // Ensure exact match
                     this.phase = 'RANK';
                     this.timer = 0;
                 }
@@ -311,14 +315,14 @@ export class ResultSection {
             ctx.lineWidth = 10;
             ctx.font = 'bold 90px "Zen Maru Gothic", serif';
             ctx.textAlign = 'center';
-            ctx.strokeText("ステージクリア！", 0, 0);
+            ctx.strokeText("STAGE CLEAR!", 0, 0);
 
             const titleGrad = ctx.createLinearGradient(0, -50, 0, 50);
             titleGrad.addColorStop(0, this.c_gold);
             titleGrad.addColorStop(0.5, this.c_lightGold);
             titleGrad.addColorStop(1, this.c_gold);
             ctx.fillStyle = titleGrad;
-            ctx.fillText("ステージクリア！", 0, 0);
+            ctx.fillText("STAGE CLEAR!", 0, 0);
 
             ctx.restore();
         }
@@ -365,9 +369,9 @@ export class ResultSection {
         ctx.translate(this.panelOffset, 0);
 
         const messages = [
+            { icon: "⏱️", text: `クリアタイム\n${this.data.timeStr}`, color: "#00cec9" }, // Blue/Cyan for time
             { icon: "💖", text: this.data.healthMsg, color: this.c_pink },
-            { icon: "🥕", text: this.data.timeMsg, color: "#FFA500" }, // Orange for carrots
-            { icon: "⚔️", text: this.data.performanceMsg, color: this.c_purple }
+            { icon: "🥕", text: this.data.timeMsg, color: "#FFA500" } // Orange for carrots
         ];
 
         // Adjust card size to fit screen
