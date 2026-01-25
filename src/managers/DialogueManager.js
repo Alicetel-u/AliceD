@@ -24,8 +24,8 @@ export class DialogueManager {
         this.dialogueBox = document.getElementById('dialogue-box');
 
         // Event Listener for advancing text
-        if (this.dialogueBox) {
-            this.dialogueBox.addEventListener('click', () => this.onInteract());
+        if (this.overlay) {
+            this.overlay.addEventListener('click', () => this.onInteract());
         }
 
         // Key listener hooks into Game input, or we can add global here

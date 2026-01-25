@@ -743,7 +743,7 @@ html {
   height: 100%;
   z-index: 2000;
   /* UIより上、ポーズ画面より下など調整 */
-  pointer-events: none;
+  pointer-events: auto;
   /* 会話中もクリックは裏に通すか、ここでブロックするか。今回はブロックしない */
   display: flex;
   flex-direction: column;
