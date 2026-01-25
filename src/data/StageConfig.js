@@ -71,7 +71,7 @@ export const StageConfig = {
             }
         },
         physics: { gravity: 1600, friction: 0.92 },
-        enemies: { ground: 'enemy_st2_ground.png', air: 'enemy_st2_air.webp' },
+        enemies: { ground: 'enemy_st2_ground.webp', air: 'enemy_st2_air.webp' },
         boss: {
             name: "深淵の幻影：シスター？？？", image: "boss_sister_s", imageWeak: "boss_sister_k",
             cutin: "boss_sister_cutin", hp: 6, bgm: "BOSS_SISTER",
