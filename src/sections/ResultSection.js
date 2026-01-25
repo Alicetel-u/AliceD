@@ -184,7 +184,7 @@ export class ResultSection {
 
             case 'SLIDE_IN':
                 const t2 = Math.min(this.timer * 1.5, 1.0);
-                const easeOut = 1 - Math.pow(1 - t2, 3);
+                const easeOut = 1 - Math.pow(1 - t2, 5); // Quintic Ease Out for smoother stop
 
                 this.charOffset = -600 + (600 * easeOut);
                 this.panelOffset = 1000 - (1000 * easeOut);
@@ -334,7 +334,7 @@ export class ResultSection {
         const charImg = this.game.assets.getImage(`title_${this.data.charId}`);
         if (charImg) {
             // Large character display in center
-            const maxCharWidth = Math.min(w * 0.70, 900);
+            const maxCharWidth = Math.min(w * 0.60, 800);
             const maxCharHeight = h * 0.95;
             const scaleW = maxCharWidth / charImg.width;
             const scaleH = maxCharHeight / charImg.height;

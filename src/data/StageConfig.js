@@ -120,7 +120,11 @@ export const StageConfig = {
         id: 4,
         name: "静寂のホスピタル",
         theme: {
-            backgroundType: "image", backgroundImage: "bg_hospital", backgroundColor: "#d1ccc0",
+            // Darkened background for better visibility
+            backgroundLayers: [
+                { image: "bg_hospital", speed: 0.1, alignBottom: false, filter: "brightness(0.6)" }
+            ],
+            backgroundColor: "#d1ccc0",
             groundTile: "hospital_tile_floor", dirtTile: "hospital_tile_wall", platformTile: "stretcher_bed"
         },
         generation: {
@@ -150,7 +154,11 @@ export const StageConfig = {
         id: 5,
         name: "天国への階段",
         theme: {
-            backgroundType: "image", backgroundImage: "bg_heaven", backgroundColor: "#f5f6fa",
+            // Darkened background for better visibility
+            backgroundLayers: [
+                { image: "bg_heaven", speed: 0.1, alignBottom: false, filter: "brightness(0.6)" }
+            ],
+            backgroundColor: "#f5f6fa",
             groundTile: "temple_tile_floor", dirtTile: "temple_tile_wall", platformTile: "golden_pillar"
         },
         generation: {
