@@ -32,6 +32,11 @@ import { StageValidator } from './utils/StageValidator.js';
 import { applyPolyfills } from './utils/Polyfills.js';
 import { DialogueManager } from './managers/DialogueManager.js';
 import { BootManager } from './managers/BootManager.js';
+import { PixiManager } from './managers/PixiManager.js';
+import { TileRenderer } from './managers/TileRenderer.js';
+import { PlayerRenderer } from './managers/PlayerRenderer.js';
+import { BossRenderer } from './managers/BossRenderer.js';
+import { EffectRenderer } from './managers/EffectRenderer.js';
 
 // ... existing imports
 
@@ -56,7 +61,7 @@ const DAMAGE_TEXTS_KANON = [
 export class Game {
     constructor(canvas) {
         this.canvas = canvas;
-        this.ctx = canvas.getContext('2d', { alpha: false });
+        this.ctx = canvas.getContext('2d', { alpha: true });
         applyPolyfills(this.ctx);
 
         // Disable antialiasing for pixel art look
@@ -68,9 +73,17 @@ export class Game {
         this.assets = new Assets();
         this.input = new Input();
         this.tileSize = 64;
+
+        // --- PixiJS & WebGL Renderers ---
+        this.pixi = new PixiManager(this);
+        this.tileRenderer = new TileRenderer(this);
+        this.playerRenderer = new PlayerRenderer(this);
+        this.bossRenderer = new BossRenderer(this);
+        this.effectRenderer = new EffectRenderer(this);
+
         this.camera = new Camera(this.width, this.height);
         this.level = new Level(this.tileSize); // 64px tiles base
-        this.parallax = new ParallaxBackground(this.width, this.height);
+        this.parallax = new ParallaxBackground(this.width, this.height, this.pixi);
         this.env = new Environment(this.width, this.height);
         this.audio = new AudioManager();
         this.characterManager = new CharacterManager();
@@ -1102,8 +1115,8 @@ export class Game {
 
         // --- CORE ASSETS (Always loaded at start) ---
         const coreAssets = [
-            'enemy_cloud', 'tiles', 'enemies', 'carrot', 'bg_sky', 'bg_mountains', 'bg_hills',
-            'golden_carrot', 'fuwamoko', 'boss_shadow',
+            'enemy_cloud', 'tiles', 'carrot', 'bg_sky', 'bg_mountains', 'bg_hills',
+            'golden_carrot', 'fuwamoko',
             'aliceend1.webp', 'aliceend2.webp', 'aliceend3.webp', 'aliceend4.webp', 'aliceend5.webp',
             'kanonend1.webp', 'kanonend2.webp', 'kanonend3.webp'
         ];
@@ -1888,8 +1901,8 @@ export class Game {
     }
 
     updateParallax() {
-        // Clear existing layers
-        this.parallax.layers = [];
+        // Clear existing layers and Pixi sprites
+        this.parallax.clear();
 
         const theme = this.currentStageConfig.theme;
 
