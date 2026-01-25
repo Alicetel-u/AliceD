@@ -23,12 +23,16 @@ export class DialogueManager {
         this.nextIndicator = document.getElementById('dialogue-next-indicator');
         this.dialogueBox = document.getElementById('dialogue-box');
 
-        // Event Listener for advancing text (Window level to ensure clicks are caught everywhere)
-        window.addEventListener('click', () => {
+        // Event Listener for advancing text (Use capture to ensure we get the event first)
+        const advanceHandler = (e) => {
             if (this.active) {
+                // Prevent game interaction underneath if needed, but primary goal is to advance text
                 this.onInteract();
             }
-        });
+        };
+
+        window.addEventListener('click', advanceHandler, true);
+        window.addEventListener('touchstart', advanceHandler, true);
 
         // Key listener hooks into Game input, or we can add global here
         window.addEventListener('keydown', (e) => {
