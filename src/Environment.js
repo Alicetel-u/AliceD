@@ -139,17 +139,24 @@ export class Environment {
             } else {
                 ctx.fillStyle = p.color;
 
-                // Optimization: Use fillRect for standard particles instead of arc circles
-                // Only use arc if specifically needed or for "glow" which is now just a larger semi-transparent rect
-                if (p.glow) {
-                    ctx.globalAlpha = alpha * 0.3;
-                    const gs = (p.size * 4) | 0;
-                    ctx.fillRect(dx - gs / 2 | 0, dy - gs / 2 | 0, gs, gs);
-                    ctx.globalAlpha = alpha;
+                // Support circles for specific particles (glow, bubbles, etc)
+                if (p.glow || p.shape === 'circle') {
+                    const s = p.size;
+                    if (p.glow) {
+                        ctx.globalAlpha = alpha * 0.3;
+                        ctx.beginPath();
+                        ctx.arc(dx, dy, s * 2.5, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.globalAlpha = alpha;
+                    }
+                    ctx.beginPath();
+                    ctx.arc(dx, dy, s / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    // Optimized square for performance
+                    const s = p.size | 0;
+                    ctx.fillRect(dx - s / 2 | 0, dy - s / 2 | 0, s, s);
                 }
-
-                const s = p.size | 0;
-                ctx.fillRect(dx - s / 2 | 0, dy - s / 2 | 0, s, s);
             }
         }
         ctx.restore();

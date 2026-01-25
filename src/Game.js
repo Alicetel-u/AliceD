@@ -228,7 +228,8 @@ export class Game {
                                 vx: Math.cos(angle) * 10,
                                 vy: Math.sin(angle) * 10,
                                 life: 40, size: 5, color: '#fff',
-                                friction: 0.95
+                                friction: 0.95,
+                                shape: 'circle' // Restore high-quality look
                             });
                         }
                     }

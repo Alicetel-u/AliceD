@@ -53,6 +53,14 @@ export class StageUI {
         barrierGrad.addColorStop(0, '#ffaa00');
         barrierGrad.addColorStop(1, '#ffff00');
         this.cache.barrierGrad = barrierGrad;
+
+        // 3. Icon Aura Gradient (Restore rich look)
+        const auraColor = isBossBattle ? '#ffaa00' : '#00ffaa';
+        const radGrad = this.ctx.createRadialGradient(0, 0, 5, 0, 0, 35);
+        radGrad.addColorStop(0, auraColor);
+        radGrad.addColorStop(0.5, auraColor + '88'); // Semi-transparent mid
+        radGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        this.cache.auraGrad = radGrad;
     }
 
     drawAuroraMeter() {
@@ -73,10 +81,13 @@ export class StageUI {
         this.ctx.fillStyle = 'rgba(10, 20, 30, 0.6)';
         this.ctx.fillRect(meterX, meterY, meterW, meterH);
 
-        // Neon Glow (Reduced frequency of shadowBlur usage or use a simple stroke)
+        // Neon Glow
+        this.ctx.shadowBlur = 10;
+        this.ctx.shadowColor = isBossBattle ? '#ff0055' : '#00ffff';
         this.ctx.strokeStyle = isBossBattle ? 'rgba(255, 0, 85, 0.8)' : 'rgba(0, 255, 255, 0.8)';
         this.ctx.lineWidth = 2;
         this.ctx.strokeRect(meterX, meterY, meterW, meterH);
+        this.ctx.shadowBlur = 0;
 
         // 2. Liquid Content
         this.ctx.save();
@@ -112,14 +123,17 @@ export class StageUI {
         this.ctx.save();
         this.ctx.translate(iconX, meterY + meterH / 2);
 
-        // Aura Glow (Use simple circles instead of complex radial gradient if possible, or cache it)
-        const auraColor = isBossBattle ? 'rgba(255, 170, 0, 0.4)' : 'rgba(0, 255, 170, 0.4)';
-        this.ctx.fillStyle = auraColor;
+        // Rich Aura Glow (using lighter and cached radial gradient)
+        this.ctx.globalCompositeOperation = 'lighter';
+        const pulse = 1.0 + Math.sin(t * 8) * 0.1;
+        this.ctx.scale(pulse, pulse);
+        this.ctx.fillStyle = this.cache.auraGrad;
         this.ctx.beginPath();
-        this.ctx.arc(0, 0, 30 + Math.sin(t * 5) * 5, 0, Math.PI * 2);
+        this.ctx.arc(0, 0, 40, 0, Math.PI * 2);
         this.ctx.fill();
 
-        this.ctx.font = '32px serif';
+        this.ctx.globalCompositeOperation = 'source-over';
+        this.ctx.font = 'bold 36px serif';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
         this.ctx.fillText("🐰", 0, Math.sin(t * 8) * 3);
