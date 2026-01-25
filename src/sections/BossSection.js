@@ -13,6 +13,7 @@ export class BossSection {
             this.dialoguePlayed = false; // Reset dialogue flag
             this.whiteOutAlpha = 0;
             this.isWhiteOut = false; // Reset transition flag
+            this.bossScoreRecorded = false; // Reset score recording flag
 
             // Cleanup BGM Overlay if active
             const overlay = document.getElementById('bgm-overlay');
@@ -41,6 +42,13 @@ export class BossSection {
             } else {
                 if (this.timer < dt * 2) { // First frame (approx)
                     this.game.audio.playBossAlarm();
+
+                    // ボス戦開始時のスコアを記録（バリアメーターが0から始まるように）
+                    if (!this.bossScoreRecorded) {
+                        this.game.bossScoreStart = this.game.stageScoreGained;
+                        this.bossScoreRecorded = true;
+                        console.log(`[BossSection] Boss battle started. Recording bossScoreStart: ${this.game.bossScoreStart}`);
+                    }
                 }
             }
         } else if (this.phase === 'APPEAR') {
@@ -477,7 +485,6 @@ export class BossSection {
     }
     _initFightState() {
         console.log("Boss Battle Triggered!");
-        // ボス戦開始時のスコアを記録して、UIのバリアメーターが0から始まるようにする
-        this.game.bossScoreStart = this.game.stageScoreGained;
+        // スコア記録はWARNINGフェーズで行うため、ここでは何もしない
     }
 }
