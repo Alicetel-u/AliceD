@@ -271,7 +271,7 @@ export class HomeManager {
             text = this.nicoTexts[Math.floor(Math.random() * this.nicoTexts.length)];
         }
 
-        this.ctx.font = 'bold 24px "Zen Maru Gothic", sans-serif';
+        this.ctx.font = 'bold 50px "Zen Maru Gothic", sans-serif';
         const measure = this.ctx.measureText(text);
         const width = measure.width;
 
@@ -297,7 +297,7 @@ export class HomeManager {
             width: width,
             speed: speed,
             color: color,
-            size: Math.floor(Math.random() * 10 + 20) // 20~30px
+            size: Math.floor(Math.random() * 30 + 40) // 40~70px
         });
     }
 

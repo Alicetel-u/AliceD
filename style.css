@@ -1171,14 +1171,14 @@ html {
 .bgm-title-scroller {
   overflow: hidden;
   white-space: nowrap;
-  width: 220px;
+  width: 320px;
   mask-image: linear-gradient(90deg, transparent 0%, white 5%, white 95%, transparent 100%);
   -webkit-mask-image: linear-gradient(90deg, transparent 0%, white 5%, white 95%, transparent 100%);
 }
 
 .bgm-title {
   font-family: 'Hiragino Sans', 'Meiryo', sans-serif;
-  font-size: 15px;
+  font-size: 22px;
   color: white;
   font-weight: bold;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
