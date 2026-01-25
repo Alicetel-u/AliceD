@@ -161,6 +161,15 @@ export class Game {
             update: (dt) => {
                 this.input.update();
 
+                // FOOLPROOF UI CLEANUP: Hide Home-only UI if game started
+                if (this.state !== 'HOME') {
+                    const easyModeBtn = document.getElementById('home-easy-mode');
+                    if (easyModeBtn && !easyModeBtn.classList.contains('hidden')) {
+                        easyModeBtn.classList.add('hidden');
+                        easyModeBtn.style.display = 'none';
+                    }
+                }
+
                 if (!this.player) return;
 
                 this.dialogueManager.update(dt);

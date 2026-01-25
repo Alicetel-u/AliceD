@@ -1872,16 +1872,9 @@ html {
 .easy-mode-label {
   color: #fff;
   font-weight: 900;
-  font-size: 16px;
+  font-size: 18px;
   letter-spacing: 1px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  text-align: left;
-}
-
-.easy-mode-desc {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.7);
-  display: block;
 }
 
 /* Toggle Switch Design */
@@ -1928,9 +1921,9 @@ html {
 }
 
 .easy-mode-container .toggle-knob::after {
-  content: '❌';
+  content: '';
 }
 
 .easy-mode-container.active .toggle-knob::after {
-  content: '🐰';
+  content: '';
 }

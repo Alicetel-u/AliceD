@@ -194,23 +194,23 @@ export class HomeManager {
             }
             */
             this.updateCurrency();
+        }
 
-            // Easy Mode UI Sync
-            const easyModeBtn = document.getElementById('home-easy-mode');
-            if (easyModeBtn) {
+        // --- GLOBAL UI VISIBILITY SYNC ---
+        const easyModeBtn = document.getElementById('home-easy-mode');
+        if (easyModeBtn) {
+            if (this.game.state !== 'HOME') {
+                easyModeBtn.classList.add('hidden');
+                easyModeBtn.style.display = 'none'; // Force hide to avoid persistent elements
+            } else {
                 easyModeBtn.classList.remove('hidden');
+                easyModeBtn.style.display = ''; // Restore default
                 if (this.game.easyMode) {
                     easyModeBtn.classList.add('active');
                 } else {
                     easyModeBtn.classList.remove('active');
                 }
             }
-        }
-
-        // Hide Easy Mode when not in Home
-        if (this.game.state !== 'HOME') {
-            const easyModeBtn = document.getElementById('home-easy-mode');
-            if (easyModeBtn) easyModeBtn.classList.add('hidden');
         }
 
         // ホーム画面専用のパーティクル（キラキラ）
