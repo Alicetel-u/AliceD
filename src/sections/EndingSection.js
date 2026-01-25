@@ -67,6 +67,16 @@ export class EndingSection {
         this.game.audio.stopBGM();
         this.game.audio.playBGM('ENDING');
 
+        // Hide HUD completely
+        const uiLayer = document.getElementById('ui-layer');
+        if (uiLayer) {
+            uiLayer.style.display = 'none';
+            uiLayer.classList.remove('flex'); // Ensure flex is removed if used
+        }
+
+        // Set game state to ENDING to stop StageUI rendering
+        this.game.state = 'ENDING';
+
         this.initParticles();
     }
 

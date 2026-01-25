@@ -580,6 +580,12 @@ export class Game {
             if (el) el.classList.add('hidden');
         });
 
+        // Ensure HUD is visible (recover from Ending hidden state)
+        const uiLayer = document.getElementById('ui-layer');
+        if (uiLayer) {
+            uiLayer.style.display = 'flex';
+        }
+
         // 動的ロードの実行
         await this.loadStageAssets(this.stage);
 
