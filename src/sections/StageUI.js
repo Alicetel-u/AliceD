@@ -106,7 +106,8 @@ export class StageUI {
         this.ctx.clip();
 
         if (isBossBattle && boss) {
-            this.drawBossFluid(meterX, meterY, meterW, meterH, boss, stageScoreGained);
+            const currentBossScore = Math.max(0, stageScoreGained - (this.game.bossScoreStart || 0));
+            this.drawBossFluid(meterX, meterY, meterW, meterH, boss, currentBossScore);
         } else {
             this.drawProgressFluid(meterX, meterY, meterW, meterH);
         }
@@ -135,7 +136,8 @@ export class StageUI {
         let progress = 0;
         if (isBossBattle && boss) {
             const barrierGoal = this.getBarrierGoal();
-            progress = Math.min(1.0, stageScoreGained / barrierGoal);
+            const currentBossScore = Math.max(0, stageScoreGained - (this.game.bossScoreStart || 0));
+            progress = Math.min(1.0, currentBossScore / barrierGoal);
             if (!boss.isInvulnerable) progress = 1.0;
         } else {
             const currentBlockX = Math.floor(player.x / tileSize);

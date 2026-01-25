@@ -99,6 +99,7 @@ export class Game {
         this.enemies = [];
         this.score = 0;
         this.stageScoreGained = 0; // そのステージで純粋に得た分
+        this.bossScoreStart = 0; // ボス戦開始時のスコアオフセット
         this.lives = 5; // Starting with 5 hearts
         this.isDebtState = false; // Flag to track if we switched to syringe mode
         this.running = false;

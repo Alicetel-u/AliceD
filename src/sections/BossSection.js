@@ -477,6 +477,7 @@ export class BossSection {
     }
     _initFightState() {
         console.log("Boss Battle Triggered!");
-        // Placeholder for any specific battle start initialization
+        // ボス戦開始時のスコアを記録して、UIのバリアメーターが0から始まるようにする
+        this.game.bossScoreStart = this.game.stageScoreGained;
     }
 }
