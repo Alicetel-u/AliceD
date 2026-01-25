@@ -836,18 +836,23 @@ ${json}
         // Initialize Config Data if not exists
         if (!this.enemyConfigData) {
             this.enemyConfigData = {};
+            this.initialEnemyConfigData = {}; // Store for change detection
+
             // Pull initial values from StageConfig
             for (let i = 1; i <= 5; i++) {
                 const config = StageConfig[i];
                 const ground = (config && config.enemies) ? config.enemies.ground : 'fuwamoko';
                 const air = (config && config.enemies) ? config.enemies.air : 'enemy_cloud';
 
-                this.enemyConfigData[i] = {
+                const entry = {
                     ground: ground,
                     air: air,
                     groundName: ground,
                     airName: air
                 };
+
+                this.enemyConfigData[i] = { ...entry };
+                this.initialEnemyConfigData[i] = { ...entry };
             }
         }
 
@@ -1051,16 +1056,37 @@ ${json}
     }
 
     exportEnemyConfigJSON() {
-        if (!this.enemyConfigData) return;
+        if (!this.enemyConfigData || !this.initialEnemyConfigData) return;
 
-        // Simplify for export
+        // Simplify for export, only including changes
         const exportData = {};
+        let hasAnyChange = false;
+
         for (let i = 1; i <= 5; i++) {
-            const d = this.enemyConfigData[i];
-            exportData[i] = {
-                ground: d.groundName || d.ground,
-                air: d.airName || d.air
-            };
+            const current = this.enemyConfigData[i];
+            const initial = this.initialEnemyConfigData[i];
+
+            const stageChanges = {};
+            let hasStageChange = false;
+
+            if (current.ground !== initial.ground) {
+                stageChanges.ground = current.groundName || current.ground;
+                hasStageChange = true;
+            }
+            if (current.air !== initial.air) {
+                stageChanges.air = current.airName || current.air;
+                hasStageChange = true;
+            }
+
+            if (hasStageChange) {
+                exportData[i] = stageChanges;
+                hasAnyChange = true;
+            }
+        }
+
+        if (!hasAnyChange) {
+            alert("変更された画像はありません。");
+            return;
         }
 
         const json = JSON.stringify(exportData, null, 4);
