@@ -286,25 +286,40 @@ export const BossBehaviors = {
         boss.y += (camera.y + 200 - boss.y) * (dt * 2.0);
 
         if (boss.timer > 1.0) {
-            if (typeof boss.rayTimer === 'undefined') boss.rayTimer = 0;
+            if (typeof boss.rayCount === 'undefined') {
+                boss.rayCount = 3; // Fire 3 times
+                boss.rayTimer = 0;
+            }
+
             boss.rayTimer -= dt;
-            if (boss.rayTimer <= 0) {
+
+            // Trigger Shot
+            if (boss.rayTimer <= 0 && boss.rayCount > 0) {
                 boss.waves.push({
-                    x: player.x - 20,
-                    y: camera.y - 1000, // Extend upwards to hide top edge
+                    x: player.x - 50, // Center on player
+                    y: camera.y - 1000, // Extend upwards
                     width: 100,
-                    height: (camera.height || 600) + 2000, // Ensure full vertical coverage
+                    height: (camera.height || 600) + 2000,
                     vx: 0,
                     vy: 0,
-                    type: 'JUDGMENT_RAY', // Explicit Type for safety
-                    life: 1.5
+                    type: 'JUDGMENT_RAY',
+                    life: 3.0,
+                    isWarning: true,
+                    warningTimer: 1.0 // 1.0s warning
                 });
-                boss.rayTimer = 1.2;
-                if (player.game && player.game.audio) player.game.audio.playLaser();
+
+                boss.rayCount--;
+                // Next shot delay: Warning(1.0) + Active(0.5) + Rest(0.5) = 2.0s
+                boss.rayTimer = 2.0;
+
+                if (player.game && player.game.audio) player.game.audio.playBossAlarm();
             }
-            if (boss.timer > 4.5) {
+
+            // Finish Condition: No counts left and timer waited out match
+            if (boss.rayCount <= 0 && boss.rayTimer <= 0) {
                 boss.state = 'BATTLE';
                 boss.timer = 0;
+                delete boss.rayCount;
                 delete boss.rayTimer;
             }
         }
