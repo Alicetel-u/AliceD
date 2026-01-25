@@ -236,12 +236,11 @@ export class HomeManager {
     }
 
     updateNicoComments(dt) {
-        // 生成
+        // 生成間隔を短くしてより賑やかに (0.1s ~ 0.4s)
         this.nicoTimer -= dt;
         if (this.nicoTimer <= 0) {
             this.spawnNicoComment();
-            // ランダムな感覚で生成 (0.2s ~ 0.8s)
-            this.nicoTimer = Math.random() * 0.6 + 0.2;
+            this.nicoTimer = Math.random() * 0.3 + 0.1;
         }
 
         // 移動
@@ -249,8 +248,7 @@ export class HomeManager {
             const c = this.nicoComments[i];
             c.x -= c.speed * dt;
 
-            // 画面外に出たら削除
-            if (c.x < -c.width) {
+            if (c.x < -c.width - 200) { // マージンを持って削除
                 this.nicoComments.splice(i, 1);
             }
         }
@@ -260,7 +258,6 @@ export class HomeManager {
         let text;
         const audio = this.game.audio;
 
-        // BGM再生中かつTITLEなら歌詞を混ぜる確率アップ
         if (audio.currentBgmType === 'TITLE' && !audio.bgmAudio.paused) {
             if (Math.random() < 0.4) {
                 text = this.lyricsList[Math.floor(Math.random() * this.lyricsList.length)];
@@ -271,33 +268,63 @@ export class HomeManager {
             text = this.nicoTexts[Math.floor(Math.random() * this.nicoTexts.length)];
         }
 
-        this.ctx.font = 'bold 50px "Zen Maru Gothic", sans-serif';
+        // サイズ決定を先に行う（計測用）
+        const size = Math.floor(Math.random() * 30 + 40); // 40~70px
+        this.ctx.font = `bold ${size}px "Zen Maru Gothic", sans-serif`;
         const measure = this.ctx.measureText(text);
         const width = measure.width;
 
-        // Y座標は画面の上半分くらいにランダム配置
-        const y = Math.random() * (this.game.height - 100) + 50;
+        // --- レーンシステム (被り防止) ---
+        const laneCount = 10;
+        const laneHeight = 75;
+        const startY = 80;
 
-        // 速度もランダム
-        const speed = Math.random() * 150 + 100;
+        // 各レーンの現在の右端位置を計算
+        const laneOccupancy = Array(laneCount).fill(-500);
+        this.nicoComments.forEach(c => {
+            if (c.lane !== undefined && c.lane < laneCount) {
+                const rightEdge = c.x + c.width;
+                if (rightEdge > laneOccupancy[c.lane]) {
+                    laneOccupancy[c.lane] = rightEdge;
+                }
+            }
+        });
 
-        // 色は白が基本だが、たまに色付き（歌詞は水色っぽくしてみる）
+        // 空いているレーン（画面右端から一定距離以上離れている）を探す
+        const safeMargin = 150; // 文字同士の横の隙間
+        const availableLanes = [];
+        for (let i = 0; i < laneCount; i++) {
+            if (laneOccupancy[i] < this.game.width - safeMargin) {
+                availableLanes.push(i);
+            }
+        }
+
+        // 空きがない場合は生成をスキップ
+        if (availableLanes.length === 0) return;
+
+        const chosenLane = availableLanes[Math.floor(Math.random() * availableLanes.length)];
+        const y = startY + (chosenLane * laneHeight);
+
+        // 速度を大幅にアップ (250 ~ 550)
+        const speed = Math.random() * 300 + 250;
+
         let color = '#FFFFFF';
         if (this.lyricsList.includes(text)) {
-            color = '#D0F0FF'; // 歌詞っぽい色
+            color = '#D0F0FF';
         } else if (Math.random() < 0.1) {
-            const colors = ['#FF0000', '#FFFF00', '#00FF00', '#00FFFF', '#FF00FF'];
+            const colors = ['#FF0000', '#FFFF00', '#00FF00', '#00FFFF', '#FF00FF', '#FF9F43'];
             color = colors[Math.floor(Math.random() * colors.length)];
         }
 
         this.nicoComments.push({
             text: text,
-            x: this.game.width,
+            x: this.game.width + 50,
             y: y,
             width: width,
             speed: speed,
             color: color,
-            size: Math.floor(Math.random() * 30 + 40) // 40~70px
+            size: size,
+            lane: chosenLane
         });
     }
 
