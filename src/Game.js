@@ -406,12 +406,16 @@ export class Game {
             ? this.currentStageConfig.theme.backgroundColor
             : '#54a0ff';
 
-        // Create a subtle vertical gradient for "premium" feel
-        const gradient = this.ctx.createLinearGradient(0, 0, 0, this.height);
-        gradient.addColorStop(0, bgColor);
-        gradient.addColorStop(1, this.adjustColor(bgColor, -20)); // Slightly darker at bottom
+        // Cache gradient based on color and height
+        if (!this.bgGradient || this.lastBgColor !== bgColor || this.lastWindowHeight !== this.height) {
+            this.lastBgColor = bgColor;
+            this.lastWindowHeight = this.height;
+            this.bgGradient = this.ctx.createLinearGradient(0, 0, 0, this.height);
+            this.bgGradient.addColorStop(0, bgColor);
+            this.bgGradient.addColorStop(1, this.adjustColor(bgColor, -20)); // Slightly darker at bottom
+        }
 
-        this.ctx.fillStyle = gradient;
+        this.ctx.fillStyle = this.bgGradient;
         this.ctx.fillRect(0, 0, this.width, this.height);
 
         // Apply Screen Shake

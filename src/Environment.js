@@ -87,7 +87,9 @@ export class Environment {
         const pCount = this.particles.length;
         if (pCount === 0) return;
 
+        const now = Date.now();
         ctx.save();
+
         for (let i = 0; i < pCount; i++) {
             const p = this.particles[i];
             const dx = (p.screenSpace ? p.x : p.x - camera.x) | 0;
@@ -106,26 +108,24 @@ export class Environment {
             ctx.globalAlpha = alpha;
 
             if (p.type === 'text') {
-                ctx.save();
-
                 if (p.rainbow) {
-                    const hue = (Date.now() / 2) % 360;
+                    const hue = (now / 2) % 360;
                     ctx.fillStyle = `hsl(${hue}, 100%, 70%)`;
                 } else {
                     ctx.fillStyle = p.color || '#FFF';
                 }
 
                 if (p.blink) {
-                    if (Math.floor(Date.now() / 50) % 2 === 0) {
+                    if (Math.floor(now / 50) % 2 === 0) {
                         ctx.globalAlpha *= 0.3;
                     }
                 }
 
                 let displaySize = p.size || 20;
                 if (p.pulse) {
-                    displaySize += Math.sin(Date.now() / 150) * (displaySize * 0.2);
+                    displaySize += Math.sin(now / 150) * (displaySize * 0.2);
                 } else if (p.rainbow) {
-                    displaySize += Math.sin(Date.now() / 100) * 10;
+                    displaySize += Math.sin(now / 100) * 10;
                 }
 
                 ctx.font = `${p.bold ? 'bold ' : ''}${displaySize | 0}px sans-serif`;
@@ -136,29 +136,20 @@ export class Environment {
                 ctx.lineWidth = (displaySize * 0.15) | 0;
                 ctx.strokeText(p.text, dx, dy);
                 ctx.fillText(p.text, dx, dy);
-
-                ctx.restore();
             } else {
                 ctx.fillStyle = p.color;
 
-                // Circular Glow (Fast replacement for shadowBlur)
+                // Optimization: Use fillRect for standard particles instead of arc circles
+                // Only use arc if specifically needed or for "glow" which is now just a larger semi-transparent rect
                 if (p.glow) {
                     ctx.globalAlpha = alpha * 0.3;
-                    ctx.beginPath();
-                    ctx.arc(dx, dy, p.size * 2, 0, Math.PI * 2);
-                    ctx.fill();
+                    const gs = (p.size * 4) | 0;
+                    ctx.fillRect(dx - gs / 2 | 0, dy - gs / 2 | 0, gs, gs);
                     ctx.globalAlpha = alpha;
                 }
 
-                // Main particle
-                if (p.grow || p.glow) {
-                    ctx.beginPath();
-                    ctx.arc(dx, dy, p.size | 0, 0, Math.PI * 2);
-                    ctx.fill();
-                } else {
-                    const s = p.size | 0;
-                    ctx.fillRect(dx - s / 2 | 0, dy - s / 2 | 0, s, s);
-                }
+                const s = p.size | 0;
+                ctx.fillRect(dx - s / 2 | 0, dy - s / 2 | 0, s, s);
             }
         }
         ctx.restore();

@@ -112,13 +112,18 @@ export class VFXManager {
     }
 
     drawVignette(ctx) {
-        const gradient = ctx.createRadialGradient(
-            this.game.width / 2, this.game.height / 2, this.game.width * 0.2,
-            this.game.width / 2, this.game.height / 2, this.game.width * 0.8
-        );
-        gradient.addColorStop(0, 'rgba(0,0,0,0)');
-        gradient.addColorStop(1, 'rgba(0,0,0,0.3)');
-        ctx.fillStyle = gradient;
+        if (!this.vignetteGradient || this.lastWidth !== this.game.width || this.lastHeight !== this.game.height) {
+            this.lastWidth = this.game.width;
+            this.lastHeight = this.game.height;
+            this.vignetteGradient = ctx.createRadialGradient(
+                this.game.width / 2, this.game.height / 2, this.game.width * 0.2,
+                this.game.width / 2, this.game.height / 2, this.game.width * 0.8
+            );
+            this.vignetteGradient.addColorStop(0, 'rgba(0,0,0,0)');
+            this.vignetteGradient.addColorStop(1, 'rgba(0,0,0,0.3)');
+        }
+
+        ctx.fillStyle = this.vignetteGradient;
         ctx.fillRect(0, 0, this.game.width, this.game.height);
     }
 }

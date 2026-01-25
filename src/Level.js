@@ -12,6 +12,7 @@ export class Level {
         this.movingPlatformSpawns = [];
         this.fallingPlatformSpawns = [];
         this.config = null;
+        this.tileCache = new Map(); // Cache for procedural tiles
     }
 
     setConfig(config) {
@@ -128,22 +129,20 @@ export class Level {
                     const tx = (c * this.tileSize - camX) | 0;
                     const ty = (r * this.tileSize - camY) | 0;
 
-                    const drawSize = (this.tileSize + 2) | 0;
-
-                    if (this.config && this.config.id === 3) {
-                        this.drawToyBlock(ctx, tile, tx, ty, drawSize, c, r);
-                    } else if (this.config && this.config.id === 4) {
-                        this.drawHospitalBlock(ctx, assets, tile, tx, ty, drawSize, c, r);
-                    } else if (this.config && this.config.id === 5) {
-                        this.drawHeavenBlock(ctx, assets, tile, tx, ty, drawSize, c, r);
+                    // Use Cached Tile for Stage 3, 4, 5
+                    if (this.config && (this.config.id >= 3 && this.config.id <= 5)) {
+                        const cached = this.getCachedTile(tile, assets, c, r);
+                        if (cached) {
+                            ctx.drawImage(cached, tx, ty, this.tileSize, this.tileSize);
+                        }
                     } else {
-                        // Standard Image Drawing
+                        // Standard Image Drawing (Already fast as they are sprites)
                         if (tile === '#' && grass) {
-                            ctx.drawImage(grass, 0, 0, grass.width, grass.height, tx, ty, drawSize, drawSize);
+                            ctx.drawImage(grass, tx, ty, this.tileSize, this.tileSize);
                         } else if (tile === 'D' && dirt) {
-                            ctx.drawImage(dirt, 0, 0, dirt.width, dirt.height, tx, ty, drawSize, drawSize);
+                            ctx.drawImage(dirt, tx, ty, this.tileSize, this.tileSize);
                         } else if (tile === 'B' && crate) {
-                            ctx.drawImage(crate, 0, 0, crate.width, crate.height, tx, ty, drawSize, drawSize);
+                            ctx.drawImage(crate, tx, ty, this.tileSize, this.tileSize);
                         }
                     }
                 }
@@ -232,16 +231,13 @@ export class Level {
                     // Normal Carrot - Bottom Anchored
                     const img = assets.getImage('carrot');
                     if (img) {
-                        ctx.save();
-                        ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
-                        ctx.shadowBlur = 8;
                         const drawSize = this.tileSize * 1.5;
                         const offset = (drawSize - this.tileSize) / 2;
+                        // Removed shadowBlur here for performance
                         ctx.drawImage(img, 0, 0, img.width, img.height,
                             Math.floor(ent.x - camera.x - offset),
                             Math.floor(ent.y - camera.y + this.tileSize - drawSize),
                             drawSize, drawSize);
-                        ctx.restore();
                         continue;
                     }
                 }
@@ -249,23 +245,19 @@ export class Level {
                 if (ent.type === 'S') {
                     // Speed clover - Bottom Anchored
                     const ts = this.tileSize;
-                    ctx.save();
                     const drawSize = ts * 1.5;
                     const ex = Math.floor(ent.x - camera.x + ts / 2);
-                    // Critical Fix: Offset Y slightly upwards (+5) to ensure it's not clipped by overlapping tiles
                     const ey = Math.floor(ent.y - camera.y + ts - 5);
 
                     ctx.font = `${Math.floor(drawSize)}px serif`;
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'bottom';
-                    ctx.shadowColor = 'rgba(0,0,0,0.5)';
-                    ctx.shadowBlur = 4;
+                    // Removed shadowBlur here for performance
                     ctx.fillText("🍀", ex, ey);
 
                     ctx.fillStyle = '#f1c40f';
                     ctx.font = `bold ${Math.floor(ts * 0.35)}px monospace`;
                     ctx.fillText("SPEED!", ex, ey - drawSize * 0.85);
-                    ctx.restore();
                     continue;
                 }
 
@@ -450,6 +442,35 @@ export class Level {
         ctx.restore();
 
         ctx.restore();
+    }
+
+    getCachedTile(type, assets, c, r) {
+        if (!this.config) return null;
+
+        const hasTop = (r > 0 && this.matrix[r - 1] && this.matrix[r - 1][c] === type);
+        const cacheKey = `${this.config.id}_${type}_${hasTop ? 'T' : 'F'}`;
+
+        if (this.tileCache.has(cacheKey)) {
+            return this.tileCache.get(cacheKey);
+        }
+
+        // Create new cache canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = this.tileSize;
+        canvas.height = this.tileSize;
+        const ctx = canvas.getContext('2d');
+
+        // Draw the tile once to this offscreen canvas
+        if (this.config.id === 3) {
+            this.drawToyBlock(ctx, type, 0, 0, this.tileSize, c, r);
+        } else if (this.config.id === 4) {
+            this.drawHospitalBlock(ctx, assets, type, 0, 0, this.tileSize, c, r);
+        } else if (this.config.id === 5) {
+            this.drawHeavenBlock(ctx, assets, type, 0, 0, this.tileSize, c, r);
+        }
+
+        this.tileCache.set(cacheKey, canvas);
+        return canvas;
     }
 
     drawStud(ctx, cx, cy, radius, height, base, lit, dark) {

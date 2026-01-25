@@ -5,7 +5,20 @@ export class ParallaxBackground {
     }
 
     addLayer(image, speed, alignBottom = false, filter = 'none') {
-        this.layers.push({ image, speed, alignBottom, filter });
+        let finalImage = image;
+
+        // Pre-filter image if filter is specified to avoid per-frame ctx.filter overhead
+        if (filter && filter !== 'none') {
+            const canvas = document.createElement('canvas');
+            canvas.width = image.width;
+            canvas.height = image.height;
+            const ctx = canvas.getContext('2d');
+            ctx.filter = filter;
+            ctx.drawImage(image, 0, 0);
+            finalImage = canvas; // Use the filtered canvas as the image source
+        }
+
+        this.layers.push({ image: finalImage, speed, alignBottom });
     }
 
     resize(width, height) {
@@ -20,12 +33,6 @@ export class ParallaxBackground {
             const imgW = layer.image.width;
             const imgH = layer.image.height;
             const speed = layer.speed;
-
-            // Apply filter if specified
-            if (layer.filter && layer.filter !== 'none') {
-                ctx.save();
-                ctx.filter = layer.filter;
-            }
 
             // Calculate offset based on camera position
             let offset = Math.floor((-camera.x * speed) % imgW);
@@ -42,15 +49,11 @@ export class ParallaxBackground {
 
                 // Vertical tiling for Sky (if not bottom aligned)
                 if (!layer.alignBottom && imgH < this.height) {
-                    for (let j = 1; j * imgH < this.height; j++) {
-                        ctx.drawImage(layer.image, (x) | 0, (drawY + j * imgH) | 0, imgW, imgH);
+                    // Optimized vertical fill
+                    for (let currY = drawY + imgH; currY < this.height; currY += imgH) {
+                        ctx.drawImage(layer.image, (x) | 0, (currY) | 0, imgW, imgH);
                     }
                 }
-            }
-
-            // Restore context if filter was applied
-            if (layer.filter && layer.filter !== 'none') {
-                ctx.restore();
             }
         });
     }
