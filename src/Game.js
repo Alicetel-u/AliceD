@@ -265,6 +265,8 @@ export class Game {
         this.sections.register('WorldRenderer', {
             // PixiJS Renderers Update Loop
             update: (dt) => {
+                this.vfx.update(dt); // VFX Logic Update
+
                 if (this.state === 'HOME' || this.state === 'BOOT') return;
 
                 // Update Background Scrolling
@@ -463,9 +465,11 @@ export class Game {
         this.ctx.fillStyle = this.bgGradient;
         this.ctx.fillRect(0, 0, this.width, this.height);
 
-        // Apply Screen Shake
-        this.ctx.save(); // Save for shake
-        this.vfx.applyShake(this.ctx);
+        // Apply Screen Shake (Legacy Canvas Only)
+        if (!usePixi) {
+            this.ctx.save();
+            this.vfx.applyShake(this.ctx);
+        }
 
         // Background (Parallax) handles its own Pixi check
         this.parallax.draw(this.ctx, this.camera);
@@ -497,10 +501,11 @@ export class Game {
             this.env.draw(this.ctx, this.camera);
         }
 
-        this.ctx.restore(); // Restore shake
-
-        // 7. Post-Process FX (Still Canvas 2D for now, overlay)
-        this.vfx.drawPostProcess(this.ctx);
+        if (!usePixi) {
+            this.ctx.restore(); // Restore shake
+            // 7. Post-Process FX (Still Canvas 2D for now, overlay)
+            this.vfx.drawPostProcess(this.ctx);
+        }
     }
 
     // --- Respawn Animation Logic ---
