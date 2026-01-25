@@ -103,8 +103,8 @@ export class ResultSection {
             healthMsg = "かなりの治療費です...\nお大事に...💉💉";
         }
 
-        // Carrot count (based on score)
-        const carrotCount = Math.floor(stageScore / 100);
+        // Carrot count (Direct tracking)
+        const carrotCount = this.game.stageCarrots || 0;
         if (carrotCount >= 50) {
             timeMsg = `ニンジンを${carrotCount}個食べました！\nたくさん集めましたね✨`;
         } else if (carrotCount >= 30) {

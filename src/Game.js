@@ -99,6 +99,7 @@ export class Game {
         this.enemies = [];
         this.score = 0;
         this.stageScoreGained = 0; // そのステージで純粋に得た分
+        this.stageCarrots = 0;     // そのステージで取得したニンジンの数（リザルト用）
         this.bossScoreStart = 0; // ボス戦開始時のスコアオフセット
         this.lives = 5; // Starting with 5 hearts
         this.isDebtState = false; // Flag to track if we switched to syringe mode
@@ -1296,6 +1297,9 @@ export class Game {
     }
 
     initLevel() {
+        this.stageScoreGained = 0; // Reset for new stage
+        this.stageCarrots = 0;     // Reset carrot count
+
         // --- Stage Configuration ---
         const config = StageConfig[this.stage || 1] || StageConfig[1];
         // const rawConfig = StageConfig[this.stage || 1];
@@ -2003,6 +2007,7 @@ export class Game {
 
                     // Boss Progress: Each carrot gives 1 point (or 2 on crit)
                     this.score += amount * 1;
+                    this.stageCarrots += amount; // Track collected count
                     this.stageScoreGained += amount * 1; // Track stage gain
                     this.updateScoreUI();
                     this.saveProgress();
@@ -2169,7 +2174,7 @@ export class Game {
 
                         // NEW: Ring gives a carrot! (Except for Super Ring)
                         if (ring.type !== 'super') {
-                            this.carrots++;
+                            this.stageCarrots++;
 
                             // Carrot +1 particle (Same style as Enemy life reward)
                             // Carrot +1 particle (Same style as Enemy life reward)
