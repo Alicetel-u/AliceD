@@ -56,7 +56,7 @@ export class StageUI {
 
         // 3. Icon Aura Gradient (Restore rich look)
         const auraColor = isBossBattle ? '#ffaa00' : '#00ffaa';
-        const radGrad = this.ctx.createRadialGradient(0, 0, 5, 0, 0, 35);
+        const radGrad = this.ctx.createRadialGradient(0, 0, 10, 0, 0, 60);
         radGrad.addColorStop(0, auraColor);
         radGrad.addColorStop(0.5, auraColor + '88'); // Semi-transparent mid
         radGrad.addColorStop(1, 'rgba(0,0,0,0)');
@@ -68,10 +68,10 @@ export class StageUI {
         const isBossBattle = state === 'BOSS_BATTLE';
         const t = this.time;
 
-        const meterW = width * 0.8;
-        const meterH = 40;
+        const meterW = width * 0.85;
+        const meterH = 65;
         const meterX = (width - meterW) / 2;
-        const meterY = height - 60;
+        const meterY = height - 90;
 
         this.refreshCaches(meterX, meterY, meterW, meterH, isBossBattle);
 
@@ -82,10 +82,10 @@ export class StageUI {
         this.ctx.fillRect(meterX, meterY, meterW, meterH);
 
         // Neon Glow
-        this.ctx.shadowBlur = 10;
+        this.ctx.shadowBlur = 20;
         this.ctx.shadowColor = isBossBattle ? '#ff0055' : '#00ffff';
         this.ctx.strokeStyle = isBossBattle ? 'rgba(255, 0, 85, 0.8)' : 'rgba(0, 255, 255, 0.8)';
-        this.ctx.lineWidth = 2;
+        this.ctx.lineWidth = 4;
         this.ctx.strokeRect(meterX, meterY, meterW, meterH);
         this.ctx.shadowBlur = 0;
 
@@ -125,18 +125,18 @@ export class StageUI {
 
         // Rich Aura Glow (using lighter and cached radial gradient)
         this.ctx.globalCompositeOperation = 'lighter';
-        const pulse = 1.0 + Math.sin(t * 8) * 0.1;
+        const pulse = 1.0 + Math.sin(t * 8) * 0.15;
         this.ctx.scale(pulse, pulse);
         this.ctx.fillStyle = this.cache.auraGrad;
         this.ctx.beginPath();
-        this.ctx.arc(0, 0, 40, 0, Math.PI * 2);
+        this.ctx.arc(0, 0, 70, 0, Math.PI * 2);
         this.ctx.fill();
 
         this.ctx.globalCompositeOperation = 'source-over';
-        this.ctx.font = 'bold 36px serif';
+        this.ctx.font = 'bold 64px serif';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
-        this.ctx.fillText("🐰", 0, Math.sin(t * 8) * 3);
+        this.ctx.fillText("🐰", 0, Math.sin(t * 8) * 5);
         this.ctx.restore();
 
         this.ctx.restore();
@@ -168,8 +168,10 @@ export class StageUI {
         }
 
         this.ctx.globalCompositeOperation = 'source-over';
-        this.ctx.font = '24px serif';
-        this.ctx.fillText("🏁", x + w - 25, y + h / 2 + 8);
+        this.ctx.font = 'bold 50px serif';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText("🏁", x + w - 40, y + h / 2);
     }
 
     drawBossFluid(x, y, w, h, boss, stageScore) {
@@ -191,19 +193,24 @@ export class StageUI {
             this.ctx.fillRect(x, y, w * barrierRatio, h);
 
             this.ctx.globalCompositeOperation = 'source-over';
-            this.ctx.fillStyle = '#fff';
-            this.ctx.font = 'bold 11px monospace';
-            this.ctx.fillText(`🛡️ BARRIER: ${Math.floor(stageScore)}/${barrierGoal}`, x + 10, y + h - 5);
+            this.ctx.font = 'bold 22px monospace';
+            this.ctx.textAlign = 'left';
+            this.ctx.textBaseline = 'middle';
+            this.ctx.fillText(`🛡️ BARRIER: ${Math.floor(stageScore)}/${barrierGoal}`, x + 25, y + h / 2);
         } else {
             this.ctx.globalCompositeOperation = 'lighter';
             this.ctx.fillStyle = `rgba(255, 200, 0, ${0.5 + Math.sin(this.time * 20) * 0.3})`;
-            this.ctx.font = 'bold 13px monospace';
-            this.ctx.fillText("⚡ BROKEN ⚡", x + 10, y + h - 5);
+            this.ctx.font = 'bold 28px monospace';
+            this.ctx.textAlign = 'left';
+            this.ctx.textBaseline = 'middle';
+            this.ctx.fillText("⚡ BROKEN ⚡", x + 25, y + h / 2);
         }
 
         this.ctx.globalCompositeOperation = 'source-over';
-        this.ctx.font = '28px serif';
-        this.ctx.fillText("👿", x + w - 30, y + h / 2 + 10);
+        this.ctx.font = 'bold 58px serif';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText("👿", x + w - 50, y + h / 2);
     }
 
     drawBossIndicator(dist, w, h) {
@@ -212,7 +219,7 @@ export class StageUI {
         this.ctx.translate(arrowX, h / 2);
         const bounce = Math.sin(this.time * 5) * 8;
         this.ctx.fillStyle = '#ff4757';
-        this.ctx.font = 'bold 40px sans-serif';
+        this.ctx.font = 'bold 72px sans-serif';
         this.ctx.textAlign = 'center';
         this.ctx.fillText(dist > 0 ? "➔" : "←", bounce, 0);
         this.ctx.restore();
