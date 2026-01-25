@@ -87,10 +87,7 @@ export class Assets {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(name.substring(0, 8), 32, 32);
-
-    const img = new Image();
-    img.src = canvas.toDataURL();
-    return img;
+    return canvas;
   }
 
   processTransparency(img, keyColor) {
@@ -102,22 +99,27 @@ export class Assets {
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
 
-    const rKey = keyColor === 'AUTO' ? data[0] : parseInt(keyColor.slice(1, 3), 16);
-    const gKey = keyColor === 'AUTO' ? data[1] : parseInt(keyColor.slice(3, 5), 16);
-    const bKey = keyColor === 'AUTO' ? data[2] : parseInt(keyColor.slice(5, 7), 16);
+    // If AUTO, only use if the pixel is NOT already transparent, otherwise default to a color that won't match much
+    const useAuto = keyColor === 'AUTO' && data[3] > 128;
+    const rKey = useAuto ? data[0] : (keyColor !== 'AUTO' ? parseInt(keyColor.slice(1, 3), 16) : -255);
+    const gKey = useAuto ? data[1] : (keyColor !== 'AUTO' ? parseInt(keyColor.slice(3, 5), 16) : -255);
+    const bKey = useAuto ? data[2] : (keyColor !== 'AUTO' ? parseInt(keyColor.slice(5, 7), 16) : -255);
 
     for (let i = 0; i < data.length; i += 4) {
+      // If the pixel is already transparent, skip it entirely
+      if (data[i + 3] < 200) continue;
+
       const r = data[i];
       const g = data[i + 1];
       const b = data[i + 2];
-      if (Math.abs(r - rKey) < 80 && Math.abs(g - gKey) < 80 && Math.abs(b - bKey) < 80) {
+
+      // Strict threshold (30 instead of 80) to avoid nuking similar colors
+      if (Math.abs(r - rKey) < 30 && Math.abs(g - gKey) < 30 && Math.abs(b - bKey) < 30) {
         data[i + 3] = 0;
       }
     }
     ctx.putImageData(imageData, 0, 0);
-    const newImg = new Image();
-    newImg.src = canvas.toDataURL();
-    return newImg;
+    return canvas; // Return context's canvas directly to avoid async toDataURL reload
   }
 
   getImage(name) {
