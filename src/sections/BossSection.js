@@ -42,13 +42,6 @@ export class BossSection {
             } else {
                 if (this.timer < dt * 2) { // First frame (approx)
                     this.game.audio.playBossAlarm();
-
-                    // ボス戦開始時のスコアを記録（バリアメーターが0から始まるように）
-                    if (!this.bossScoreRecorded) {
-                        this.game.bossScoreStart = this.game.stageScoreGained;
-                        this.bossScoreRecorded = true;
-                        console.log(`[BossSection] Boss battle started. Recording bossScoreStart: ${this.game.bossScoreStart}`);
-                    }
                 }
             }
         } else if (this.phase === 'APPEAR') {

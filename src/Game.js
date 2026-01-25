@@ -781,6 +781,7 @@ export class Game {
 
         this.results = null;
         this.stageScoreGained = 0;
+        this.bossScoreStart = 0; // ステージ開始時にリセット（通常ステージのスコアもバリアに反映させる）
         this.stageDamageCount = 0;
         this.stageStartTime = Date.now();
 
