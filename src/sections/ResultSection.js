@@ -52,22 +52,31 @@ export class ResultSection {
 
         const total = stageScore + timeBonus + lifeBonus + noDmgBonus + quickBonus;
 
-        // Rank
-        let rank = 'C';
-        if (total >= 10000) rank = 'SS';
-        else if (total >= 8000) rank = 'S';
-        else if (total >= 6000) rank = 'A';
-        else if (total >= 4000) rank = 'B';
+        // === NEW RANK SYSTEM: Based on Remaining Hearts/Syringes ===
+        let rank = 'B'; // Default
 
-        // Comments based on char
+        if (lives >= 10) {
+            rank = 'SS'; // ハート10個以上残存（ノーダメージ＋敵を倒して増やした）
+        } else if (lives >= 1) {
+            rank = 'S';  // ハート1個以上9個以下残存
+        } else if (lives >= -9) {
+            rank = 'A';  // ハート0個、注射器1個以上9個以下
+        } else {
+            rank = 'B';  // 注射器10個以上使用
+        }
+
+        // Comments based on rank and character
         const charId = this.game.characterManager.getCurrentCharacter().id;
         let comment = "Nice Try!";
-        if (rank === 'SS' || rank === 'S') {
+
+        if (rank === 'SS') {
             comment = (charId === 'kanon') ? "完璧な計算通りね！" : "やったね！大成功！";
-        } else if (rank === 'A' || rank === 'B') {
-            comment = (charId === 'kanon') ? "悪くない結果だわ。" : "いい感じだぴょん！";
+        } else if (rank === 'S') {
+            comment = (charId === 'kanon') ? "ほぼ完璧ね。" : "すごいぴょん！";
+        } else if (rank === 'A') {
+            comment = (charId === 'kanon') ? "ギリギリだったわね..." : "あぶなかったぴょん...";
         } else {
-            comment = (charId === 'kanon') ? "次はもっと効率的に..." : "もっと頑張るぴょん...";
+            comment = (charId === 'kanon') ? "次はもっと慎重に..." : "もっと頑張るぴょん...";
         }
 
         // Store result data locally
