@@ -63,6 +63,7 @@ export const CHARACTERS = [
             type: 'SHEET',
             ...SheetLayouts.STANDARD_STRIP,
             frameInterval: 10,
+            visualOffsetY: 14, // アリスのスプライトは下に余白があるため
             renderEffect: {
                 shadowBlur: 4,
                 shadowColor: 'rgba(0, 0, 0, 0.4)'
@@ -95,6 +96,7 @@ export const CHARACTERS = [
             ...SheetLayouts.KANON_QUADRANT,
             frameInterval: 6,
             bleed: 4.0, // Aggressive bleed to guarantee no edge noise from non-integer height (147.5px)
+            visualOffsetY: 0, // カノンのスプライトは余白が少ない（または異なる）ため
             renderEffect: {
                 shadowBlur: 4,   // より太い淵取り
                 shadowColor: '#000000' // 黒い淵取り

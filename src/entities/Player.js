@@ -683,10 +683,10 @@ export class Player {
 
         // Calculate draw position
         // Pivot is bottom center
-        // Fix (Deep): Add larger offset (+14px) to ground the character firmly
-        // The sprite has some whitespace at bottom, so we need to push it down significantly
+        // Use per-character visualOffsetY if provided, fallback to 0
+        const visualOffsetY = (animConfig && animConfig.visualOffsetY) || 0;
         const x = this.x - camera.x + this.width / 2;
-        const y = this.y - camera.y + this.height + 14;
+        const y = this.y - camera.y + this.height + visualOffsetY;
 
         // Visual Layout Logic (Size calculation)
         const visualScale = 1.5;
