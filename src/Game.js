@@ -770,6 +770,8 @@ export class Game {
     }
 
     loadProgress() {
+        this.highScore = parseInt(localStorage.getItem('aliceD_highScore')) || 0;
+        this.easyMode = localStorage.getItem('aliceD_easyMode') === 'true';
         const savedScore = localStorage.getItem('rabbit_dash_score');
         if (savedScore) {
             this.score = parseInt(savedScore, 10);
@@ -1316,7 +1318,13 @@ export class Game {
             const rand = Math.random();
 
             // Dynamic Hole Generation based on Config
-            if (!isArena && rand < gen.holes) {
+            let holeProb = gen.holes;
+            // EASY MODE: Remove holes from Stage 2 onwards
+            if (this.easyMode && this.stage >= 2) {
+                holeProb = 0;
+            }
+
+            if (!isArena && rand < holeProb) {
                 const gapSize = Math.floor(Math.random() * 2) + 2;
                 for (let i = 0; i < gapSize && x + i < cols; i++) {
                     heights[x + i] = null;

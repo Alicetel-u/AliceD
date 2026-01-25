@@ -73,6 +73,18 @@ export class HomeManager {
                 }
             });
         }
+
+        // Easy Mode Toggle Action
+        const easyModeBtn = document.getElementById('home-easy-mode');
+        if (easyModeBtn) {
+            easyModeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.game.easyMode = !this.game.easyMode;
+                localStorage.setItem('aliceD_easyMode', this.game.easyMode);
+                // Also trigger SE if needed
+                if (this.game.audio && this.game.audio.playClick) this.game.audio.playClick();
+            });
+        }
     }
 
     updateCurrency() {
@@ -182,6 +194,23 @@ export class HomeManager {
             }
             */
             this.updateCurrency();
+
+            // Easy Mode UI Sync
+            const easyModeBtn = document.getElementById('home-easy-mode');
+            if (easyModeBtn) {
+                easyModeBtn.classList.remove('hidden');
+                if (this.game.easyMode) {
+                    easyModeBtn.classList.add('active');
+                } else {
+                    easyModeBtn.classList.remove('active');
+                }
+            }
+        }
+
+        // Hide Easy Mode when not in Home
+        if (this.game.state !== 'HOME') {
+            const easyModeBtn = document.getElementById('home-easy-mode');
+            if (easyModeBtn) easyModeBtn.classList.add('hidden');
         }
 
         // ホーム画面専用のパーティクル（キラキラ）
