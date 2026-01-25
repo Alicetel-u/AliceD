@@ -389,17 +389,19 @@ export class BossSection {
 
                 if (cutinImg) {
                     const entryT = Math.min(1.0, (t - 1.0) * 1.5);
-                    const offX = (1 - entryT) * w;
                     const imgRatio = cutinImg.height / cutinImg.width;
-                    const drawW = w * 0.8;
+                    const drawW = w * 0.6; // 60% width
                     const drawH = drawW * imgRatio;
+
+                    const targetX = (w - drawW) / 2;
+                    const slideOffset = (1 - entryT) * w; // Slide from right
                     const drawY = (h - drawH) / 2;
 
                     ctx.save();
                     ctx.globalAlpha = Math.min(1.0, entryT * 2);
                     ctx.shadowColor = '#ff4757';
                     ctx.shadowBlur = 20;
-                    ctx.drawImage(cutinImg, offX + w * 0.1, drawY, drawW, drawH);
+                    ctx.drawImage(cutinImg, targetX + slideOffset, drawY, drawW, drawH);
                     ctx.restore();
                 }
             }
