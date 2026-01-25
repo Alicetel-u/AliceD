@@ -38,6 +38,7 @@ import { PlayerRenderer } from './managers/PlayerRenderer.js';
 import { BossRenderer } from './managers/BossRenderer.js';
 import { EffectRenderer } from './managers/EffectRenderer.js';
 import { EntityRenderer } from './managers/EntityRenderer.js';
+import { DomEffectManager } from './managers/DomEffectManager.js';
 
 // ... existing imports
 
@@ -82,6 +83,8 @@ export class Game {
         this.bossRenderer = new BossRenderer(this);
         this.effectRenderer = new EffectRenderer(this);
         this.entityRenderer = new EntityRenderer(this);
+        this.domEffects = new DomEffectManager(this);
+        this.domEffects.init();
 
         this.camera = new Camera(this.width, this.height);
         this.level = new Level(this.tileSize); // 64px tiles base
@@ -220,15 +223,11 @@ export class Game {
 
                     // Visual Feedback: Text
                     if (this.player) {
-                        this.env.particles.push({
-                            type: 'text',
-                            x: this.player.x + this.player.width / 2,
-                            y: this.player.y - 60,
-                            vx: 0, vy: -1, life: 60,
-                            text: "RECOVERY!",
-                            color: '#ffff00', size: 28, bold: true, pulse: true,
-                            stroke: '#000000'
-                        });
+                        this.domEffects.spawn("RECOVERY!",
+                            this.player.x + this.player.width / 2,
+                            this.player.y - 60,
+                            { color: '#ffff00', size: 28, bold: true, pulse: true, vy: -1, life: 60 }
+                        );
 
                         // Visual Feedback: Yellow Barrier (Visible & Sustained)
                         this.env.particles.push({
@@ -266,6 +265,7 @@ export class Game {
             // PixiJS Renderers Update Loop
             update: (dt) => {
                 this.vfx.update(dt); // VFX Logic Update
+                this.domEffects.update(dt);
 
                 if (this.state === 'HOME' || this.state === 'BOOT') return;
 
@@ -2082,11 +2082,13 @@ export class Game {
                 } else if (ent.type === 'R') {
                     // Bonus Gift Box Discovery
                     this.audio.playCollect();
-                    this.env.particles.push({
-                        type: 'text',
-                        x: ent.x, y: ent.y - 40, vy: -1.5, vx: 0, life: 60,
-                        text: "GET!", color: '#ff9f43', size: 30, bold: true
-                    });
+                    // Bonus Gift Box Discovery
+                    this.audio.playCollect();
+                    this.domEffects.spawn("GET!",
+                        ent.x,
+                        ent.y - 40,
+                        { color: '#ff9f43', size: 30, bold: true, vy: -1.5, life: 60 }
+                    );
                 } // 重複していた 'G' の判定（Global Win Logic）は削除または統合が必要だが、
                 // 現在はゴール地点に別の文字を割り当てるか、条件（stage終了判定）で分岐させるべき
                 // ここでは一旦そのままにし、'G' をすべてフィーバーに統一する（ゴールは別で処理されているはず）
@@ -2168,20 +2170,12 @@ export class Game {
                             this.carrots++;
 
                             // Carrot +1 particle (Same style as Enemy life reward)
-                            this.env.particles.push({
-                                type: 'text',
-                                x: centerX,
-                                y: centerY - 20,
-                                vx: (Math.random() - 0.5) * 8,
-                                vy: -15 - Math.random() * 10,
-                                gravity: 0.7,
-                                friction: 0.98,
-                                life: 90,
-                                text: "🥕+1",
-                                size: 45,
-                                bold: true,
-                                pulse: true
-                            });
+                            // Carrot +1 particle (Same style as Enemy life reward)
+                            this.domEffects.spawn("🥕+1",
+                                centerX,
+                                centerY - 20,
+                                { vy: -15, life: 90, size: 45, bold: true, pulse: true, gravity: 0.7 }
+                            );
                         }
 
                         this.camera.shake(0.2, 10); // 0.2s shake
@@ -2292,11 +2286,13 @@ export class Game {
         if (Math.random() * 100 < stats.DEF) {
             // Guarded!
             this.damageCooldown = 1.0;
-            this.env.particles.push({
-                type: 'text',
-                x: this.player.x, y: this.player.y - 40, vy: -1.5, vx: 0, life: 60,
-                text: "GUARD!", color: '#ffff00', size: 20
-            });
+            // Guarded!
+            this.damageCooldown = 1.0;
+            this.domEffects.spawn("GUARD!",
+                this.player.x,
+                this.player.y - 40,
+                { color: '#ffff00', size: 20, vy: -1.5, life: 60 }
+            );
             this.audio.playLand();
             return;
         }
@@ -2374,13 +2370,13 @@ export class Game {
             damageText = DAMAGE_TEXTS_KANON[Math.floor(Math.random() * DAMAGE_TEXTS_KANON.length)];
         }
 
-        this.env.particles.push({
-            type: 'text',
-            x: this.player.x, y: this.player.y - 40, vy: -0.5, vx: 0, life: 60,
-            text: damageText, color: '#ff3333', size: 50, gravity: 0,
-            bold: true, blink: false,
-            attachTo: this.player
-        });
+
+
+        this.domEffects.spawn(damageText,
+            this.player.x,
+            this.player.y - 40,
+            { color: '#ff3333', size: 50, bold: true, vy: -0.5, life: 60, gravity: 0 }
+        );
 
         // GAME_OVER condition removed per user request
         /*
@@ -2487,11 +2483,11 @@ export class Game {
 
                     this.camera.shake(0.2, 10);
                     const comicTexts = ["SMASH!", "POW!!!", "WHAM!", "BOOM!", "CRASH!"];
-                    this.env.particles.push({
-                        type: 'text', x: b.x + b.width / 2, y: b.y - 20,
-                        vy: -8, life: 60, text: comicTexts[Math.floor(Math.random() * comicTexts.length)],
-                        color: '#ff4757', size: 70, bold: true, stroke: '#ffffff'
-                    });
+                    this.domEffects.spawn(comicTexts[Math.floor(Math.random() * comicTexts.length)],
+                        b.x + b.width / 2,
+                        b.y - 20,
+                        { color: '#ff4757', size: 70, bold: true, vy: -8, life: 60 }
+                    );
 
                     if (b.defeated) {
                         this.score += 50;
@@ -2617,10 +2613,11 @@ export class Game {
         if (this.aerialKillCombo >= 2) {
             // Long shake for combos
             this.camera.shake(0.25, 8); // 0.25s duration (was 0.5s)
-            this.env.particles.push({
-                type: 'text', x: en.x, y: en.y - 40, vy: -3, life: 60,
-                text: `${this.aerialKillCombo} COMBO!`, color: '#e056fd', size: 40, bold: true
-            });
+            this.domEffects.spawn(`${this.aerialKillCombo} COMBO!`,
+                en.x,
+                en.y - 40,
+                { color: '#e056fd', size: 40, bold: true, vy: -3, life: 60 }
+            );
         } else {
             // Normal short shake
             this.camera.shake(0.1, 5);
@@ -2637,20 +2634,11 @@ export class Game {
         this.updateHealthUI();
 
         // ニンジンではなくライフ(ハート)がポーンと出てくるエフェクトに変更
-        this.env.particles.push({
-            type: 'text',
-            x: en.x + (en.width || 64) / 2,
-            y: en.y + (en.height || 64) / 2,
-            vx: (Math.random() - 0.5) * 8,
-            vy: -15 - Math.random() * 10,
-            gravity: 0.7,
-            friction: 0.98,
-            life: 90,
-            text: "❤️+1",
-            size: 45,
-            bold: true,
-            pulse: true
-        });
+        this.domEffects.spawn("❤️+1",
+            en.x + (en.width || 64) / 2,
+            en.y + (en.height || 64) / 2,
+            { vy: -15, life: 90, size: 45, bold: true, pulse: true, gravity: 0.7 }
+        );
     }
 
     spawnBossExplosion(x, y) {
@@ -2711,13 +2699,11 @@ export class Game {
         }
 
         // 6. Finishing Text Overlay (Pulsing)
-        this.env.particles.push({
-            type: 'text',
-            x: this.width / 2, y: this.height / 2,
-            vx: 0, vy: -0.5, life: 180,
-            text: "🌟 BOSS DEFEATED! 🌟", color: '#f1c40f', size: 60,
-            screenSpace: true, bold: true, pulse: true
-        });
+        this.domEffects.spawn("🌟 BOSS DEFEATED! 🌟",
+            this.width / 2,
+            this.height / 2,
+            { color: '#f1c40f', size: 60, screenSpace: true, bold: true, pulse: true, vy: -0.5, life: 180 }
+        );
 
         // 7. Calculate Stage Results
         const elapsedSec = Math.floor((Date.now() - this.stageStartTime) / 1000);
@@ -2811,17 +2797,11 @@ export class Game {
     }
 
     showReadyGo() {
-        this.env.particles.push({
-            type: 'text',
-            x: this.width / 2,
-            y: this.height / 2,
-            text: 'READY GO!',
-            color: '#f1c40f',
-            size: 60,
-            life: 120,
-            screenSpace: true,
-            bold: true
-        });
+        this.domEffects.spawn('READY GO!',
+            this.width / 2,
+            this.height / 2,
+            { color: '#f1c40f', size: 60, life: 120, screenSpace: true, bold: true }
+        );
 
         // Sound effect (Optional if we have one, otherwise just visuals)
         if (this.audio) {
