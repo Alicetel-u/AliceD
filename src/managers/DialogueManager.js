@@ -155,18 +155,20 @@ export class DialogueManager {
 
         if (this.isTyping) {
             this.timer += dt * 1000;
-            if (this.timer > this.textSpeed) {
-                this.timer = 0;
-                const fullText = this.currentDialogue.text;
+            const fullText = this.currentDialogue.text;
 
-                if (this.charIndex < fullText.length) {
-                    this.textBox.textContent += fullText[this.charIndex];
-                    this.charIndex++;
-                    // Typing sound?
-                } else {
+            // Process as many characters as needed for the elapsed time
+            while (this.timer >= this.textSpeed && this.charIndex < fullText.length) {
+                this.timer -= this.textSpeed;
+                this.textBox.textContent += fullText[this.charIndex];
+                this.charIndex++;
+
+                // If finished typing within this loop
+                if (this.charIndex >= fullText.length) {
                     this.isTyping = false;
                     this.nextIndicator.style.display = 'block';
                     this.autoAdvanceTimer = 0;
+                    break;
                 }
             }
         } else {
