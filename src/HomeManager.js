@@ -393,13 +393,31 @@ export class HomeManager {
     }
 
     async selectAndStart(charId) {
-        // 現在のキャラと違う場合のみ切り替え
+        // --- 1. 即座にロード画面を表示（止まった感を無くす） ---
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+            loadingScreen.classList.remove('hidden');
+
+            const status = document.getElementById('loading-status');
+            if (status) status.textContent = "LOADING CHARACTER...";
+
+            // プログレスバー（バニー）も表示状態にする
+            const bar = document.getElementById('loading-bar-container');
+            if (bar) bar.classList.remove('hidden');
+        }
+
+        // ブラウザがロード画面を描画する時間を確保
+        await new Promise(r => setTimeout(r, 60));
+
+        // --- 2. キャラクター切り替えとアセット読み込み ---
         if (this.game.characterManager.getCurrentCharacter().id !== charId) {
-            // 正しいメソッド名 selectCharacter に修正
             this.game.characterManager.selectCharacter(charId);
             await this.game.reloadCharacterSprite();
         }
-        this.game.startGame();
+
+        // --- 3. ゲーム開始 ---
+        // ※startGame内部でもロード画面の制御が行われるため、以降の遷移はそちらに任せる
+        await this.game.startGame();
     }
 
     drawBackground() {

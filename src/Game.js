@@ -2798,11 +2798,21 @@ export class Game {
     }
 
     showReadyGo() {
-        this.domEffects.spawn('READY GO!',
+        // シックでエレガントなスタート演出
+        this.domEffects.spawn('READY',
             this.width / 2,
-            this.height / 2,
-            { color: '#f1c40f', size: 60, life: 120, screenSpace: true, bold: true }
+            this.height / 2 - 30,
+            { color: '#e0e0e0', size: 42, life: 80, screenSpace: true, bold: false, opacity: 0.9 }
         );
+
+        // 少し遅れて「GO」を表示
+        setTimeout(() => {
+            this.domEffects.spawn('GO',
+                this.width / 2,
+                this.height / 2 + 10,
+                { color: '#a0a0a0', size: 38, life: 60, screenSpace: true, bold: false, opacity: 0.85 }
+            );
+        }, 400);
 
         // Sound effect (Optional if we have one, otherwise just visuals)
         if (this.audio) {
