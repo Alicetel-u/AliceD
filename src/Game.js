@@ -37,6 +37,7 @@ import { TileRenderer } from './managers/TileRenderer.js';
 import { PlayerRenderer } from './managers/PlayerRenderer.js';
 import { BossRenderer } from './managers/BossRenderer.js';
 import { EffectRenderer } from './managers/EffectRenderer.js';
+import { EntityRenderer } from './managers/EntityRenderer.js';
 
 // ... existing imports
 
@@ -80,6 +81,7 @@ export class Game {
         this.playerRenderer = new PlayerRenderer(this);
         this.bossRenderer = new BossRenderer(this);
         this.effectRenderer = new EffectRenderer(this);
+        this.entityRenderer = new EntityRenderer(this);
 
         this.camera = new Camera(this.width, this.height);
         this.level = new Level(this.tileSize); // 64px tiles base
@@ -261,12 +263,26 @@ export class Game {
 
         // World Renderer: 中央集権的な描画システム (背景 -> マップ -> キャラ -> エフェクト)
         this.sections.register('WorldRenderer', {
+            // PixiJS Renderers Update Loop
             update: (dt) => {
-                this.vfx.update(dt);
-            },
-            draw: () => this.drawWorld()
-        });
+                if (this.state === 'HOME' || this.state === 'BOOT') return;
 
+                // Update Background Scrolling
+                if (this.parallax) this.parallax.update(this.camera);
+
+                // Update Pixi Renderers
+                if (this.pixi && this.pixi.isReady) {
+                    if (this.tileRenderer) this.tileRenderer.update(this.camera);
+                    if (this.entityRenderer) this.entityRenderer.update(dt, this.camera);
+                    if (this.playerRenderer) this.playerRenderer.update(this.player, this.camera);
+                    if (this.bossRenderer) this.bossRenderer.update(this.boss, this.camera);
+                    if (this.effectRenderer) this.effectRenderer.update(this.env, this.player, this.camera);
+                }
+            },
+            draw: () => {
+                this.drawWorld();
+            }
+        });
         this.sections.register('Environment', {
             update: (dt) => this.env.update(dt)
             // Draw moved to WorldRenderer
@@ -424,6 +440,11 @@ export class Game {
         if (this.gameWon) return; // Dedicated win screen handles this
         if (this.state === 'HOME' || this.state === 'WAIT_FOR_INPUT' || this.state === 'BOOT') return; // Home/Intro handles itself
 
+        // 1. PixiJS Rendering Check
+        // If Pixi is ready, we skip most Canvas 2D drawing.
+        // We only draw things that are NOT yet migrated or are UI overlays.
+        const usePixi = (this.pixi && this.pixi.isReady);
+
         // 1. Clear Screen & Background (Dynamic based on Stage Theme)
         const bgColor = (this.currentStageConfig && this.currentStageConfig.theme)
             ? this.currentStageConfig.theme.backgroundColor
@@ -438,6 +459,7 @@ export class Game {
             this.bgGradient.addColorStop(1, this.adjustColor(bgColor, -20)); // Slightly darker at bottom
         }
 
+        // Always clear/fill background for Overlay canvases or fallback
         this.ctx.fillStyle = this.bgGradient;
         this.ctx.fillRect(0, 0, this.width, this.height);
 
@@ -445,38 +467,39 @@ export class Game {
         this.ctx.save(); // Save for shake
         this.vfx.applyShake(this.ctx);
 
+        // Background (Parallax) handles its own Pixi check
         this.parallax.draw(this.ctx, this.camera);
 
-        // 2. Level (Tiles)
-        this.level.draw(this.ctx, this.assets, this.camera);
+        if (!usePixi) {
+            // 2. Level (Tiles) - Legacy
+            this.level.draw(this.ctx, this.assets, this.camera);
 
-        // 3. Enemies
-        this.enemies.forEach(enemy => enemy.draw(this.ctx, this.assets, this.camera));
+            // 3. Enemies - Legacy
+            this.enemies.forEach(enemy => enemy.draw(this.ctx, this.assets, this.camera)); // Migrated
 
-        if (this.springs) this.springs.forEach(s => s.draw(this.ctx, this.assets, this.camera));
-        if (this.rings) this.rings.forEach(r => r.draw(this.ctx, this.assets, this.camera));
-        if (this.clouds) this.clouds.forEach(c => c.draw(this.ctx, this.assets, this.camera));
-        if (this.movingPlatforms) this.movingPlatforms.forEach(mp => mp.draw(this.ctx, this.camera));
-        if (this.fallingPlatforms) this.fallingPlatforms.forEach(fp => fp.draw(this.ctx, this.camera));
+            if (this.springs) this.springs.forEach(s => s.draw(this.ctx, this.assets, this.camera)); // Migrated
+            if (this.rings) this.rings.forEach(r => r.draw(this.ctx, this.assets, this.camera)); // Migrated
+            if (this.clouds) this.clouds.forEach(c => c.draw(this.ctx, this.assets, this.camera)); // Migrated
+            if (this.movingPlatforms) this.movingPlatforms.forEach(mp => mp.draw(this.ctx, this.camera)); // Migrated
+            if (this.fallingPlatforms) this.fallingPlatforms.forEach(fp => fp.draw(this.ctx, this.camera)); // Migrated
 
-        // 4. Player
-        if (this.player) {
-            this.player.draw(this.ctx, this.assets, this.camera);
+            // 4. Player - Legacy
+            if (this.player) {
+                this.player.draw(this.ctx, this.assets, this.camera);
+            }
+
+            // 5. Boss - Legacy
+            if (this.boss && (this.state === 'BOSS_BATTLE')) {
+                this.boss.draw(this.ctx, this.assets, this.camera);
+            }
+
+            // 6. Particles (Environment) - Legacy
+            this.env.draw(this.ctx, this.camera);
         }
-
-        // 5. Boss
-        if (this.boss && (this.state === 'BOSS_BATTLE')) {
-            // Only draw boss if we are in boss battle (or maybe transitioning)
-            // BossSection will handle Overlay/Cut-in
-            this.boss.draw(this.ctx, this.assets, this.camera);
-        }
-
-        // 6. Particles (Environment)
-        this.env.draw(this.ctx, this.camera);
 
         this.ctx.restore(); // Restore shake
 
-        // 7. Post-Process FX
+        // 7. Post-Process FX (Still Canvas 2D for now, overlay)
         this.vfx.drawPostProcess(this.ctx);
     }
 
@@ -1761,6 +1784,14 @@ export class Game {
 
         const map = grid.map(row => row.join(''));
         this.level.load(map);
+
+        // --- PixiJS: Rebuild Map & Entities ---
+        if (this.tileRenderer) {
+            this.tileRenderer.rebuild(grid);
+        }
+        if (this.entityRenderer) {
+            this.entityRenderer.init();
+        }
 
         // ... Object Instantiation (Enemies, Springs, etc.) ...
         this.enemies = this.level.enemySpawns.map(spawn => {
