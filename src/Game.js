@@ -633,10 +633,11 @@ export class Game {
             uiLayer.style.display = isIngame ? 'flex' : 'none';
         }
         if (debugContainer) {
-            const isVisible = this.debugManager ? this.debugManager.isVisible : false;
-            // SHOW if (ingame OR explicitly visible via secret trigger)
-            debugContainer.style.display = (isIngame || isVisible) ? 'block' : 'none';
+            // Visibility is now managed by DebugManager.update() every frame
         }
+
+        // ステージUI（ナビゲーション、警告など）の描画
+        this.stageUI.draw();
 
         // 1. Click to Start Screen
         if (this.state === 'WAIT_FOR_INPUT') {

@@ -78,17 +78,16 @@ export class DebugManager {
                 console.log(`[Debug] Secret trigger clicked: ${this.debugClickCount}/3`);
 
                 if (this.debugClickCount >= 3) {
-                    this.isVisible = !this.isVisible;
+                    this.isVisible = true; // 3回クリックで常に出現
                     this.debugClickCount = 0;
-                    console.log(`[Debug] Debug visibility toggled: ${this.isVisible}`);
+                    console.log(`[Debug] Debug tool activated via secret trigger`);
 
-                    // Force update container display immediately
-                    const container = document.getElementById('debug-container');
-                    if (container) {
-                        container.style.display = this.isVisible ? 'block' : 'none';
+                    // 全ステージ共通で表示を確実にするため、明示的にスタイルを更新
+                    if (this.elements.container) {
+                        this.elements.container.style.display = 'block';
                     }
                     if (this.elements.debugRoomEntry) {
-                        this.elements.debugRoomEntry.style.display = this.isVisible ? 'flex' : 'none';
+                        this.elements.debugRoomEntry.style.display = 'flex';
                     }
                 }
                 e.stopPropagation();
@@ -170,11 +169,24 @@ export class DebugManager {
             });
         }
 
-        // メニューの開閉
-        this.elements.toggle.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.elements.menu.classList.toggle('hidden');
-        });
+        // メニューの閉じる (歯車マークで消える)
+        if (this.elements.toggle) {
+            this.elements.toggle.style.cursor = 'pointer';
+            this.elements.toggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.isVisible = false;
+                console.log(`[Debug] Debug tool hidden via gear mark`);
+
+                // 即座に非表示を反映
+                if (this.elements.container) {
+                    this.elements.container.style.display = 'none';
+                }
+                if (this.elements.debugRoomEntry) {
+                    this.elements.debugRoomEntry.style.display = 'none';
+                }
+            });
+        }
 
         // BOSSワープ
         if (this.elements.warp) {
@@ -276,7 +288,7 @@ export class DebugManager {
                     this.game.state = 'STAGE_INTRO';
                     this.game.introTimer = 0;
                     this.updateInputBlockState();
-                    if (this.elements.menu) this.elements.menu.classList.add('hidden');
+                    // Keep menu state as is (do not hide)
                 });
             }
         });
@@ -886,12 +898,16 @@ ${json}
     update(dt) {
         if (!this.enabled) return;
 
-        // Title Screen Debug Button Visibility
+        // 全体のデバッグツールの表示状態を反映 (isVisibleが唯一のソース)
+        if (this.elements.container) {
+            this.elements.container.style.display = this.isVisible ? 'block' : 'none';
+        }
+
+        // Title Screen Debug Button (Debug Room Entry) Visibility
         if (this.elements.debugRoomEntry) {
-            // Only show on Title Screen (WAIT_FOR_INPUT, TITLE, HOME) or Loading if isVisible is true
-            const isTitleState = (this.game.state === 'WAIT_FOR_INPUT' || this.game.state === 'TITLE' || this.game.state === 'HOME' || this.game.state === 'LOADING');
-            if (isTitleState && this.isVisible) {
+            if (this.isVisible) {
                 this.elements.debugRoomEntry.style.display = 'flex';
+                this.elements.debugRoomEntry.style.zIndex = "10000"; // 確実に上に
             } else {
                 this.elements.debugRoomEntry.style.display = 'none';
             }
