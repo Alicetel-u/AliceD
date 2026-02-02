@@ -1962,6 +1962,7 @@ html {
     touch-action: manipulation;
     width: 100vw !important;
     height: 100vh !important;
+    background: #1a1a2e !important;
   }
 
   /* --- App Container --- */
@@ -1972,234 +1973,253 @@ html {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
+    background: #1a1a2e !important;
   }
 
-  /* --- Game Canvas - Full screen, no crop --- */
+  /* --- Game Canvas - Positioned by JS, just ensure visibility --- */
   #game-canvas {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    object-fit: contain !important;
-    background-color: #000 !important;
+    /* JS handles positioning and sizing */
+    image-rendering: pixelated !important;
+    image-rendering: crisp-edges !important;
   }
 
-  /* --- UI Layer (HUD) - Overlay on game --- */
+  /* --- UI Layer (HUD) - Top margin area --- */
   #ui-layer {
     position: fixed !important;
-    top: calc(8px + var(--safe-area-top)) !important;
-    left: 8px !important;
-    width: auto !important;
+    top: calc(10px + var(--safe-area-top)) !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    padding: 0 10px !important;
+    box-sizing: border-box !important;
     font-size: 12px !important;
     z-index: 3000 !important;
-  }
-
-  #hud-left {
-    flex-direction: column !important;
-    gap: 4px !important;
+    display: flex !important;
+    justify-content: space-between !important;
     align-items: flex-start !important;
   }
 
-  /* Stage Name - Compact */
-  #stage-name {
-    font-size: 10px !important;
-    padding: 2px 8px !important;
-    border-radius: 8px !important;
-    background: rgba(0, 0, 0, 0.6) !important;
-    backdrop-filter: blur(4px) !important;
+  #hud-left {
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    align-items: center !important;
+    max-width: 70% !important;
   }
 
-  /* Health Bar - Compact */
-  #health-bar {
-    gap: 3px !important;
-    padding: 3px 8px !important;
+  /* Stage Name */
+  #stage-name {
+    font-size: 11px !important;
+    padding: 4px 10px !important;
     border-radius: 12px !important;
-    font-size: 14px !important;
-    background: rgba(0, 0, 0, 0.6) !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    backdrop-filter: blur(8px) !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
+  }
+
+  /* Health Bar */
+  #health-bar {
+    gap: 4px !important;
+    padding: 4px 10px !important;
+    border-radius: 15px !important;
+    font-size: 16px !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    backdrop-filter: blur(8px) !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
   }
 
   .heart {
-    font-size: 14px !important;
+    font-size: 16px !important;
   }
 
-  /* Speed Meter - Compact */
+  /* Speed Meter */
   #speed-meter {
-    font-size: 10px !important;
-    padding: 2px 8px !important;
-    border-radius: 10px !important;
-    background: rgba(0, 0, 0, 0.6) !important;
+    font-size: 11px !important;
+    padding: 4px 10px !important;
+    border-radius: 12px !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    backdrop-filter: blur(8px) !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
   }
 
-  /* Mute Button - Top right */
+  /* Mute Button */
   #mute-btn {
-    position: fixed !important;
-    top: calc(8px + var(--safe-area-top)) !important;
-    right: 8px !important;
-    font-size: 20px !important;
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    font-size: 22px !important;
     z-index: 3001 !important;
-    background: rgba(0, 0, 0, 0.5) !important;
+    background: rgba(0, 0, 0, 0.4) !important;
     border-radius: 50% !important;
-    width: 36px !important;
-    height: 36px !important;
+    width: 38px !important;
+    height: 38px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    backdrop-filter: blur(8px) !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
+    flex-shrink: 0 !important;
   }
 
-  /* Collection Hub - Below mute */
+  /* Collection Hub */
   #collection-hub {
     position: fixed !important;
-    top: calc(50px + var(--safe-area-top)) !important;
-    right: 8px !important;
-    gap: 4px !important;
+    top: calc(60px + var(--safe-area-top)) !important;
+    right: 10px !important;
+    gap: 5px !important;
     z-index: 3001 !important;
   }
 
   #collection-toggle {
-    width: 32px !important;
-    height: 32px !important;
-    font-size: 16px !important;
-    border-radius: 8px !important;
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 18px !important;
+    border-radius: 10px !important;
   }
 
   #item-stock {
-    width: 70px !important;
+    width: 80px !important;
   }
 
   .stock-icon {
-    width: 28px !important;
-    height: 28px !important;
-    font-size: 14px !important;
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 16px !important;
   }
 
   /* --- Dialogue System --- */
   #dialogue-overlay {
-    padding-top: 10px;
+    padding-top: 0 !important;
+    justify-content: flex-end !important;
   }
 
   #dialogue-container {
-    width: 95%;
-    max-width: none;
-    height: auto;
-    min-height: 160px;
-    flex-direction: column;
-    align-items: center;
+    width: 96% !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: auto !important;
+    flex-direction: row !important;
+    align-items: flex-end !important;
+    margin: 0 auto 10px auto !important;
   }
 
   .portrait-container {
-    width: 100px;
-    height: 100px;
-    position: absolute;
+    width: 60px !important;
+    height: 60px !important;
+    position: relative !important;
+    flex-shrink: 0 !important;
   }
 
   .portrait-container.left {
-    left: 5px;
-    top: -20px;
-    margin-right: 0;
+    left: auto !important;
+    top: auto !important;
+    margin-right: 6px !important;
   }
 
   .portrait-container.right {
-    right: 5px;
-    top: -20px;
-    margin-left: 0;
+    right: auto !important;
+    top: auto !important;
+    margin-left: 6px !important;
   }
 
   #dialogue-box {
-    width: 100%;
-    padding: 15px 20px;
-    min-height: 100px;
-    margin-top: 40px;
-    margin-bottom: 10px;
-    border-radius: 12px;
+    width: auto !important;
+    flex: 1 !important;
+    padding: 10px 14px !important;
+    min-height: 65px !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    border-radius: 12px !important;
   }
 
   #dialogue-name-label {
-    font-size: 16px;
-    padding: 4px 14px;
-    margin-top: -35px;
+    font-size: 12px !important;
+    padding: 3px 10px !important;
+    margin-top: -22px !important;
+    margin-bottom: 4px !important;
   }
 
   #dialogue-text {
-    font-size: 18px;
-    line-height: 1.4;
-    min-height: 2.8em;
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+    min-height: 2.2em !important;
   }
 
   #dialogue-next-indicator {
-    font-size: 16px;
-    right: 15px;
-    bottom: 8px;
+    font-size: 12px !important;
+    right: 10px !important;
+    bottom: 6px !important;
   }
 
   /* --- Home Screen Panels --- */
   .home-panel {
-    position: absolute;
+    position: fixed !important;
     left: 50% !important;
     right: auto !important;
     transform: translateX(-50%) !important;
-    width: 92%;
-    max-width: 360px;
-    height: auto;
-    min-height: auto;
-    padding: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    width: 94% !important;
+    max-width: 400px !important;
+    height: auto !important;
+    min-height: auto !important;
+    padding: 12px !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    background: rgba(30, 30, 50, 0.85) !important;
+    backdrop-filter: blur(12px) !important;
+    border-radius: 16px !important;
   }
 
   .home-panel:hover {
     transform: translateX(-50%) !important;
   }
 
-  /* Position panels vertically - Gacha on top, Collection on bottom */
+  /* Position panels - bottom area */
   #home-gacha-panel {
-    top: 10px !important;
-    bottom: auto !important;
-    max-height: 42vh;
-    border-radius: 20px;
-    z-index: 100;
+    top: auto !important;
+    bottom: calc(15px + var(--safe-area-bottom)) !important;
+    max-height: 30vh !important;
+    z-index: 101 !important;
   }
 
   #home-collection-panel {
     top: auto !important;
-    bottom: 10px !important;
-    max-height: 42vh;
-    border-radius: 20px;
-    z-index: 99;
+    bottom: calc(15px + var(--safe-area-bottom)) !important;
+    max-height: 30vh !important;
+    z-index: 100 !important;
   }
 
   .panel-header {
-    font-size: 18px;
-    margin-bottom: 10px;
-    padding-bottom: 10px;
+    font-size: 16px !important;
+    margin-bottom: 8px !important;
+    padding-bottom: 8px !important;
   }
 
   .panel-content {
-    max-height: 30vh;
-    overflow-y: auto;
+    max-height: 20vh !important;
+    overflow-y: auto !important;
   }
 
   .mini-collection-grid {
-    grid-template-columns: repeat(5, 1fr);
-    gap: 6px;
+    grid-template-columns: repeat(6, 1fr) !important;
+    gap: 5px !important;
   }
 
   .mini-item {
-    font-size: 16px;
+    font-size: 16px !important;
   }
 
   .home-gacha-btn {
-    font-size: 16px;
-    padding: 12px;
+    font-size: 14px !important;
+    padding: 10px !important;
   }
 
   /* --- Stage Title Overlay --- */
   .stage-title-container {
-    padding: 25px 0;
+    padding: 20px 0 !important;
   }
 
   .stage-label {
-    font-size: 1.2rem;
-    letter-spacing: 2px;
+    font-size: 1rem !important;
+    letter-spacing: 2px !important;
   }
 
   .stage-name-main {
@@ -2576,36 +2596,28 @@ html {
 
 /* ===========================================
    PORTRAIT MODE - Vertical phone layout
-   Full screen canvas with overlay UI
+   Game centered, UI in top/bottom margins
    =========================================== */
 
 @media screen and (max-width: 768px) and (orientation: portrait) {
 
-  /* Canvas fills screen with object-fit contain */
-  #game-canvas {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    object-fit: contain !important;
-    background: #000 !important;
-  }
+  /* Canvas is positioned by JS - no CSS override needed */
 
-  /* Home panels - bottom overlay */
+  /* Home panels - in bottom margin */
   .home-panel {
     position: fixed !important;
-    bottom: calc(10px + var(--safe-area-bottom)) !important;
+    bottom: calc(15px + var(--safe-area-bottom)) !important;
     top: auto !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    width: 92% !important;
-    max-width: 380px !important;
-    max-height: 40vh !important;
+    width: 94% !important;
+    max-width: 400px !important;
+    max-height: 28vh !important;
     border-radius: 16px !important;
     padding: 12px !important;
-    background: rgba(255, 255, 255, 0.12) !important;
-    backdrop-filter: blur(16px) !important;
+    background: rgba(30, 30, 50, 0.85) !important;
+    backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
   }
 
   .home-panel:hover {
@@ -2627,12 +2639,16 @@ html {
   }
 
   .panel-content {
-    max-height: 25vh !important;
+    max-height: 18vh !important;
   }
 
   .mini-collection-grid {
-    grid-template-columns: repeat(5, 1fr) !important;
+    grid-template-columns: repeat(6, 1fr) !important;
     gap: 5px !important;
+  }
+
+  .mini-item {
+    font-size: 18px !important;
   }
 
   .home-gacha-btn {
@@ -2640,7 +2656,7 @@ html {
     padding: 10px !important;
   }
 
-  /* Dialogue overlay - bottom */
+  /* Dialogue - bottom margin area */
   #dialogue-overlay {
     position: fixed !important;
     top: auto !important;
@@ -2648,9 +2664,9 @@ html {
     left: 0 !important;
     right: 0 !important;
     height: auto !important;
-    padding: 8px !important;
-    padding-bottom: calc(8px + var(--safe-area-bottom)) !important;
-    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%) !important;
+    padding: 10px !important;
+    padding-bottom: calc(15px + var(--safe-area-bottom)) !important;
+    background: rgba(0, 0, 0, 0.6) !important;
   }
 
   #dialogue-container {
@@ -2661,132 +2677,138 @@ html {
   }
 
   .portrait-container {
-    width: 60px !important;
-    height: 60px !important;
+    width: 65px !important;
+    height: 65px !important;
     position: relative !important;
     flex-shrink: 0 !important;
   }
 
   .portrait-container.left {
-    margin-right: 5px !important;
+    margin-right: 8px !important;
   }
 
   .portrait-container.right {
-    margin-left: 5px !important;
+    margin-left: 8px !important;
   }
 
   #dialogue-box {
     margin-top: 0 !important;
     margin-bottom: 0 !important;
-    min-height: 70px !important;
-    padding: 10px 12px !important;
+    min-height: 75px !important;
+    padding: 12px 14px !important;
     border-radius: 12px !important;
-    background: rgba(20, 20, 35, 0.9) !important;
+    background: rgba(20, 20, 35, 0.95) !important;
   }
 
   #dialogue-text {
-    font-size: 14px !important;
-    line-height: 1.35 !important;
-    min-height: 2.4em !important;
+    font-size: 15px !important;
+    line-height: 1.4 !important;
+    min-height: 2.5em !important;
   }
 
   #dialogue-name-label {
-    font-size: 12px !important;
-    padding: 2px 10px !important;
-    margin-top: -24px !important;
+    font-size: 13px !important;
+    padding: 3px 12px !important;
+    margin-top: -26px !important;
     margin-bottom: 6px !important;
   }
 
   #dialogue-next-indicator {
     font-size: 14px !important;
-    right: 10px !important;
-    bottom: 6px !important;
+    right: 12px !important;
+    bottom: 8px !important;
   }
 
   /* Stage title */
   .stage-title-container {
-    padding: 15px 0 !important;
+    padding: 20px 0 !important;
   }
 
   .stage-name-main {
-    font-size: 1.6rem !important;
-    padding: 5px 15px !important;
+    font-size: 1.8rem !important;
+    padding: 6px 18px !important;
   }
 
   .stage-label {
-    font-size: 0.85rem !important;
+    font-size: 0.9rem !important;
   }
 
-  /* Easy mode - overlay */
+  /* Easy mode - bottom margin */
   .easy-mode-container {
     position: fixed !important;
-    bottom: calc(15px + var(--safe-area-bottom)) !important;
+    bottom: calc(20px + var(--safe-area-bottom)) !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     z-index: 150 !important;
-    padding: 6px 14px !important;
-    background: rgba(0, 0, 0, 0.5) !important;
+    padding: 8px 16px !important;
+    background: rgba(30, 30, 50, 0.8) !important;
     border-radius: 20px !important;
+    backdrop-filter: blur(8px) !important;
   }
 
   .easy-mode-label {
-    font-size: 12px !important;
+    font-size: 13px !important;
   }
 
   .toggle-switch {
-    width: 44px !important;
-    height: 22px !important;
+    width: 48px !important;
+    height: 24px !important;
   }
 
   .toggle-knob {
-    width: 16px !important;
-    height: 16px !important;
+    width: 18px !important;
+    height: 18px !important;
   }
 
   .easy-mode-container.active .toggle-knob {
-    left: 24px !important;
+    left: 26px !important;
   }
 
   /* Loading screen */
   #loading-bar-container {
-    bottom: calc(100px + var(--safe-area-bottom)) !important;
-    width: 80% !important;
-    max-width: 320px !important;
+    bottom: calc(120px + var(--safe-area-bottom)) !important;
+    width: 75% !important;
+    max-width: 300px !important;
   }
 
   #splash-logo {
-    width: 180px !important;
+    width: 200px !important;
   }
 
-  /* BGM overlay - compact */
+  /* BGM overlay - top right below HUD */
   #bgm-overlay {
-    top: calc(50px + var(--safe-area-top)) !important;
+    top: calc(60px + var(--safe-area-top)) !important;
   }
 
   .bgm-content {
-    min-width: 160px !important;
-    padding: 5px 15px 5px 5px !important;
+    min-width: 180px !important;
+    padding: 6px 18px 6px 6px !important;
   }
 
   .bgm-icon-container {
-    width: 30px !important;
-    height: 30px !important;
+    width: 32px !important;
+    height: 32px !important;
   }
 
   .bgm-icon {
-    font-size: 14px !important;
+    font-size: 16px !important;
   }
 
   .bgm-title-scroller {
-    width: 100px !important;
+    width: 120px !important;
   }
 
   .bgm-title {
-    font-size: 12px !important;
+    font-size: 13px !important;
   }
 
   .bgm-label {
-    font-size: 7px !important;
+    font-size: 8px !important;
+  }
+
+  /* Collection hub - below BGM */
+  #collection-hub {
+    top: calc(100px + var(--safe-area-top)) !important;
   }
 }
 
@@ -2879,6 +2901,7 @@ html {
   html {
     width: 100vw !important;
     height: 100vh !important;
+    background: #000 !important;
   }
 
   #app {
@@ -2888,30 +2911,27 @@ html {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
-  }
-
-  /* Canvas fills screen */
-  #game-canvas {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    object-fit: contain !important;
     background: #000 !important;
   }
 
-  /* HUD compact overlay */
+  /* Canvas is positioned by JS */
+
+  /* HUD overlay - compact */
   #ui-layer {
     position: fixed !important;
-    top: calc(5px + var(--safe-area-top)) !important;
+    top: calc(6px + var(--safe-area-top)) !important;
     left: calc(8px + var(--safe-area-left)) !important;
+    right: calc(8px + var(--safe-area-right)) !important;
+    width: auto !important;
     z-index: 3000 !important;
+    display: flex !important;
+    justify-content: space-between !important;
   }
 
   #hud-left {
     flex-direction: row !important;
-    gap: 6px !important;
+    gap: 5px !important;
+    align-items: center !important;
   }
 
   #hud-left {
