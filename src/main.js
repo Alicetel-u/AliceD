@@ -38,10 +38,11 @@ function resize() {
     canvas.style.width = displayWidth + 'px';
     canvas.style.height = displayHeight + 'px';
 
-    // 中央配置
-    canvas.style.position = 'absolute';
+    // 中央配置（fixedで親要素の影響を排除）
+    canvas.style.position = 'fixed';
     canvas.style.left = Math.floor((screenWidth - displayWidth) / 2) + 'px';
     canvas.style.top = Math.floor((screenHeight - displayHeight) / 2) + 'px';
+    canvas.style.zIndex = '1';
 
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = false;
