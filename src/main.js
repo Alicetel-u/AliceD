@@ -2,10 +2,10 @@ import { Game } from './Game.js';
 
 const canvas = document.getElementById('game-canvas');
 
-// 仮想解像度の設定（16:9） - より広く見えるように1600x900に調整
+// 仮想解像度の設定（16:9）
 const VIRTUAL_WIDTH = 1600;
 const VIRTUAL_HEIGHT = 900;
-const ASPECT_RATIO = VIRTUAL_WIDTH / VIRTUAL_HEIGHT; // 16:9 = 1.777...
+const ASPECT_RATIO = VIRTUAL_WIDTH / VIRTUAL_HEIGHT;
 
 function resize() {
     const screenWidth = window.innerWidth;
@@ -13,46 +13,35 @@ function resize() {
     const screenAspect = screenWidth / screenHeight;
 
     let canvasWidth, canvasHeight;
-    let cssWidth, cssHeight;
+    let displayWidth, displayHeight;
 
-    // モバイル判定（縦長画面 or 幅768px以下）
-    const isMobilePortrait = screenAspect < 1 || screenWidth <= 768;
-
-    if (isMobilePortrait) {
-        // モバイル縦持ち: 横幅に合わせて16:9を維持
-        // キャンバス解像度は仮想解像度を使用（ゲーム全体が見える）
-        canvasWidth = VIRTUAL_WIDTH;
-        canvasHeight = VIRTUAL_HEIGHT;
-
-        // 表示サイズは横幅100%、高さはアスペクト比から計算
-        cssWidth = screenWidth;
-        cssHeight = screenWidth / ASPECT_RATIO;
-
-        // 画面に収まるように調整
-        if (cssHeight > screenHeight * 0.7) {
-            cssHeight = screenHeight * 0.7;
-            cssWidth = cssHeight * ASPECT_RATIO;
-        }
+    // 常に16:9のアスペクト比を維持
+    if (screenAspect > ASPECT_RATIO) {
+        // 画面が横長すぎる場合：高さに合わせる
+        displayHeight = screenHeight;
+        displayWidth = screenHeight * ASPECT_RATIO;
     } else {
-        // PC/タブレット横向き: 画面全体を使用
-        canvasWidth = screenWidth;
-        canvasHeight = screenHeight;
-        cssWidth = screenWidth;
-        cssHeight = screenHeight;
+        // 画面が縦長の場合：横幅に合わせる
+        displayWidth = screenWidth;
+        displayHeight = screenWidth / ASPECT_RATIO;
     }
+
+    // キャンバスの描画解像度（常に仮想解像度を使用）
+    canvasWidth = VIRTUAL_WIDTH;
+    canvasHeight = VIRTUAL_HEIGHT;
 
     // キャンバスの描画解像度を設定
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
 
     // キャンバスの表示サイズを設定
-    canvas.style.width = cssWidth + 'px';
-    canvas.style.height = cssHeight + 'px';
+    canvas.style.width = displayWidth + 'px';
+    canvas.style.height = displayHeight + 'px';
 
     // 中央配置
     canvas.style.position = 'absolute';
-    canvas.style.left = ((screenWidth - cssWidth) / 2) + 'px';
-    canvas.style.top = ((screenHeight - cssHeight) / 2) + 'px';
+    canvas.style.left = Math.floor((screenWidth - displayWidth) / 2) + 'px';
+    canvas.style.top = Math.floor((screenHeight - displayHeight) / 2) + 'px';
 
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = false;

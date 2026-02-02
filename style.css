@@ -47,13 +47,11 @@ html {
 
 #game-canvas {
   image-rendering: pixelated;
+  image-rendering: crisp-edges;
   /* Essential for pixel art */
-  /* box-shadow: 0 0 20px rgba(0, 0, 0, 0.3); */
   background: transparent;
   display: block;
-  position: absolute;
-  top: 0;
-  left: 0;
+  /* Position and size controlled by JS */
 }
 
 #ui-layer {
@@ -1976,11 +1974,11 @@ html {
     background: #1a1a2e !important;
   }
 
-  /* --- Game Canvas - Positioned by JS, just ensure visibility --- */
+  /* --- Game Canvas - All positioning handled by JS --- */
   #game-canvas {
-    /* JS handles positioning and sizing */
     image-rendering: pixelated !important;
     image-rendering: crisp-edges !important;
+    /* Do not override JS positioning */
   }
 
   /* --- UI Layer (HUD) - Top margin area --- */
