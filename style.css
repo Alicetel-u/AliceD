@@ -1962,7 +1962,6 @@ html {
     touch-action: manipulation;
     width: 100vw !important;
     height: 100vh !important;
-    background-color: #1a1a2e !important;
   }
 
   /* --- App Container --- */
@@ -1973,96 +1972,105 @@ html {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    align-items: center !important;
-    background-color: #1a1a2e !important;
   }
 
-  /* --- Game Canvas - Fit width, maintain aspect ratio --- */
+  /* --- Game Canvas - Full screen, no crop --- */
   #game-canvas {
-    position: relative !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
     width: 100vw !important;
-    height: auto !important;
-    aspect-ratio: 16 / 9 !important;
-    max-height: 60vh !important;
+    height: 100vh !important;
     object-fit: contain !important;
-    top: auto !important;
-    left: auto !important;
+    background-color: #000 !important;
   }
 
-  /* --- UI Layer (HUD) - Position in top margin area --- */
+  /* --- UI Layer (HUD) - Overlay on game --- */
   #ui-layer {
     position: fixed !important;
-    top: calc(5px + var(--safe-area-top)) !important;
-    left: calc(10px + var(--safe-area-left)) !important;
-    width: calc(100% - 20px - var(--safe-area-left) - var(--safe-area-right)) !important;
-    font-size: 14px !important;
+    top: calc(8px + var(--safe-area-top)) !important;
+    left: 8px !important;
+    width: auto !important;
+    font-size: 12px !important;
     z-index: 3000 !important;
   }
 
   #hud-left {
-    flex-direction: row !important;
-    flex-wrap: wrap !important;
-    gap: 6px !important;
-    align-items: center !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    align-items: flex-start !important;
   }
 
-  /* Stage Name */
+  /* Stage Name - Compact */
   #stage-name {
-    font-size: 12px !important;
-    padding: 3px 8px !important;
-    border-radius: 10px !important;
+    font-size: 10px !important;
+    padding: 2px 8px !important;
+    border-radius: 8px !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(4px) !important;
   }
 
-  /* Health Bar */
+  /* Health Bar - Compact */
   #health-bar {
-    gap: 5px;
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-size: 18px;
+    gap: 3px !important;
+    padding: 3px 8px !important;
+    border-radius: 12px !important;
+    font-size: 14px !important;
+    background: rgba(0, 0, 0, 0.6) !important;
   }
 
   .heart {
-    font-size: 18px;
-  }
-
-  /* Speed Meter */
-  #speed-meter {
     font-size: 14px !important;
-    padding: 4px 10px !important;
-    border-radius: 15px !important;
   }
 
-  /* Mute Button */
+  /* Speed Meter - Compact */
+  #speed-meter {
+    font-size: 10px !important;
+    padding: 2px 8px !important;
+    border-radius: 10px !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+  }
+
+  /* Mute Button - Top right */
   #mute-btn {
-    top: 10px !important;
-    right: 10px !important;
-    font-size: 24px !important;
+    position: fixed !important;
+    top: calc(8px + var(--safe-area-top)) !important;
+    right: 8px !important;
+    font-size: 20px !important;
+    z-index: 3001 !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    border-radius: 50% !important;
+    width: 36px !important;
+    height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
-  /* Collection Hub */
+  /* Collection Hub - Below mute */
   #collection-hub {
-    top: 45px !important;
-    right: 10px !important;
-    gap: 5px !important;
+    position: fixed !important;
+    top: calc(50px + var(--safe-area-top)) !important;
+    right: 8px !important;
+    gap: 4px !important;
+    z-index: 3001 !important;
   }
 
   #collection-toggle {
-    width: 36px !important;
-    height: 36px !important;
-    font-size: 18px !important;
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 16px !important;
+    border-radius: 8px !important;
   }
 
   #item-stock {
-    width: 80px !important;
+    width: 70px !important;
   }
 
   .stock-icon {
-    width: 32px;
-    height: 32px;
-    font-size: 18px;
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 14px !important;
   }
 
   /* --- Dialogue System --- */
@@ -2234,403 +2242,374 @@ html {
 
   /* --- Gacha Modal --- */
   #gacha-modal .modal-content {
-    width: 95%;
-    max-width: none;
-    max-height: 85vh;
-    padding: 15px;
-    border-radius: 15px;
-    border-width: 3px;
+    width: 92% !important;
+    max-width: 360px !important;
+    max-height: 80vh !important;
+    padding: 15px !important;
+    border-radius: 16px !important;
+    border-width: 3px !important;
   }
 
   .gacha-capsule {
-    width: 80px;
-    height: 80px;
-    font-size: 32px;
-    margin: 15px auto;
+    width: 70px !important;
+    height: 70px !important;
+    font-size: 28px !important;
+    margin: 12px auto !important;
   }
 
   #collection-list h3 {
-    font-size: 16px;
+    font-size: 14px !important;
   }
 
   .collection-item {
-    width: 50px;
-    height: 50px;
-    font-size: 24px;
+    width: 45px !important;
+    height: 45px !important;
+    font-size: 20px !important;
   }
 
   /* --- Music Room Panel --- */
   .music-room-container {
-    width: 95%;
-    max-width: none;
-    height: 90%;
-    max-height: none;
-    padding: 15px;
-    border-radius: 25px;
-    border-width: 5px;
+    width: 94% !important;
+    max-width: 400px !important;
+    height: 85% !important;
+    max-height: none !important;
+    padding: 12px !important;
+    border-radius: 20px !important;
+    border-width: 4px !important;
   }
 
   .music-room-header {
-    margin-bottom: 15px;
-    padding-bottom: 10px;
+    margin-bottom: 12px !important;
+    padding-bottom: 8px !important;
   }
 
   .music-room-header h1 {
-    font-size: 24px;
+    font-size: 20px !important;
   }
 
   .close-btn {
-    width: 40px;
-    height: 40px;
-    font-size: 24px;
-    border-radius: 12px;
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 20px !important;
+    border-radius: 10px !important;
   }
 
   .music-player-display {
-    flex-direction: column;
-    gap: 15px;
-    padding: 15px;
-    border-radius: 20px;
-    margin-bottom: 15px;
+    flex-direction: row !important;
+    gap: 10px !important;
+    padding: 10px !important;
+    border-radius: 15px !important;
+    margin-bottom: 10px !important;
   }
 
   .cd-art {
-    width: 80px;
-    height: 80px;
+    width: 60px !important;
+    height: 60px !important;
   }
 
   .music-note {
-    font-size: 28px;
+    font-size: 24px !important;
   }
 
   .now-playing-info {
-    text-align: center;
+    text-align: left !important;
   }
 
   .np-title {
-    font-size: 20px;
+    font-size: 16px !important;
   }
 
   .np-artist {
-    font-size: 14px;
+    font-size: 12px !important;
   }
 
   .music-controls {
-    justify-content: center;
-    margin: 10px 0 0 0;
+    margin: 5px 0 0 0 !important;
   }
 
   .control-btn {
-    width: 50px;
-    height: 50px;
-    font-size: 20px;
-    border-radius: 15px;
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 16px !important;
+    border-radius: 12px !important;
   }
 
   .visualizer-bars {
-    display: none;
+    display: none !important;
   }
 
   .track-list {
-    grid-template-columns: 1fr;
-    gap: 10px;
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
   }
 
   .track-item {
-    padding: 12px;
-    border-radius: 12px;
+    padding: 10px !important;
+    border-radius: 10px !important;
   }
 
   .track-item .t-title {
-    font-size: 14px;
+    font-size: 13px !important;
   }
 
   .track-item .t-artist {
-    font-size: 11px;
+    font-size: 10px !important;
   }
 
   .track-section-title {
-    font-size: 14px;
-    margin: 15px 0 8px;
+    font-size: 12px !important;
+    margin: 12px 0 6px !important;
   }
 
   /* --- Debug Room Overlay --- */
   #debug-room-overlay {
-    padding: 20px;
-    overflow-y: auto;
+    padding: 15px !important;
+    overflow-y: auto !important;
   }
 
   #debug-room-overlay h1 {
-    font-size: 28px !important;
-    margin-bottom: 25px !important;
+    font-size: 24px !important;
+    margin-bottom: 20px !important;
   }
 
   #debug-room-overlay>div[style*="grid"] {
     grid-template-columns: 1fr !important;
-    width: 90% !important;
-    max-width: 300px !important;
-    gap: 15px !important;
+    width: 85% !important;
+    max-width: 280px !important;
+    gap: 12px !important;
   }
 
   #debug-room-overlay .game-btn {
-    height: 70px !important;
-    font-size: 16px !important;
+    height: 60px !important;
+    font-size: 14px !important;
   }
 
   /* --- Preview Select Modal --- */
   #preview-select-modal .modal-content {
-    width: 90% !important;
-    max-width: 350px !important;
-    padding: 20px !important;
-    border-radius: 15px !important;
+    width: 88% !important;
+    max-width: 320px !important;
+    padding: 15px !important;
+    border-radius: 12px !important;
   }
 
   #preview-select-modal h2 {
-    font-size: 20px !important;
+    font-size: 18px !important;
   }
 
   #preview-select-modal .game-btn {
-    padding: 12px !important;
-    font-size: 16px !important;
+    padding: 10px !important;
+    font-size: 14px !important;
   }
 
   /* --- Dialogue Editor Modal --- */
   #dialogue-editor-modal .editor-panel {
-    width: 98% !important;
-    height: 98% !important;
-    padding: 10px !important;
+    width: 96% !important;
+    height: 96% !important;
+    padding: 8px !important;
     border-radius: 8px !important;
   }
 
   #dialogue-editor-modal h2 {
-    font-size: 20px !important;
+    font-size: 18px !important;
   }
 
   #dialogue-editor-modal select {
-    font-size: 16px !important;
-    padding: 8px !important;
+    font-size: 14px !important;
+    padding: 6px !important;
   }
 
   #dialogue-editor-modal button.game-btn {
-    font-size: 14px !important;
-    padding: 8px 12px !important;
+    font-size: 12px !important;
+    padding: 6px 10px !important;
   }
 
   #editor-rows-container {
-    padding: 8px !important;
+    padding: 6px !important;
   }
 
   /* --- Loading Screen --- */
   #loading-bar-container {
-    width: 85%;
-    max-width: 350px;
-    bottom: 80px;
+    width: 80% !important;
+    max-width: 300px !important;
+    bottom: 100px !important;
   }
 
   #carrot-bar-outer {
-    height: 24px;
+    height: 22px !important;
   }
 
   #bunny-runner {
-    font-size: 26px;
+    font-size: 24px !important;
   }
 
   #carrot-leaf {
-    font-size: 32px;
-    right: -20px;
-    top: -16px;
+    font-size: 28px !important;
+    right: -18px !important;
+    top: -14px !important;
   }
 
   #loading-status {
-    font-size: 13px;
+    font-size: 12px !important;
   }
 
   #loading-percentage {
-    font-size: 18px;
-    padding: 6px 14px;
+    font-size: 16px !important;
+    padding: 5px 12px !important;
   }
 
   #splash-logo {
-    width: 200px;
+    width: 160px !important;
   }
 
   /* --- Debug Menu --- */
   #debug-container {
-    bottom: 10px;
-    left: 10px;
+    bottom: calc(10px + var(--safe-area-bottom)) !important;
+    left: 10px !important;
   }
 
   #debug-menu {
-    width: 260px;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-    padding: 10px;
+    width: 240px !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 5px !important;
+    padding: 8px !important;
   }
 
   .debug-btn {
-    font-size: 10px !important;
-    height: 38px !important;
+    font-size: 9px !important;
+    height: 34px !important;
   }
 
   #btn-debug-toggle {
-    width: 36px;
-    height: 36px;
-    font-size: 18px;
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 16px !important;
   }
 
   /* --- Debug Room Button (bottom right) --- */
   #debug-room-btn {
-    bottom: 15px !important;
+    bottom: calc(15px + var(--safe-area-bottom)) !important;
     right: 15px !important;
   }
 
   #debug-room-btn>div {
-    font-size: 20px !important;
-    padding: 8px !important;
+    font-size: 18px !important;
+    padding: 6px !important;
   }
 
   /* --- Easy Mode Toggle --- */
   .easy-mode-container {
-    bottom: 80px;
-    padding: 8px 18px;
-    gap: 10px;
+    bottom: calc(15px + var(--safe-area-bottom)) !important;
+    padding: 6px 14px !important;
+    gap: 8px !important;
   }
 
   .easy-mode-label {
-    font-size: 14px;
+    font-size: 12px !important;
   }
 
   .toggle-switch {
-    width: 50px;
-    height: 26px;
+    width: 44px !important;
+    height: 22px !important;
   }
 
   .toggle-knob {
-    width: 18px;
-    height: 18px;
+    width: 16px !important;
+    height: 16px !important;
   }
 
   .easy-mode-container.active .toggle-knob {
-    left: 28px;
+    left: 24px !important;
   }
 
   /* --- Intro/Title Screens --- */
   .game-title {
-    font-size: 40px;
+    font-size: 32px !important;
   }
 
   .game-title .subtitle {
-    font-size: 18px;
+    font-size: 14px !important;
   }
 
   .game-title.small {
-    font-size: 36px;
-    margin-bottom: 25px;
+    font-size: 28px !important;
+    margin-bottom: 20px !important;
   }
 
   .start-prompt {
-    margin-top: 50px;
-    font-size: 20px;
-    padding: 15px 25px;
-    letter-spacing: 2px;
+    margin-top: 40px !important;
+    font-size: 16px !important;
+    padding: 12px 20px !important;
+    letter-spacing: 1px !important;
   }
 
   .menu-container {
-    width: 280px;
-    gap: 15px;
+    width: 260px !important;
+    gap: 12px !important;
   }
 
   .menu-btn {
-    padding: 15px;
-    font-size: 18px;
-    border-radius: 15px;
+    padding: 12px !important;
+    font-size: 16px !important;
+    border-radius: 12px !important;
   }
 
   .version-info {
-    bottom: 10px;
-    right: 10px;
-    font-size: 11px;
+    bottom: calc(10px + var(--safe-area-bottom)) !important;
+    right: 10px !important;
+    font-size: 10px !important;
   }
 
   /* --- Impact Text Effect --- */
   .text-impact {
-    font-size: 1.4rem;
-    padding: 10px 5px;
-    letter-spacing: 1px;
+    font-size: 1.2rem !important;
+    padding: 8px 4px !important;
+    letter-spacing: 1px !important;
   }
 
   /* --- Debug Trigger Area (for tap) --- */
   #debug-trigger {
-    width: 100px !important;
-    height: 100px !important;
+    width: 80px !important;
+    height: 80px !important;
   }
 
 }
 
 /* ===========================================
    PORTRAIT MODE - Vertical phone layout
-   Canvas centered with UI in margins
+   Full screen canvas with overlay UI
    =========================================== */
 
 @media screen and (max-width: 768px) and (orientation: portrait) {
 
-  /* Canvas takes center, aspect ratio preserved */
+  /* Canvas fills screen with object-fit contain */
   #game-canvas {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
     width: 100vw !important;
-    height: auto !important;
-    aspect-ratio: 16 / 9 !important;
-    max-height: 55vh !important;
-    position: relative !important;
-    top: auto !important;
-    left: auto !important;
-    margin: auto !important;
+    height: 100vh !important;
+    object-fit: contain !important;
+    background: #000 !important;
   }
 
-  /* HUD positioned above canvas area */
-  #ui-layer {
-    position: fixed !important;
-    top: calc(5px + var(--safe-area-top)) !important;
-    left: 5px !important;
-    right: 5px !important;
-    width: auto !important;
-    z-index: 3000 !important;
-  }
-
-  #hud-left {
-    flex-direction: row !important;
-    flex-wrap: wrap !important;
-    gap: 5px !important;
-  }
-
-  /* Mute button - top right corner */
-  #mute-btn {
-    position: fixed !important;
-    top: calc(8px + var(--safe-area-top)) !important;
-    right: 10px !important;
-    font-size: 22px !important;
-    z-index: 3001 !important;
-  }
-
-  /* Collection hub below mute */
-  #collection-hub {
-    position: fixed !important;
-    top: calc(40px + var(--safe-area-top)) !important;
-    right: 10px !important;
-    z-index: 3001 !important;
-  }
-
-  /* Home panels - bottom area below canvas */
+  /* Home panels - bottom overlay */
   .home-panel {
     position: fixed !important;
     bottom: calc(10px + var(--safe-area-bottom)) !important;
     top: auto !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    width: 94% !important;
-    max-width: 400px !important;
-    max-height: 35vh !important;
-    border-radius: 15px !important;
+    width: 92% !important;
+    max-width: 380px !important;
+    max-height: 40vh !important;
+    border-radius: 16px !important;
     padding: 12px !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+    backdrop-filter: blur(16px) !important;
+  }
+
+  .home-panel:hover {
+    transform: translateX(-50%) !important;
   }
 
   #home-gacha-panel {
@@ -2641,7 +2620,27 @@ html {
     z-index: 100 !important;
   }
 
-  /* Dialogue overlay - below canvas */
+  .panel-header {
+    font-size: 16px !important;
+    margin-bottom: 8px !important;
+    padding-bottom: 8px !important;
+  }
+
+  .panel-content {
+    max-height: 25vh !important;
+  }
+
+  .mini-collection-grid {
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 5px !important;
+  }
+
+  .home-gacha-btn {
+    font-size: 14px !important;
+    padding: 10px !important;
+  }
+
+  /* Dialogue overlay - bottom */
   #dialogue-overlay {
     position: fixed !important;
     top: auto !important;
@@ -2649,75 +2648,145 @@ html {
     left: 0 !important;
     right: 0 !important;
     height: auto !important;
-    max-height: 40vh !important;
-    padding: 10px !important;
-    padding-bottom: calc(10px + var(--safe-area-bottom)) !important;
+    padding: 8px !important;
+    padding-bottom: calc(8px + var(--safe-area-bottom)) !important;
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%) !important;
   }
 
   #dialogue-container {
     width: 100% !important;
     height: auto !important;
     flex-direction: row !important;
+    align-items: flex-end !important;
   }
 
   .portrait-container {
-    width: 70px !important;
-    height: 70px !important;
+    width: 60px !important;
+    height: 60px !important;
     position: relative !important;
-    top: auto !important;
-    left: auto !important;
-    right: auto !important;
+    flex-shrink: 0 !important;
+  }
+
+  .portrait-container.left {
+    margin-right: 5px !important;
+  }
+
+  .portrait-container.right {
+    margin-left: 5px !important;
   }
 
   #dialogue-box {
     margin-top: 0 !important;
-    min-height: 80px !important;
-    padding: 12px 15px !important;
+    margin-bottom: 0 !important;
+    min-height: 70px !important;
+    padding: 10px 12px !important;
+    border-radius: 12px !important;
+    background: rgba(20, 20, 35, 0.9) !important;
   }
 
   #dialogue-text {
-    font-size: 15px !important;
-    line-height: 1.4 !important;
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+    min-height: 2.4em !important;
   }
 
   #dialogue-name-label {
-    font-size: 13px !important;
-    padding: 3px 10px !important;
-    margin-top: -28px !important;
+    font-size: 12px !important;
+    padding: 2px 10px !important;
+    margin-top: -24px !important;
+    margin-bottom: 6px !important;
   }
 
-  /* Stage title - overlay on canvas */
+  #dialogue-next-indicator {
+    font-size: 14px !important;
+    right: 10px !important;
+    bottom: 6px !important;
+  }
+
+  /* Stage title */
   .stage-title-container {
-    padding: 20px 0 !important;
+    padding: 15px 0 !important;
   }
 
   .stage-name-main {
-    font-size: 1.8rem !important;
+    font-size: 1.6rem !important;
+    padding: 5px 15px !important;
   }
 
   .stage-label {
-    font-size: 0.9rem !important;
+    font-size: 0.85rem !important;
   }
 
-  /* Easy mode toggle - bottom area */
+  /* Easy mode - overlay */
   .easy-mode-container {
     position: fixed !important;
-    bottom: calc(50px + var(--safe-area-bottom)) !important;
+    bottom: calc(15px + var(--safe-area-bottom)) !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    z-index: 200 !important;
+    z-index: 150 !important;
+    padding: 6px 14px !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    border-radius: 20px !important;
   }
 
-  /* Loading screen adjustments */
+  .easy-mode-label {
+    font-size: 12px !important;
+  }
+
+  .toggle-switch {
+    width: 44px !important;
+    height: 22px !important;
+  }
+
+  .toggle-knob {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .easy-mode-container.active .toggle-knob {
+    left: 24px !important;
+  }
+
+  /* Loading screen */
   #loading-bar-container {
-    bottom: calc(80px + var(--safe-area-bottom)) !important;
+    bottom: calc(100px + var(--safe-area-bottom)) !important;
+    width: 80% !important;
+    max-width: 320px !important;
   }
 
-  /* BGM overlay - smaller */
+  #splash-logo {
+    width: 180px !important;
+  }
+
+  /* BGM overlay - compact */
   #bgm-overlay {
-    top: calc(45px + var(--safe-area-top)) !important;
-    transform: scale(0.85) !important;
-    transform-origin: top right !important;
+    top: calc(50px + var(--safe-area-top)) !important;
+  }
+
+  .bgm-content {
+    min-width: 160px !important;
+    padding: 5px 15px 5px 5px !important;
+  }
+
+  .bgm-icon-container {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  .bgm-icon {
+    font-size: 14px !important;
+  }
+
+  .bgm-title-scroller {
+    width: 100px !important;
+  }
+
+  .bgm-title {
+    font-size: 12px !important;
+  }
+
+  .bgm-label {
+    font-size: 7px !important;
   }
 }
 
@@ -2810,7 +2879,6 @@ html {
   html {
     width: 100vw !important;
     height: 100vh !important;
-    background-color: #1a1a2e !important;
   }
 
   #app {
@@ -2820,28 +2888,30 @@ html {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
   }
 
-  /* Canvas fills height, width follows aspect ratio */
+  /* Canvas fills screen */
   #game-canvas {
-    position: relative !important;
-    width: auto !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
     height: 100vh !important;
-    max-width: 100vw !important;
-    aspect-ratio: 16 / 9 !important;
-    top: auto !important;
-    left: auto !important;
+    object-fit: contain !important;
+    background: #000 !important;
   }
 
-  /* HUD compact for landscape */
+  /* HUD compact overlay */
   #ui-layer {
     position: fixed !important;
     top: calc(5px + var(--safe-area-top)) !important;
     left: calc(8px + var(--safe-area-left)) !important;
     z-index: 3000 !important;
+  }
+
+  #hud-left {
+    flex-direction: row !important;
+    gap: 6px !important;
   }
 
   #hud-left {
