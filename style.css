@@ -3679,3 +3679,76 @@ html {
     image-rendering: pixelated;
   }
 }
+
+/* --- Mobile Landscape Dialogue Optimization --- */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+
+  /* 会話レイヤーの位置調整：中央より少し上に */
+  #dialogue-overlay {
+    padding-top: 0 !important;
+    justify-content: center !important;
+  }
+
+  #dialogue-container {
+    height: auto !important;
+    /* 高さを自動調整 */
+    align-items: center !important;
+    /* 垂直方向中央揃え */
+    width: 85% !important;
+    /* 横幅も少し詰める */
+    transform: translateY(-15px) !important;
+    /* さらに少し上にずらす */
+  }
+
+  /* 立ち絵を小さくして画面を圧迫しないように */
+  .portrait-container {
+    width: 100px !important;
+    height: 100px !important;
+  }
+
+  .portrait-img {
+    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.5)) !important;
+    /* 影も軽くする */
+  }
+
+  /* アクティブ時の拡大も抑えめに */
+  .portrait-active {
+    transform: scale(1.05) translateY(0) !important;
+  }
+
+  /* 会話ボックスを極力コンパクトに */
+  #dialogue-box {
+    min-height: auto !important;
+    padding: 8px 15px !important;
+    margin-bottom: 0 !important;
+    border-radius: 10px !important;
+    background: rgba(20, 20, 35, 0.9) !important;
+    /* 背景を少し濃くして読みやすく */
+  }
+
+  /* 名前ラベルのサイズ調整 */
+  #dialogue-name-label {
+    margin-top: -25px !important;
+    margin-bottom: 2px !important;
+    font-size: 14px !important;
+    padding: 2px 8px !important;
+    border-width: 1px !important;
+  }
+
+  /* 本文のフォントと行間を詰める */
+  #dialogue-text {
+    font-size: 16px !important;
+    line-height: 1.3 !important;
+    min-height: auto !important;
+    letter-spacing: 0 !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 1) !important;
+    /* 読みやすさ優先 */
+  }
+
+  /* 送りアイコンの縮小 */
+  #dialogue-next-indicator {
+    font-size: 16px !important;
+    bottom: 4px !important;
+    right: 10px !important;
+  }
+}
