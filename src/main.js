@@ -7,13 +7,21 @@ const VIRTUAL_WIDTH = 1600;
 const VIRTUAL_HEIGHT = 900;
 const ASPECT_RATIO = VIRTUAL_WIDTH / VIRTUAL_HEIGHT;
 
+// モバイル判定（横画面でも正しく検出）
+// タッチデバイスかつ物理画面の短辺が768px以下をモバイルとする
+function detectMobile() {
+    const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const smallScreen = Math.min(screen.width, screen.height) <= 768;
+    return hasTouch && smallScreen;
+}
+
 function resize() {
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
 
-    // PCの場合（幅が768pxより大きい）は全画面表示（余白なし）
-    // モバイルの場合（幅が768px以下）はアスペクト比維持でフィットさせる
-    const isMobile = screenWidth <= 768;
+    // モバイル判定：タッチデバイスかつ物理画面の短辺が768px以下
+    // 横画面でもwindow.innerWidthが大きくなっても正しく判定される
+    const isMobile = detectMobile();
 
     let canvasWidth, canvasHeight;
     let displayWidth, displayHeight;

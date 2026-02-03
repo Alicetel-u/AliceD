@@ -12,8 +12,11 @@ export class Environment {
     update(dt) {
         const dtFrames = dt * 60;
         // Hard limit particles for performance check
-        // Mobile (width <= 768) -> limit to 50, Desktop -> 200
-        const isMobile = window.innerWidth <= 768;
+        // Mobile detection: タッチデバイスかつ物理画面の短辺が768px以下
+        // 横画面でもwindow.innerWidthに依存せず正しく判定
+        const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const smallScreen = Math.min(screen.width, screen.height) <= 768;
+        const isMobile = hasTouch && smallScreen;
         const MAX_PARTICLES = isMobile ? 50 : 300;
 
         // Spawn ambient particles
