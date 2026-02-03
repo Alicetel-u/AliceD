@@ -1953,14 +1953,14 @@ html {
   /* --- Global Adjustments --- */
   body,
   html {
-    overflow: hidden;
+    overflow: hidden !important;
     touch-action: manipulation;
     width: 100vw !important;
     height: 100vh !important;
     background: #1a1a2e !important;
   }
 
-  /* --- App Container --- */
+  /* --- App Container - Strict clipping --- */
   #app {
     width: 100vw !important;
     height: 100vh !important;
@@ -1969,6 +1969,51 @@ html {
     top: 0 !important;
     left: 0 !important;
     background: #1a1a2e !important;
+    clip-path: inset(0) !important;
+  }
+
+  /* --- Hide exposed/stray elements on mobile --- */
+  /* Loading screen elements when hidden */
+  #loading-screen.hidden,
+  #loading-screen.hidden .logo-wrapper,
+  #loading-screen.hidden #splash-logo {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    display: none !important;
+  }
+
+  /* Debug buttons - hide when not actively debugging */
+  #debug-room-btn {
+    display: none !important;
+  }
+
+  #debug-trigger {
+    width: 50px !important;
+    height: 50px !important;
+  }
+
+  /* Ensure debug container stays within bounds */
+  #debug-container {
+    bottom: 10px !important;
+    left: 10px !important;
+    transform: scale(0.8) !important;
+    transform-origin: bottom left !important;
+  }
+
+  /* Version text - keep it contained */
+  #loading-version {
+    font-size: 8px !important;
+    bottom: 5px !important;
+    right: 5px !important;
+  }
+
+  /* Prevent any stray title/logo elements from showing */
+  .game-title:not(.visible),
+  .game-subtitle:not(.visible),
+  .title-logo:not(.visible) {
+    opacity: 0 !important;
+    visibility: hidden !important;
   }
 
   /* --- Game Canvas - All positioning handled by JS --- */
@@ -1989,9 +2034,10 @@ html {
     box-sizing: border-box !important;
     font-size: 12px !important;
     z-index: 3000 !important;
-    display: flex !important;
+    /* display is controlled by JavaScript - do not override with !important */
     justify-content: space-between !important;
     align-items: flex-start !important;
+    flex-direction: row !important;
   }
 
   #hud-left {
@@ -2600,6 +2646,20 @@ html {
 
 @media screen and (max-width: 768px) and (orientation: portrait) {
 
+  /* === HIDE EXPOSED ELEMENTS IN PORTRAIT === */
+  #loading-screen.hidden,
+  #loading-screen.hidden .logo-wrapper,
+  #loading-screen.hidden #splash-logo {
+    display: none !important;
+  }
+
+  .game-title:not(.visible),
+  .game-subtitle:not(.visible),
+  .title-logo:not(.visible),
+  #debug-room-btn {
+    display: none !important;
+  }
+
   /* Canvas is positioned by JS - no CSS override needed */
 
   /* Home panels - in bottom margin */
@@ -2897,12 +2957,13 @@ html {
 
 @media screen and (max-width: 900px) and (orientation: landscape) {
 
-  /* --- Landscape: Full screen game --- */
+  /* --- Landscape: Full screen game with strict clipping --- */
   body,
   html {
     width: 100vw !important;
     height: 100vh !important;
     background: #000 !important;
+    overflow: hidden !important;
   }
 
   #app {
@@ -2913,24 +2974,53 @@ html {
     top: 0 !important;
     left: 0 !important;
     background: #000 !important;
+    clip-path: inset(0) !important;
   }
 
-  /* Hide exposed logo/title elements in landscape (only when loading is complete) */
+  /* === HIDE ALL EXPOSED ELEMENTS IN LANDSCAPE === */
+
+  /* Loading screen - completely hide when done */
+  #loading-screen.hidden,
   #loading-screen.hidden .logo-wrapper,
   #loading-screen.hidden #splash-logo {
     opacity: 0 !important;
     visibility: hidden !important;
     pointer-events: none !important;
-  }
-
-  /* Hide title elements that might peek through in landscape */
-  .game-title,
-  .game-subtitle,
-  .title-logo {
     display: none !important;
   }
 
-  /* Ensure loading screen shows logo during load */
+  /* Title/Logo elements - always hidden in landscape gameplay */
+  .game-title,
+  .game-subtitle,
+  .title-logo,
+  .logo-wrapper:not(#loading-screen:not(.hidden) .logo-wrapper) {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    display: none !important;
+  }
+
+  /* Debug buttons - hide completely */
+  #debug-room-btn {
+    display: none !important;
+  }
+
+  #debug-trigger {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  #debug-container {
+    transform: scale(0.7) !important;
+    transform-origin: bottom left !important;
+  }
+
+  /* Version text - minimal */
+  #loading-version {
+    font-size: 6px !important;
+    opacity: 0.5 !important;
+  }
+
+  /* Ensure loading screen shows logo ONLY during load */
   #loading-screen:not(.hidden) .logo-wrapper {
     display: flex !important;
     opacity: 1 !important;
@@ -2940,7 +3030,7 @@ html {
   #loading-screen:not(.hidden) #splash-logo {
     opacity: 1 !important;
     visibility: visible !important;
-    width: 150px !important;
+    width: 120px !important;
   }
 
   /* Canvas is positioned by JS */
@@ -2953,8 +3043,9 @@ html {
     right: calc(6px + var(--safe-area-right)) !important;
     width: auto !important;
     z-index: 3000 !important;
-    display: flex !important;
+    /* display is controlled by JavaScript - do not override */
     justify-content: space-between !important;
+    flex-direction: row !important;
   }
 
   #hud-left {
@@ -3267,6 +3358,31 @@ html {
 
 /* --- Mobile Portrait Optimization (Added for vertical layout) --- */
 @media screen and (max-width: 768px) and (orientation: portrait) {
+
+  /* === HIDE ALL EXPOSED ELEMENTS IN PORTRAIT === */
+
+  /* Loading screen - completely hide when done */
+  #loading-screen.hidden,
+  #loading-screen.hidden .logo-wrapper,
+  #loading-screen.hidden #splash-logo {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    display: none !important;
+  }
+
+  /* Title/Logo elements - hidden during gameplay */
+  .game-title:not(.visible),
+  .game-subtitle:not(.visible),
+  .title-logo:not(.visible) {
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
+
+  /* Debug room button - hide */
+  #debug-room-btn {
+    display: none !important;
+  }
 
   /* 1. Game Canvas: Vertically centered by JS - add visual polish */
   #game-canvas {
