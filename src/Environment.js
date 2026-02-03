@@ -11,8 +11,10 @@ export class Environment {
 
     update(dt) {
         const dtFrames = dt * 60;
-        // Hard limit particles for performance
-        const MAX_PARTICLES = 200;
+        // Hard limit particles for performance check
+        // Mobile (width <= 768) -> limit to 50, Desktop -> 200
+        const isMobile = window.innerWidth <= 768;
+        const MAX_PARTICLES = isMobile ? 50 : 300;
 
         // Spawn ambient particles
         if (this.particles.length < 30 && Math.random() < 0.05 * dtFrames) {

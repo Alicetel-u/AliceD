@@ -27,9 +27,11 @@ function resize() {
         displayWidth = screenWidth;
         displayHeight = screenHeight;
     } else {
-        // Mobile: 16:9のアスペクト比を維持しつつ最大化（内部解像度は固定）
-        canvasWidth = VIRTUAL_WIDTH;
-        canvasHeight = VIRTUAL_HEIGHT;
+        // Mobile: 16:9のアスペクト比を維持しつつ最大化
+        // 内部解像度を少し下げて負荷軽減 (1600x900 -> 1152x648, 72%)
+        // GPU負荷は約50%削減されます
+        canvasWidth = 1152;
+        canvasHeight = 648;
 
         const screenAspect = screenWidth / screenHeight;
         if (screenAspect > ASPECT_RATIO) {

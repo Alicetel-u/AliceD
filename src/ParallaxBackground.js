@@ -10,20 +10,10 @@ export class ParallaxBackground {
     }
 
     addLayer(image, speed, alignBottom = false, filter = 'none') {
-        let finalImage = image;
+        // filter string (e.g. "brightness(0.6)") is passed but we don't process image here anymore.
+        // We will parse it in createPixiSprite to apply tint.
 
-        // Pre-filter image if filter is specified (2D only logic preserved for creating texture source)
-        if (filter && filter !== 'none') {
-            const canvas = document.createElement('canvas');
-            canvas.width = image.width;
-            canvas.height = image.height;
-            const ctx = canvas.getContext('2d');
-            ctx.filter = filter;
-            ctx.drawImage(image, 0, 0);
-            finalImage = canvas;
-        }
-
-        const layer = { image: finalImage, speed, alignBottom, filter, sprite: null };
+        const layer = { image, speed, alignBottom, filter, sprite: null };
         this.layers.push(layer);
 
         // If WebGL is ready, create Pixi TilingSprite immediately
@@ -44,6 +34,20 @@ export class ParallaxBackground {
             width: this.width,
             height: layer.alignBottom ? texture.height : this.height
         });
+
+        // Apply tint if filter is brightness
+        if (layer.filter && layer.filter.includes('brightness')) {
+            // Extract brightness value: brightness(0.6) -> 0.6
+            const match = layer.filter.match(/brightness\(([^)]+)\)/);
+            if (match) {
+                const b = parseFloat(match[1]);
+                // Convert brightness float to hex tint (assuming white base)
+                const val = Math.floor(255 * b);
+                // Create gray scale tint
+                sprite.tint = (val << 16) | (val << 8) | val;
+            }
+        }
+        // Tint default is 0xFFFFFF (white/no change)
 
         if (layer.alignBottom) {
             sprite.y = this.height - texture.height;

@@ -3751,4 +3751,15 @@ html {
     bottom: 4px !important;
     right: 10px !important;
   }
+
+  /* ロード画面のロゴを非表示（縦幅確保のため） */
+  #splash-logo {
+    display: none !important;
+  }
+
+  /* ロードバーの位置調整 */
+  #loading-bar-container {
+    bottom: 60px !important;
+    transform: scale(0.8);
+  }
 }
