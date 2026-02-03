@@ -88,11 +88,7 @@ export class DomEffectManager {
             const fx = this.effects[i];
 
             // Physics
-            fx.x += fx.vx * df; // vx in pixels/frame? 
-            // Usually vx is pixels/frame in original code (e.g. vx = -1.5)
-            // If vx was pixels/second, we would use dt.
-            // Original code: vx: (Math.random() - 0.5) * 8 -> seems like px/frame.
-
+            fx.x += fx.vx * df;
             fx.y += fx.vy * df;
             fx.vy += fx.gravity * df;
             fx.life -= df;
@@ -111,10 +107,9 @@ export class DomEffectManager {
             // Hide if off-screen (optimization)
             if (drawX < -100 || drawX > this.game.width + 100 || drawY < -100 || drawY > this.game.height + 100) {
                 fx.el.style.display = 'none';
+                continue; // Skip transform update if hidden
             } else {
                 fx.el.style.display = 'block';
-                fx.el.style.left = drawX + 'px';
-                fx.el.style.top = drawY + 'px';
             }
 
             // Animation (Fade & Pulse)
@@ -135,7 +130,10 @@ export class DomEffectManager {
                 scale *= (age / 5);
             }
 
-            fx.el.style.transform = `translate(-50%, -50%) scale(${scale})`;
+            // --- OPTIMIZATION: Use translate3d instead of top/left to avoid layout thrashing ---
+            // translate3d(x, y, 0) forces GPU acceleration
+            // We combine position and centering/scaling into one transform string.
+            fx.el.style.transform = `translate3d(${drawX}px, ${drawY}px, 0) translate(-50%, -50%) scale(${scale})`;
         }
     }
 

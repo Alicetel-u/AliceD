@@ -3623,3 +3623,59 @@ html {
     transform-origin: top right !important;
   }
 }
+
+/* --- Mobile Performance Optimizations --- */
+@media (max-width: 768px) {
+  * {
+    /* モバイルではタッチハイライトを無効化 */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* 重いフィルタ処理を無効化 */
+  #health-bar,
+  .home-panel,
+  #gacha-modal,
+  .modal-content,
+  #debug-menu {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* 代替の背景色（透明度を上げて視認性を確保） */
+  #health-bar {
+    background: rgba(0, 0, 0, 0.8) !important;
+  }
+
+  .home-panel {
+    background: rgba(255, 255, 255, 0.95) !important;
+  }
+
+  #debug-menu {
+    background: rgba(45, 52, 54, 1.0) !important;
+  }
+
+  /* アニメーションの簡略化 */
+  .gacha-capsule {
+    animation: none !important;
+    box-shadow: none !important;
+  }
+
+  /* パーティクル用キャンバスの軽量化 */
+  .confetti-canvas {
+    display: none !important;
+    /* モバイルでは紙吹雪をオフにする */
+  }
+
+  /* ゲームプレイ中のUIエフェクト軽減 */
+  #ui-layer {
+    text-shadow: 1px 1px 0 #000 !important;
+    /* 影をシンプルに */
+  }
+
+  /* 画像レンダリングの強制 */
+  canvas {
+    image-rendering: pixelated;
+  }
+}
