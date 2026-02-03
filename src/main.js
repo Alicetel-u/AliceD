@@ -10,25 +10,36 @@ const ASPECT_RATIO = VIRTUAL_WIDTH / VIRTUAL_HEIGHT;
 function resize() {
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
-    const screenAspect = screenWidth / screenHeight;
+
+    // PCの場合（幅が768pxより大きい）は全画面表示（余白なし）
+    // モバイルの場合（幅が768px以下）はアスペクト比維持でフィットさせる
+    const isMobile = screenWidth <= 768;
 
     let canvasWidth, canvasHeight;
     let displayWidth, displayHeight;
 
-    // 常に16:9のアスペクト比を維持
-    if (screenAspect > ASPECT_RATIO) {
-        // 画面が横長すぎる場合：高さに合わせる
-        displayHeight = screenHeight;
-        displayWidth = screenHeight * ASPECT_RATIO;
-    } else {
-        // 画面が縦長の場合：横幅に合わせる
-        displayWidth = screenWidth;
-        displayHeight = screenWidth / ASPECT_RATIO;
-    }
+    if (!isMobile) {
+        // PC: 画面解像度に合わせてキャンバスサイズ自体を変更する（歪み防止）
+        // ベースの高さを900pxとし、幅は画面比率に応じて可変にする
+        canvasHeight = VIRTUAL_HEIGHT;
+        canvasWidth = Math.ceil(canvasHeight * (screenWidth / screenHeight));
 
-    // キャンバスの描画解像度（常に仮想解像度を使用）
-    canvasWidth = VIRTUAL_WIDTH;
-    canvasHeight = VIRTUAL_HEIGHT;
+        displayWidth = screenWidth;
+        displayHeight = screenHeight;
+    } else {
+        // Mobile: 16:9のアスペクト比を維持しつつ最大化（内部解像度は固定）
+        canvasWidth = VIRTUAL_WIDTH;
+        canvasHeight = VIRTUAL_HEIGHT;
+
+        const screenAspect = screenWidth / screenHeight;
+        if (screenAspect > ASPECT_RATIO) {
+            displayHeight = screenHeight;
+            displayWidth = screenHeight * ASPECT_RATIO;
+        } else {
+            displayWidth = screenWidth;
+            displayHeight = screenWidth / ASPECT_RATIO;
+        }
+    }
 
     // キャンバスの描画解像度を設定
     canvas.width = canvasWidth;

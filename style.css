@@ -2009,7 +2009,7 @@ html {
     border-radius: 12px !important;
     background: rgba(0, 0, 0, 0.5) !important;
     backdrop-filter: blur(8px) !important;
-    border: 1px solid rgba(255,255,255,0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
   }
 
   /* Health Bar */
@@ -2020,7 +2020,7 @@ html {
     font-size: 16px !important;
     background: rgba(0, 0, 0, 0.5) !important;
     backdrop-filter: blur(8px) !important;
-    border: 1px solid rgba(255,255,255,0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
   }
 
   .heart {
@@ -2034,7 +2034,7 @@ html {
     border-radius: 12px !important;
     background: rgba(0, 0, 0, 0.5) !important;
     backdrop-filter: blur(8px) !important;
-    border: 1px solid rgba(255,255,255,0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
   }
 
   /* Mute Button */
@@ -2052,7 +2052,7 @@ html {
     align-items: center !important;
     justify-content: center !important;
     backdrop-filter: blur(8px) !important;
-    border: 1px solid rgba(255,255,255,0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
     flex-shrink: 0 !important;
   }
 
@@ -2085,7 +2085,9 @@ html {
   /* --- Dialogue System --- */
   #dialogue-overlay {
     padding-top: 0 !important;
+    padding-top: 0 !important;
     justify-content: flex-end !important;
+    /* Default to bottom, overridden in portrait */
   }
 
   #dialogue-container {
@@ -2096,6 +2098,54 @@ html {
     flex-direction: row !important;
     align-items: flex-end !important;
     margin: 0 auto 10px auto !important;
+  }
+
+  /* --- Mobile Landscape Specific --- */
+  @media screen and (max-width: 768px) and (orientation: landscape) {
+
+    /* Raise Loading Screen to cover UI icons (z-index 3001) */
+    #loading-screen {
+      z-index: 4000 !important;
+    }
+
+    /* Move dialogue down slightly */
+    #dialogue-container {
+      margin-bottom: 5px !important;
+      /* Reduced from general mobile margin if needed, or specific spacing */
+      align-items: flex-end !important;
+    }
+  }
+
+  /* --- Mobile Portrait Specific --- */
+  @media screen and (max-width: 768px) and (orientation: portrait) {
+
+    /* Position Dialogue at the top (above game screen visually) */
+    #dialogue-overlay {
+      justify-content: flex-start !important;
+      padding-top: 60px !important;
+      /* Clear the top safe area / HUD */
+    }
+
+    #dialogue-container {
+      margin-top: 10px !important;
+      margin-bottom: auto !important;
+      /* Reset bottom margin */
+      align-items: flex-start !important;
+    }
+
+    /* Ensure dialogue name label is positioned correctly for top layout */
+    #dialogue-name-label {
+      margin-top: -10px !important;
+      margin-bottom: -15px !important;
+      /* Pull closer to box */
+      z-index: 20 !important;
+    }
+  }
+
+  /* --- General Mobile Z-Index Fixes --- */
+  #dialogue-overlay {
+    /* Ensure dialogue is above UI layer (3000) */
+    z-index: 3500 !important;
   }
 
   .portrait-container {
@@ -2612,7 +2662,7 @@ html {
     padding: 12px !important;
     background: rgba(30, 30, 50, 0.85) !important;
     backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(255,255,255,0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
   }
 
   .home-panel:hover {
@@ -3187,4 +3237,151 @@ html {
     width: 180px !important;
   }
 
+
+}
+
+/* --- Mobile Portrait Optimization (Added for vertical layout) --- */
+@media screen and (max-width: 768px) and (orientation: portrait) {
+
+  /* 1. Game Canvas: Move to upper part for better visibility */
+  #game-canvas {
+    top: 25% !important;
+    /* Move down slightly to clear HUD */
+    transform: translateY(0) !important;
+    /* Cancel center alignment */
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    border: 2px solid #444;
+    /* Conceptual border */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+
+  /* 2. HUD Adjustments (Header Style) */
+  #ui-layer {
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0 !important;
+    pointer-events: none;
+  }
+
+  /* Top Left Group: Stage Name & Hearts */
+  #hud-left {
+    flex-direction: row !important;
+    align-items: center;
+    gap: 8px;
+    position: absolute;
+    top: max(10px, env(safe-area-inset-top));
+    left: 10px;
+    flex-wrap: nowrap;
+    width: 85%;
+    z-index: 100;
+  }
+
+  #stage-name {
+    font-size: 13px !important;
+    padding: 4px 8px !important;
+    white-space: nowrap;
+    order: 1;
+    /* First */
+  }
+
+  #health-bar {
+    padding: 4px 6px !important;
+    order: 2;
+    /* Second */
+  }
+
+  #speed-meter {
+    font-size: 12px !important;
+    padding: 4px 8px !important;
+    position: static !important;
+    /* Flow naturally */
+    order: 3;
+    /* Third */
+    margin-left: auto;
+    /* Push to right slightly */
+  }
+
+  /* Top Right Group: Tools */
+  #mute-btn {
+    top: max(50px, calc(env(safe-area-inset-top) + 40px)) !important;
+    right: 15px !important;
+    font-size: 32px !important;
+    z-index: 101;
+  }
+
+  #collection-hub {
+    top: max(100px, calc(env(safe-area-inset-top) + 90px)) !important;
+    right: 15px !important;
+    z-index: 101;
+  }
+
+  /* 3. Dialogue Box: Position directly below the game canvas */
+  #dialogue-container {
+    position: absolute !important;
+    width: 96% !important;
+    left: 2% !important;
+    transform: none !important;
+    /* Canvas is at 25%, height is roughly 25-30% of height. So start dialogue at 55-60% */
+    top: 50% !important;
+    bottom: auto !important;
+    /* Force unset bottom */
+    height: auto !important;
+    min-height: 200px;
+    display: block !important;
+    /* Stop flex centering if it interferes */
+  }
+
+  #dialogue-box {
+    width: 100% !important;
+    height: 160px !important;
+    margin-bottom: 0 !important;
+    border-radius: 16px !important;
+    position: relative;
+    margin-top: 40px;
+    /* Space for portraits */
+    background: rgba(0, 0, 0, 0.85) !important;
+    border: 2px solid #fff;
+  }
+
+  /* Portrait Images: Position ON TOP of the dialogue box edge */
+  .portrait-container {
+    position: absolute !important;
+    top: 0 !important;
+    /* Relative to container top */
+    bottom: auto !important;
+    height: 120px !important;
+    width: auto !important;
+    z-index: 20;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+  }
+
+  .portrait-container.left {
+    left: 10px !important;
+    transform: none !important;
+  }
+
+  .portrait-container.right {
+    right: 10px !important;
+    transform: none !important;
+    flex-direction: row-reverse;
+  }
+
+  /* Text Adjustments */
+  #dialogue-name-label {
+    top: -15px !important;
+    left: 20px !important;
+    font-size: 16px !important;
+    background: #ff9f43;
+    padding: 4px 12px;
+    border-radius: 12px;
+  }
+
+  #dialogue-text {
+    font-size: 16px !important;
+    line-height: 1.6 !important;
+    padding-top: 20px;
+  }
 }
