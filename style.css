@@ -2797,7 +2797,7 @@ html {
   /* Combined Bottom Controls: EASY MODE & MUSIC ROOM (Vertical Stack & Large) */
   .easy-mode-container {
     position: fixed !important;
-    bottom: 28% !important;
+    bottom: 25% !important;
     /* Stacked above music button */
     left: 50% !important;
     transform: translateX(-50%) !important;
@@ -2840,7 +2840,7 @@ html {
 
   #home-music-btn {
     position: fixed !important;
-    bottom: 20% !important;
+    bottom: 17% !important;
     /* Stacked below Easy Mode */
     left: 50% !important;
     transform: translateX(-50%) !important;
