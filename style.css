@@ -2085,9 +2085,7 @@ html {
   /* --- Dialogue System --- */
   #dialogue-overlay {
     padding-top: 0 !important;
-    padding-top: 0 !important;
     justify-content: flex-end !important;
-    /* Default to bottom, overridden in portrait */
   }
 
   #dialogue-container {
@@ -2100,53 +2098,7 @@ html {
     margin: 0 auto 10px auto !important;
   }
 
-  /* --- Mobile Landscape Specific --- */
-  @media screen and (max-width: 768px) and (orientation: landscape) {
 
-    /* Raise Loading Screen to cover UI icons (z-index 3001) */
-    #loading-screen {
-      z-index: 4000 !important;
-    }
-
-    /* Move dialogue down slightly */
-    #dialogue-container {
-      margin-bottom: 5px !important;
-      /* Reduced from general mobile margin if needed, or specific spacing */
-      align-items: flex-end !important;
-    }
-  }
-
-  /* --- Mobile Portrait Specific --- */
-  @media screen and (max-width: 768px) and (orientation: portrait) {
-
-    /* Position Dialogue at the top (above game screen visually) */
-    #dialogue-overlay {
-      justify-content: flex-start !important;
-      padding-top: 60px !important;
-      /* Clear the top safe area / HUD */
-    }
-
-    #dialogue-container {
-      margin-top: 10px !important;
-      margin-bottom: auto !important;
-      /* Reset bottom margin */
-      align-items: flex-start !important;
-    }
-
-    /* Ensure dialogue name label is positioned correctly for top layout */
-    #dialogue-name-label {
-      margin-top: -10px !important;
-      margin-bottom: -15px !important;
-      /* Pull closer to box */
-      z-index: 20 !important;
-    }
-  }
-
-  /* --- General Mobile Z-Index Fixes --- */
-  #dialogue-overlay {
-    /* Ensure dialogue is above UI layer (3000) */
-    z-index: 3500 !important;
-  }
 
   .portrait-container {
     width: 60px !important;
