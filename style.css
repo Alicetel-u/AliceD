@@ -2794,35 +2794,78 @@ html {
     font-size: 0.9rem !important;
   }
 
-  /* Easy mode - bottom margin */
+  /* Combined Bottom Controls: EASY MODE & MUSIC ROOM (Vertical Stack & Large) */
   .easy-mode-container {
     position: fixed !important;
-    bottom: calc(20px + var(--safe-area-bottom)) !important;
+    bottom: 28% !important;
+    /* Stacked above music button */
     left: 50% !important;
     transform: translateX(-50%) !important;
-    z-index: 150 !important;
-    padding: 8px 16px !important;
-    background: rgba(30, 30, 50, 0.8) !important;
-    border-radius: 20px !important;
-    backdrop-filter: blur(8px) !important;
+    /* Center-aligned vertically */
+    z-index: 2000 !important;
+    padding: 12px 24px !important;
+    background: rgba(30, 30, 50, 0.85) !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 25px !important;
+    backdrop-filter: blur(12px) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+    display: flex;
+    /* Remove !important to fix visibility during logo */
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 15px !important;
+    white-space: nowrap !important;
+    min-width: 220px !important;
   }
 
   .easy-mode-label {
-    font-size: 13px !important;
+    font-size: 16px !important;
+    font-weight: 900 !important;
   }
 
   .toggle-switch {
-    width: 48px !important;
-    height: 24px !important;
+    width: 60px !important;
+    height: 30px !important;
+    border-radius: 15px !important;
   }
 
   .toggle-knob {
-    width: 18px !important;
-    height: 18px !important;
+    width: 22px !important;
+    height: 22px !important;
   }
 
   .easy-mode-container.active .toggle-knob {
-    left: 26px !important;
+    left: 34px !important;
+  }
+
+  #home-music-btn {
+    position: fixed !important;
+    bottom: 20% !important;
+    /* Stacked below Easy Mode */
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 2000 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 12px 24px !important;
+    background: rgba(0, 210, 255, 0.25) !important;
+    border: 2px solid #00d2ff !important;
+    border-radius: 25px !important;
+    color: #fff !important;
+    font-weight: 900 !important;
+    font-size: 16px !important;
+    letter-spacing: 1px !important;
+    backdrop-filter: blur(12px) !important;
+    box-shadow: 0 0 20px rgba(0, 210, 255, 0.4) !important;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
+    pointer-events: auto !important;
+    white-space: nowrap !important;
+    min-width: 220px !important;
+  }
+
+  #home-music-btn.hidden {
+    display: none !important;
   }
 
   /* Loading screen */
@@ -3063,14 +3106,9 @@ html {
     font-size: 12px !important;
   }
 
-  #stage-name {
-    font-size: 9px !important;
-    padding: 2px 5px !important;
-  }
-
+  #stage-name,
   #speed-meter {
-    font-size: 9px !important;
-    padding: 2px 6px !important;
+    display: none !important;
   }
 
   /* Mute button - smaller */
@@ -3118,11 +3156,12 @@ html {
     min-height: 70px !important;
     max-width: 90% !important;
     align-items: flex-end !important;
-    background: rgba(0, 0, 0, 0.75) !important;
-    backdrop-filter: blur(10px) !important;
-    border-radius: 12px !important;
-    padding: 6px !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background: transparent !important;
+    /* REMOVE EXTRA FRAME */
+    backdrop-filter: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    border: none !important;
   }
 
   .portrait-container {
@@ -3416,10 +3455,8 @@ html {
   }
 
   #stage-name {
-    font-size: 10px !important;
-    padding: 3px 6px !important;
-    white-space: nowrap;
-    order: 1;
+    display: none !important;
+    /* Hide as requested */
   }
 
   #health-bar {
@@ -3433,10 +3470,8 @@ html {
   }
 
   #speed-meter {
-    font-size: 10px !important;
-    padding: 3px 6px !important;
-    position: static !important;
-    order: 3;
+    display: none !important;
+    /* Hide as requested */
   }
 
   /* Top Right Group: Smaller icons within viewport */
@@ -3466,23 +3501,25 @@ html {
   /* 3. Dialogue Box: Position ABOVE the game canvas */
   #dialogue-overlay {
     position: fixed !important;
-    top: calc(50px + var(--safe-area-top)) !important;
-    bottom: auto !important;
+    top: auto !important;
+    bottom: 70% !important;
+    /* Lowered from 82% to be closer to game screen */
     left: 0 !important;
     right: 0 !important;
     height: auto !important;
-    max-height: 25vh !important;
-    padding: 8px !important;
+    padding: 0 10px !important;
     background: transparent !important;
     z-index: 5000 !important;
     display: flex !important;
-    align-items: flex-start !important;
+    align-items: flex-end !important;
     justify-content: center !important;
+    transform: none !important;
+    pointer-events: none;
   }
 
   #dialogue-container {
     position: relative !important;
-    width: 96% !important;
+    width: 100% !important;
     max-width: 500px !important;
     left: auto !important;
     transform: none !important;
@@ -3493,11 +3530,13 @@ html {
     display: flex !important;
     flex-direction: row !important;
     align-items: flex-end !important;
-    background: rgba(0, 0, 0, 0.7) !important;
-    border-radius: 16px !important;
-    padding: 8px !important;
-    backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    background: transparent !important;
+    /* REMOVE EXTRA FRAME */
+    border-radius: 0 !important;
+    padding: 0 !important;
+    backdrop-filter: none !important;
+    border: none !important;
+    pointer-events: auto;
   }
 
   #dialogue-box {
@@ -3505,24 +3544,28 @@ html {
     height: auto !important;
     flex: 1 !important;
     margin: 0 !important;
-    padding: 10px 12px !important;
-    min-height: 60px !important;
-    border-radius: 12px !important;
+    padding: 15px 18px !important;
+    /* Larger padding */
+    min-height: 80px !important;
+    /* Larger box */
+    border-radius: 18px !important;
     position: relative !important;
     background: rgba(20, 20, 35, 0.95) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
   }
 
-  /* Portrait Images: Compact alongside dialogue */
+  /* Portrait Images: ENLARGED */
   .portrait-container {
     position: relative !important;
     top: auto !important;
     bottom: auto !important;
-    height: 55px !important;
-    width: 55px !important;
+    height: 90px !important;
+    /* Enlarged from 55px */
+    width: 90px !important;
     flex-shrink: 0 !important;
     z-index: 20;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
   }
 
   .portrait-container.left {
@@ -3544,29 +3587,33 @@ html {
     border-radius: 8px !important;
   }
 
-  /* Text Adjustments */
+  /* Text Adjustments: LARGER */
   #dialogue-name-label {
     position: absolute !important;
-    top: -10px !important;
-    left: 10px !important;
-    font-size: 11px !important;
+    top: -12px !important;
+    left: 15px !important;
+    font-size: 14px !important;
+    /* Enlarged */
     background: linear-gradient(90deg, #ff9f43, #e67e22) !important;
-    padding: 2px 10px !important;
-    border-radius: 10px !important;
+    padding: 3px 14px !important;
+    border-radius: 12px !important;
     margin: 0 !important;
+    font-weight: bold !important;
   }
 
   #dialogue-text {
-    font-size: 13px !important;
-    line-height: 1.5 !important;
-    padding-top: 8px !important;
-    min-height: 2em !important;
+    font-size: 18px !important;
+    /* Enlarged from 13px */
+    line-height: 1.6 !important;
+    padding-top: 10px !important;
+    min-height: 2.2em !important;
+    font-weight: 500 !important;
   }
 
   #dialogue-next-indicator {
-    font-size: 10px !important;
-    right: 8px !important;
-    bottom: 4px !important;
+    font-size: 14px !important;
+    right: 12px !important;
+    bottom: 8px !important;
   }
 
   /* BGM overlay - compact */

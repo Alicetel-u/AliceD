@@ -81,7 +81,16 @@ export class HomeManager {
                 e.preventDefault();
                 this.game.easyMode = !this.game.easyMode;
                 localStorage.setItem('aliceD_easyMode', this.game.easyMode);
-                // Also trigger SE if needed
+                if (this.game.audio && this.game.audio.playClick) this.game.audio.playClick();
+            });
+        }
+
+        // Music Room Button Action (DOM Version)
+        const musicBtn = document.getElementById('home-music-btn');
+        if (musicBtn) {
+            musicBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.openMusicRoom();
                 if (this.game.audio && this.game.audio.playClick) this.game.audio.playClick();
             });
         }
@@ -198,18 +207,26 @@ export class HomeManager {
 
         // --- GLOBAL UI VISIBILITY SYNC ---
         const easyModeBtn = document.getElementById('home-easy-mode');
+        const musicBtn = document.getElementById('home-music-btn');
+        const loadingScreen = document.getElementById('loading-screen');
+        const isPortrait = window.innerHeight > window.innerWidth;
+        const isLoaded = loadingScreen && loadingScreen.classList.contains('hidden');
+
         if (easyModeBtn) {
-            if (this.game.state !== 'HOME') {
+            if (this.game.state !== 'HOME' || !isLoaded) {
                 easyModeBtn.classList.add('hidden');
-                easyModeBtn.style.display = 'none'; // Force hide to avoid persistent elements
             } else {
                 easyModeBtn.classList.remove('hidden');
-                easyModeBtn.style.display = ''; // Restore default
-                if (this.game.easyMode) {
-                    easyModeBtn.classList.add('active');
-                } else {
-                    easyModeBtn.classList.remove('active');
-                }
+                if (this.game.easyMode) easyModeBtn.classList.add('active');
+                else easyModeBtn.classList.remove('active');
+            }
+        }
+
+        if (musicBtn) {
+            if (this.game.state !== 'HOME' || !isPortrait || !isLoaded) {
+                musicBtn.classList.add('hidden');
+            } else {
+                musicBtn.classList.remove('hidden');
             }
         }
 
@@ -618,6 +635,10 @@ export class HomeManager {
         });
 
         // --- Music Room Button ---
+        // Skip canvas version on mobile portrait (use DOM button instead)
+        const isPortrait = window.innerHeight > window.innerWidth;
+        if (isPortrait) return;
+
         const musicBtnW = 220;
         const musicBtnH = 50;
         const musicBtnX = (this.game.width - musicBtnW) / 2;
