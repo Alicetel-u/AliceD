@@ -58,7 +58,7 @@ export class Boss {
     }
 
     isNurse() {
-        return this.config.image && this.config.image.includes('nurse');
+        return this.config.image && (this.config.image.includes('nurse') || this.config.image.includes('hospital'));
     }
 
     isGod() {
