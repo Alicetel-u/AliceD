@@ -1160,6 +1160,11 @@ export class Game {
         // Initialize Boot Manager
         this.bootManager.init();
 
+        // Initialize PixiJS Render Engine (WebGL)
+        this.pixi.init(this.width, this.height).catch(err => {
+            console.error("Failed to initialize PixiJS:", err);
+        });
+
         const selectedCharacter = this.characterManager.getCurrentCharacter();
 
         // --- CORE ASSETS (Always loaded at start) ---

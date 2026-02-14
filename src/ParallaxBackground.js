@@ -6,7 +6,9 @@ export class ParallaxBackground {
         this.height = height;
         this.pixi = pixiManager;
         this.layers = [];
+        this.pixiInitialized = false;
         // No resize call needed in constructor usually, but consistency is good
+        this.hasWarnedReady = false;
     }
 
     addLayer(image, speed, alignBottom = false, filter = 'none') {
@@ -56,7 +58,7 @@ export class ParallaxBackground {
                 height: layer.alignBottom ? texture.height : this.height
             });
             shadow.tint = 0x000000;
-            shadow.alpha = 0.5;
+            shadow.alpha = 0.7;
             // Offset slightly to the right and down for visibility
             shadow.tilePosition.set(15, 15);
 
@@ -77,6 +79,19 @@ export class ParallaxBackground {
         if (this.pixi.layers.background) {
             this.pixi.layers.background.addChild(sprite);
         }
+    }
+
+    /**
+     * Pixiが後から準備完了になった場合にスプライトを生成する
+     */
+    initPixi() {
+        if (!this.pixi || !this.pixi.isReady) return;
+        this.layers.forEach(layer => {
+            if (!layer.sprite) {
+                this.createPixiSprite(layer);
+            }
+        });
+        this.pixiInitialized = true;
     }
 
     /**
@@ -121,6 +136,11 @@ export class ParallaxBackground {
     }
 
     update(camera) {
+        // Auto-init Pixi if it becomes ready
+        if (!this.pixiInitialized && this.pixi && this.pixi.isReady) {
+            this.initPixi();
+        }
+
         // Update Pixi positions if sprites exist
         this.layers.forEach(layer => {
             if (layer.sprite) {
@@ -158,10 +178,62 @@ export class ParallaxBackground {
             }
 
             for (let x = offset; x < this.width; x += imgW) {
+                // Determine if we need to apply filters
+                const hasBrightness = layer.filter && layer.filter.includes('brightness');
+                const hasShadow = layer.filter && layer.filter.includes('shadow');
+
+                // 1. Draw Shadow pass (if requested)
+                if (hasShadow) {
+                    ctx.save();
+                    ctx.globalAlpha = 0.4;
+                    ctx.fillStyle = '#000';
+                    // We can't easily draw an offset darkened copy in a loop efficiently, 
+                    // so we use a darkened overlay and a slight offset fill if possible.
+                    // But simpler: just draw the image darkened and offset.
+                    ctx.drawImage(layer.image, (x + 15) | 0, (drawY + 15) | 0, imgW, imgH);
+                    ctx.restore();
+                }
+
+                // 2. Draw Main Image pass
                 ctx.drawImage(layer.image, (x) | 0, (drawY) | 0, imgW, imgH);
+
+                // 3. Apply Brightness (if requested) via Overlay
+                if (hasBrightness) {
+                    const match = layer.filter.match(/brightness\(([^)]+)\)/);
+                    if (match) {
+                        const b = parseFloat(match[1]);
+                        ctx.save();
+                        ctx.fillStyle = `rgba(0,0,0,${1 - b})`;
+                        ctx.fillRect((x) | 0, (drawY) | 0, imgW, imgH);
+                        ctx.restore();
+                    }
+                }
+
+                // 4. Draw Atmospheric Gradient (the "Shadow" effect for depth)
+                if (hasShadow) {
+                    ctx.save();
+                    const grad = ctx.createLinearGradient(0, drawY, 0, drawY + imgH);
+                    grad.addColorStop(0, 'rgba(0,0,0,0)');
+                    grad.addColorStop(0.8, 'rgba(0,0,0,0.5)');
+                    ctx.fillStyle = grad;
+                    ctx.fillRect((x) | 0, (drawY) | 0, imgW, imgH);
+                    ctx.restore();
+                }
+
                 if (!layer.alignBottom && imgH < this.height) {
                     for (let currY = drawY + imgH; currY < this.height; currY += imgH) {
                         ctx.drawImage(layer.image, (x) | 0, (currY) | 0, imgW, imgH);
+                        // Apply same filters for tiled vertical layers
+                        if (hasBrightness) {
+                            const match = layer.filter.match(/brightness\(([^)]+)\)/);
+                            if (match) {
+                                const b = parseFloat(match[1]);
+                                ctx.save();
+                                ctx.fillStyle = `rgba(0,0,0,${1 - b})`;
+                                ctx.fillRect((x) | 0, (currY) | 0, imgW, imgH);
+                                ctx.restore();
+                            }
+                        }
                     }
                 }
             }
