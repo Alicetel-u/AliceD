@@ -10,10 +10,9 @@ export class TileRenderer {
         this.game = game;
         this.pixi = game.pixi;
         this.tileSize = game.tileSize;
+        this.tileSprites = [];
         this.isReady = false;
         this.container = null;
-        this.lastGrid = null; // Store for catch-up
-        this.pixiInitialized = false;
     }
 
     init() {
@@ -26,7 +25,6 @@ export class TileRenderer {
      * @param {Array} grid 2D array of tile characters
      */
     rebuild(grid) {
-        this.lastGrid = grid;
         if (!this.pixi || !this.pixi.isReady) return;
 
         // Use the world layer
@@ -82,11 +80,6 @@ export class TileRenderer {
     }
 
     update(camera) {
-        if (!this.pixiInitialized && this.pixi && this.pixi.isReady && this.lastGrid) {
-            this.rebuild(this.lastGrid);
-            this.pixiInitialized = true;
-        }
-
         if (!this.isReady || !this.pixi.layers.world) return;
 
         // Move the entire world layer opposite to camera
