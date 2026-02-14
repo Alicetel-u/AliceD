@@ -67,6 +67,12 @@ html {
   z-index: 2005;
 }
 
+#stage-name,
+#speed-meter,
+#score-board {
+  display: none !important;
+}
+
 #health-bar {
   display: flex;
   gap: 10px;
