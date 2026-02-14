@@ -689,9 +689,10 @@ export class Game {
     }
 
     drawGameUI() {
-        // Toggle HTML UI Visiblity based on state
-        // Only show HUD and Debug tools when actually playing a stage
-        const isIngame = (this.state === 'PLAYING' || this.state === 'BOSS_BATTLE' || this.state === 'RESPAWNING' || this.state === 'GAME_OVER' || this.gameWon);
+        // --- MODIFIED: Strict HUD Visibility ---
+        // Only show HUD during actual stage gameplay (including boss and respawn)
+        // Explicitly exclude HOME, WAIT_FOR_INPUT, GAME_OVER, RESULTS, ENDING
+        const isIngame = (this.state === 'PLAYING' || this.state === 'BOSS_BATTLE' || this.state === 'RESPAWNING') && !this.gameWon;
 
         const uiLayer = document.getElementById('ui-layer');
         const debugContainer = document.getElementById('debug-container');

@@ -93,7 +93,7 @@ export const StageConfig = {
             // User provided custom background + Toy Mountains
             backgroundLayers: [
                 { image: "bg_stage3_sky.webp", speed: 0.05, alignBottom: false }, // 奥：ステージ3用空
-                { image: "bg_toy_mountains", speed: 0.2, alignBottom: true, filter: "brightness(0.6)" }   // 手前：おもちゃの山 (少し暗くして手前のブロックを目立たせる)
+                { image: "bg_toy_mountains", speed: 0.2, alignBottom: true, filter: "brightness(0.6) shadow" }   // 手前：おもちゃの山 (少し暗くして手前のブロックを目立たせる)
             ],
             backgroundColor: "#ff9ff3",
             groundTile: "toy_block_primary", dirtTile: "toy_block_secondary", platformTile: "toy_box_crate"
@@ -125,7 +125,7 @@ export const StageConfig = {
         theme: {
             // Darkened background for better visibility
             backgroundLayers: [
-                { image: "bg_hospital", speed: 0.1, alignBottom: false, filter: "brightness(0.6)" }
+                { image: "bg_hospital", speed: 0.1, alignBottom: false, filter: "brightness(0.6) shadow" }
             ],
             backgroundColor: "#d1ccc0",
             groundTile: "hospital_tile_floor", dirtTile: "hospital_tile_wall", platformTile: "stretcher_bed"
@@ -160,7 +160,7 @@ export const StageConfig = {
         theme: {
             // Darkened background for better visibility
             backgroundLayers: [
-                { image: "bg_heaven", speed: 0.1, alignBottom: false, filter: "brightness(0.6)" }
+                { image: "bg_heaven", speed: 0.1, alignBottom: false, filter: "brightness(0.6) shadow" }
             ],
             backgroundColor: "#f5f6fa",
             groundTile: "temple_tile_floor", dirtTile: "temple_tile_wall", platformTile: "golden_pillar"

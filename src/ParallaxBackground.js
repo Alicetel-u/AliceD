@@ -13,7 +13,7 @@ export class ParallaxBackground {
         // filter string (e.g. "brightness(0.6)") is passed but we don't process image here anymore.
         // We will parse it in createPixiSprite to apply tint.
 
-        const layer = { image, speed, alignBottom, filter, sprite: null };
+        const layer = { image, speed, alignBottom, filter, sprite: null, shadowSprite: null };
         this.layers.push(layer);
 
         // If WebGL is ready, create Pixi TilingSprite immediately
@@ -48,6 +48,26 @@ export class ParallaxBackground {
             }
         }
         // Tint default is 0xFFFFFF (white/no change)
+        if (layer.filter && layer.filter.includes('shadow')) {
+            // Create a shadow sprite (darkened and offset)
+            const shadow = new PIXI.TilingSprite({
+                texture: texture,
+                width: this.width,
+                height: layer.alignBottom ? texture.height : this.height
+            });
+            shadow.tint = 0x000000;
+            shadow.alpha = 0.5;
+            // Slightly offset to the right and down
+            shadow.tilePosition.set(5, 5);
+
+            if (layer.alignBottom) {
+                shadow.y = this.height - texture.height;
+            }
+            layer.shadowSprite = shadow;
+            if (this.pixi.layers.background) {
+                this.pixi.layers.background.addChild(shadow);
+            }
+        }
 
         if (layer.alignBottom) {
             sprite.y = this.height - texture.height;
@@ -64,6 +84,12 @@ export class ParallaxBackground {
      */
     clear() {
         this.layers.forEach(layer => {
+            if (layer.shadowSprite) {
+                if (this.pixi && this.pixi.layers.background) {
+                    this.pixi.layers.background.removeChild(layer.shadowSprite);
+                }
+                layer.shadowSprite.destroy({ children: true, texture: false, baseTexture: false });
+            }
             if (layer.sprite) {
                 if (this.pixi && this.pixi.layers.background) {
                     this.pixi.layers.background.removeChild(layer.sprite);
@@ -84,6 +110,12 @@ export class ParallaxBackground {
                 layer.sprite.width = width;
                 if (!layer.alignBottom) layer.sprite.height = height;
                 else layer.sprite.y = height - layer.sprite.texture.height;
+
+                if (layer.shadowSprite) {
+                    layer.shadowSprite.width = width;
+                    if (!layer.alignBottom) layer.shadowSprite.height = height;
+                    else layer.shadowSprite.y = height - layer.shadowSprite.texture.height;
+                }
             }
         });
     }
@@ -96,6 +128,9 @@ export class ParallaxBackground {
                 // NOTE: Pixi TilingSprite tilePosition is positive -> scroll left?
                 // Usually tilePosition.x = -cameraX works for "camera moving right"
                 layer.sprite.tilePosition.x = -camera.x * layer.speed;
+                if (layer.shadowSprite) {
+                    layer.shadowSprite.tilePosition.x = -camera.x * layer.speed;
+                }
             }
         });
     }
