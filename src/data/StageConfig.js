@@ -145,8 +145,9 @@ export const StageConfig = {
             ai: {
                 attackInterval: 2.5,
                 attackPool: [
-                    { state: 'VITAL_CHECK_PREP', weight: 0.60 },
-                    { state: 'VACCINE_RAIN', weight: 0.30 },
+                    { state: 'VITAL_CHECK_PREP', weight: 0.45 },
+                    { state: 'VACCINE_RAIN', weight: 0.25 },
+                    { state: 'TOY_BOUNCE', weight: 0.20 },
                     { state: 'PILL_BARRAGE', weight: 0.10 }
                 ]
             },
