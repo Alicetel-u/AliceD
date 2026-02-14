@@ -1971,12 +1971,14 @@ export class Game {
             theme.backgroundLayers.forEach(layerDef => {
                 const img = this.assets.getImage(layerDef.image);
                 if (img) {
-                    // speed: 0 = static, 1 = follows camera perfectly (never seen moving?), 0.5 = half speed
-                    // alignBottom: true if it should sit at the bottom (ground), false for sky/fill
-                    // filter: (optional) CSS filter string like "blur(4px)" or "brightness(0.5)"
                     this.parallax.addLayer(img, layerDef.speed, layerDef.alignBottom, layerDef.filter);
                 }
             });
+            // Add dark overlay for stages with busy backgrounds (3, 4, 5)
+            const stageId = this.currentStageConfig.id;
+            if (stageId >= 3) {
+                this.parallax.setDarkOverlay(0.35);
+            }
             return;
         }
 
