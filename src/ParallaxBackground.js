@@ -57,8 +57,8 @@ export class ParallaxBackground {
             });
             shadow.tint = 0x000000;
             shadow.alpha = 0.5;
-            // Slightly offset to the right and down
-            shadow.tilePosition.set(5, 5);
+            // Offset slightly to the right and down for visibility
+            shadow.tilePosition.set(15, 15);
 
             if (layer.alignBottom) {
                 shadow.y = this.height - texture.height;
@@ -129,7 +129,8 @@ export class ParallaxBackground {
                 // Usually tilePosition.x = -cameraX works for "camera moving right"
                 layer.sprite.tilePosition.x = -camera.x * layer.speed;
                 if (layer.shadowSprite) {
-                    layer.shadowSprite.tilePosition.x = -camera.x * layer.speed;
+                    layer.shadowSprite.tilePosition.x = (-camera.x * layer.speed) + 15;
+                    layer.shadowSprite.tilePosition.y = 15;
                 }
             }
         });
