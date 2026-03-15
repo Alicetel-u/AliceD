@@ -10,8 +10,35 @@ export class DebugManager {
         this.enabled = true; // デバッグ機能自体の有効化フラグ
         this.isGodMode = false; // デフォルトで無敵モードOFF
         this.isVisible = false; // デバッグツールの表示状態
+        this.isAutoPlay = false; // オートプレイモード
+        this.autoPlayJumpCooldown = 0; // ジャンプのクールダウン
         this.debugClickCount = 0;
         this.lastDebugClickTime = 0;
+
+        // --- Full Auto Debug ---
+        this.isFullAuto = false;
+        this._asyncBusy = false;
+        this._savedScore = null;
+        this._dialogueAdvanceTimer = 0;
+        this._bossHpTimer = 0;
+        this._resultSkipTimer = 0;
+        this._endingAdvanceTimer = 0;
+        this._fullAutoStartTime = 0;
+        this._fullAutoErrors = 0;
+        this._errorHandler = null;
+        this._rejectionHandler = null;
+        this.fullAutoLog = [];
+        this._telemetryTimer = 0;
+        this._fpsFrames = 0;
+        this._fpsTime = 0;
+        this._fpsValue = 60;
+        this._stateTransitions = [];
+        this._lastTrackedState = null;
+
+        // ボススキル検証
+        this._bossSkillLog = {};       // { stage: [ { skill, time } ] }
+        this._lastBossState = null;
+        this._bossSkillAnomalies = [];
 
         // HTML要素の参照
         this.elements = {
@@ -53,6 +80,11 @@ export class DebugManager {
             roomBtnDialogue: document.getElementById('room-btn-dialogue'),
             roomBtnBack: document.getElementById('room-btn-back'),
 
+            // AutoPlay & GodMode & FullAuto
+            autoPlay: document.getElementById('btn-debug-autoplay'),
+            god: document.getElementById('btn-debug-godmode'),
+            fullAuto: document.getElementById('btn-debug-fullauto'),
+
             // Preview Elements (Removed in simple editor, but keeping references safe or null)
             previewText: null,
             trigger: document.getElementById('debug-trigger'),
@@ -65,6 +97,13 @@ export class DebugManager {
     }
 
     init() {
+        // --- KEYBOARD SHORTCUTS ---
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'F9') { e.preventDefault(); this.toggleAutoPlay(); }
+            if (e.code === 'F8' && this.isVisible) { e.preventDefault(); this.toggleGodMode(); }
+            if (e.code === 'F7') { e.preventDefault(); this.toggleFullAuto(); }
+        });
+
         // --- SECRET TRIGGER LOGIC (Bottom-Left 3 Clicks) ---
         if (this.elements.trigger) {
             this.elements.trigger.addEventListener('click', (e) => {
@@ -257,6 +296,30 @@ export class DebugManager {
                 this.game.updateScoreUI();
                 this.game.saveProgress();
                 console.log("[Debug] Barrier Break Score +100 added.");
+            });
+        }
+
+        // AUTO PLAY
+        if (this.elements.autoPlay) {
+            this.elements.autoPlay.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleAutoPlay();
+            });
+        }
+
+        // GOD MODE
+        if (this.elements.god) {
+            this.elements.god.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleGodMode();
+            });
+        }
+
+        // FULL AUTO DEBUG
+        if (this.elements.fullAuto) {
+            this.elements.fullAuto.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleFullAuto();
             });
         }
 
@@ -1157,25 +1220,34 @@ ${json}
         const { game } = this;
         if ((game.state === 'PLAYING' || game.state === 'RESPAWN_WAIT') && game.boss && game.player) {
             const targetX = game.boss.x - 500;
-            const targetCol = Math.floor(targetX / game.tileSize);
+            const ts = game.tileSize;
 
-            let groundY = -1;
-            for (let row = 0; row < game.level.rows; row++) {
-                if (game.level.isSolid(targetCol, row)) {
-                    groundY = row * game.tileSize;
-                    break;
+            // 安全な着地点を探す: ボス手前の複数列を試行
+            let safeX = targetX;
+            let safeY = game.level.height - ts * 3;
+
+            for (let colOffset = 0; colOffset >= -10; colOffset--) {
+                const col = Math.floor((targetX + colOffset * ts) / ts);
+                if (col < 0 || col >= game.level.cols) continue;
+
+                // 下から上に探索して、地面の上の空間を見つける
+                for (let row = game.level.rows - 1; row >= 1; row--) {
+                    if (game.level.isSolid(col, row) && !game.level.isSolid(col, row - 1) && !game.level.isSolid(col, row - 2)) {
+                        // row が地面、row-1 と row-2 が空き → 安全
+                        safeX = col * ts;
+                        safeY = row * ts - game.player.height - 1;
+                        colOffset = -999; // 外側ループ脱出
+                        break;
+                    }
                 }
             }
 
-            game.player.x = targetX;
-            if (groundY !== -1) {
-                game.player.y = groundY - game.tileSize;
-            } else {
-                game.player.y = game.player.lastSafeY || (game.height - game.tileSize * 2);
-            }
-
+            game.player.x = safeX;
+            game.player.y = safeY;
             game.player.vx = 0;
             game.player.vy = 0;
+            game.player.lastSafeX = safeX;
+            game.player.lastSafeY = safeY;
             game.camera.x = game.player.x - game.width / 2;
             game.state = 'PLAYING';
         }
@@ -1196,6 +1268,26 @@ ${json}
 
     update(dt) {
         if (!this.enabled) return;
+
+        // FPS計測
+        this._fpsFrames++;
+        this._fpsTime += dt;
+        if (this._fpsTime >= 1.0) {
+            this._fpsValue = Math.round(this._fpsFrames / this._fpsTime);
+            this._fpsFrames = 0;
+            this._fpsTime = 0;
+        }
+
+        // オートプレイ処理
+        if (this.isAutoPlay) {
+            this.updateAutoPlay(dt);
+        }
+
+        // フルオートデバッグ処理
+        if (this.isFullAuto) {
+            this.updateFullAuto(dt);
+            this.updateTelemetry(dt);
+        }
 
         // 全体のデバッグツールの表示状態を反映 (isVisibleが唯一のソース)
         if (this.elements.container) {
@@ -1219,6 +1311,11 @@ ${json}
         // ヒットボックスの描画
         if (this.showHitboxes) {
             this.drawDebugVisuals();
+        }
+
+        // フルオートテレメトリオーバーレイ
+        if (this.isFullAuto) {
+            this.drawTelemetry();
         }
     }
 
@@ -1316,6 +1413,683 @@ ${json}
             );
         }
 
+        ctx.restore();
+    }
+
+    // ===== AutoPlay =====
+
+    // タイルが固体かチェック (ヘルパー)
+    _isSolid(level, col, row) {
+        if (row < 0 || row >= level.rows || col < 0 || col >= level.cols) return false;
+        const t = level.matrix[row]?.[col];
+        return t === '#' || t === 'D' || t === 'B';
+    }
+
+    // 指定列の地面Y座標を探す (上から探索、見つからなければ-1)
+    _findGroundRow(level, col, startRow, maxDepth) {
+        for (let dy = 0; dy <= maxDepth; dy++) {
+            const row = startRow + dy;
+            if (this._isSolid(level, col, row)) return row;
+        }
+        return -1;
+    }
+
+    updateAutoPlay(dt) {
+        const game = this.game;
+        const player = game.player;
+        const level = game.level;
+        const input = game.input;
+
+        if (!player || !level || !level.matrix) return;
+        if (game.state !== 'PLAYING' && game.state !== 'BOSS_BATTLE') return;
+        if (game.isPaused) return;
+
+        if (this.autoPlayJumpCooldown > 0) this.autoPlayJumpCooldown -= dt;
+
+        const ts = game.tileSize || 64;
+        const cx = player.x + player.width / 2;
+        const cy = player.y + player.height / 2;
+        const bottom = player.y + player.height;
+        const playerCol = Math.floor(cx / ts);
+        const playerRow = Math.floor(bottom / ts);
+        const speed = Math.abs(player.vx) || 300; // 現在の走行速度 (px/s)
+
+        let shouldJump = false;
+        let shouldGlide = false;
+        let jumpReason = '';
+
+        // ===== 1. 地形スキャン: 前方の穴・壁・段差を検知 =====
+
+        // 速度に応じた先読み距離 (最低4タイル、速度に応じて最大10タイル)
+        const lookTiles = Math.max(4, Math.min(10, Math.ceil(speed * 0.8 / ts)));
+
+        // 前方の地面プロファイルを構築
+        let gapStart = -1;    // 穴の開始位置 (タイル単位の前方距離)
+        let gapWidth = 0;     // 穴の幅
+        let wallDist = -1;    // 壁までの距離
+
+        for (let i = 1; i <= lookTiles; i++) {
+            const col = Math.floor((cx + i * ts) / ts);
+            if (col >= level.cols) break;
+
+            // 壁チェック: プレイヤーの体の高さ (2タイル分) に固体があるか
+            const bodyTopRow = Math.floor(player.y / ts);
+            const bodyMidRow = Math.floor(cy / ts);
+            const bodyBotRow = playerRow;
+            if (this._isSolid(level, col, bodyTopRow) || this._isSolid(level, col, bodyMidRow) || this._isSolid(level, col, bodyBotRow)) {
+                if (wallDist < 0) wallDist = i;
+            }
+
+            // 穴チェック: 足元から下方向に8タイル分の地面を探す
+            const groundRow = this._findGroundRow(level, col, playerRow, 8);
+            if (groundRow < 0 && gapStart < 0) {
+                gapStart = i;
+            }
+            if (gapStart >= 0 && groundRow < 0) {
+                gapWidth = i - gapStart + 1;
+            }
+            if (gapStart >= 0 && groundRow >= 0) {
+                break; // 穴の終わりを見つけた
+            }
+        }
+
+        // ===== 2. ジャンプ判定 =====
+
+        // 2a. 穴の回避
+        if (gapStart >= 0) {
+            if (gapStart <= 1) {
+                // 穴が目の前: 即ジャンプ (地面でも空中でも)
+                shouldJump = true;
+                jumpReason = `gap_now(w=${gapWidth})`;
+                shouldGlide = true; // 常にグライドで安全マージン
+            } else if (gapStart <= 3 && player.grounded) {
+                // 穴まで2-3タイル: 地面にいるなら即ジャンプ（ギリギリ手前）
+                shouldJump = true;
+                jumpReason = `gap_edge(w=${gapWidth},d=${gapStart})`;
+                if (gapWidth >= 2) shouldGlide = true;
+            } else if (gapStart <= 5 && player.grounded && gapWidth >= 3) {
+                // 幅広い穴が近い: 早めジャンプ+グライド準備
+                shouldJump = true;
+                shouldGlide = true;
+                jumpReason = `gap_wide(w=${gapWidth},d=${gapStart})`;
+            }
+        }
+
+        // 2b. 壁の回避
+        if (!shouldJump && wallDist > 0 && wallDist <= 3) {
+            shouldJump = true;
+            jumpReason = `wall(d=${wallDist})`;
+        }
+
+        // 2c. 敵の回避
+        if (!shouldJump && game.enemies) {
+            for (const enemy of game.enemies) {
+                if (enemy.dead) continue;
+                const dx = enemy.x - cx;
+                const dy = enemy.y - cy;
+                if (dx > 0 && dx < ts * 5 && Math.abs(dy) < ts * 3) {
+                    shouldJump = true;
+                    jumpReason = `enemy(d=${(dx/ts).toFixed(1)})`;
+                    break;
+                }
+            }
+        }
+
+        // ===== 3. 空中制御 (穴越え最重要) =====
+
+        if (!player.grounded) {
+            // 前方と真下の地面を幅広く探索
+            const belowGround = this._findGroundRow(level, playerCol, playerRow, 10);
+            const fwd1Ground = this._findGroundRow(level, Math.floor((cx + ts) / ts), playerRow, 10);
+            const fwd2Ground = this._findGroundRow(level, Math.floor((cx + ts * 2) / ts), playerRow, 10);
+            const fwd3Ground = this._findGroundRow(level, Math.floor((cx + ts * 3) / ts), playerRow, 10);
+
+            const overPit = belowGround < 0 && fwd1Ground < 0;
+            const landingAhead = fwd2Ground >= 0 || fwd3Ground >= 0;
+
+            // 3a. 穴の上で落下中 → 追加ジャンプで高度回復
+            if (overPit && player.vy > 50 && player.jumpCount < player.maxJumps) {
+                // 前方に着地点がないor遠い → ジャンプで延命
+                if (!landingAhead || player.vy > 400) {
+                    shouldJump = true;
+                    jumpReason = 'air_save';
+                }
+            }
+
+            // 3b. 穴の上で下降中 → グライドで距離を稼ぐ
+            if (player.vy > 0) {
+                if (overPit) {
+                    shouldGlide = true; // 穴の上 → 常にグライド
+                } else if (belowGround >= 0 && belowGround - playerRow <= 3) {
+                    shouldGlide = false; // 着地間近 → グライド解除
+                }
+            }
+
+            // 3c. 全ジャンプ使い切り + 穴の上 + 着地点なし → グライド必須
+            if (overPit && player.jumpCount >= player.maxJumps) {
+                shouldGlide = true;
+            }
+        }
+
+        // ===== 4. ボス戦AI =====
+        if (game.state === 'BOSS_BATTLE' && game.boss && !game.boss.defeated) {
+            const boss = game.boss;
+
+            // プロジェクタイル回避
+            if (boss.projectiles) {
+                for (const proj of boss.projectiles) {
+                    const dx = proj.x - cx;
+                    const dy = proj.y - cy;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < ts * 5 && (proj.vx === undefined || proj.vx < 0 || dx < 0)) {
+                        shouldJump = true; jumpReason = 'projectile'; break;
+                    }
+                }
+            }
+
+            // 波動回避
+            if (boss.waves) {
+                for (const wave of boss.waves) {
+                    const futureX = wave.x + (wave.vx || -800) * 0.3;
+                    if (cx > Math.min(wave.x, futureX) - ts && cx < wave.x + (wave.width || 400) + ts) {
+                        if (bottom > wave.y - ts && player.y < wave.y + (wave.height || 100) + ts) {
+                            shouldJump = true; shouldGlide = true; jumpReason = 'wave'; break;
+                        }
+                    }
+                }
+            }
+
+            // 床ハザード (CAST_FLOOR)
+            if (boss.floorHazard && boss.floorHazard.active && player.grounded) {
+                shouldJump = true; shouldGlide = true; jumpReason = 'floor_hazard';
+            }
+
+            // ToyPresents / Pills / VitalLasers / ScalpelDash
+            const hazards = [
+                ...(boss.toyPresents || []),
+                ...(boss.pills || [])
+            ];
+            for (const h of hazards) {
+                if (Math.abs((h.x || 0) - cx) < ts * 3 && Math.abs((h.y || 0) - cy) < ts * 3) {
+                    shouldJump = true; jumpReason = 'hazard'; break;
+                }
+            }
+            if (boss.vitalLasers) {
+                for (const v of boss.vitalLasers) {
+                    if (Math.abs(cy - (v.y || 0)) < ts * 1.5) { shouldJump = true; jumpReason = 'laser'; break; }
+                }
+            }
+            if (boss.scalpelDash?.active && Math.abs(cy - boss.scalpelDash.y) < ts * 2) {
+                shouldJump = true; jumpReason = 'scalpel';
+            }
+
+            // SPIN_DASH / SOUL_SCYTHE
+            if (boss.state === 'SPIN_DASH' && !boss.isReturning) { shouldJump = true; shouldGlide = true; jumpReason = 'spin_dash'; }
+            if (boss.state === 'SOUL_SCYTHE' && Math.abs(boss.x - cx) < ts * 5) { shouldJump = true; jumpReason = 'soul_scythe'; }
+        }
+
+        // ===== 5. 入力実行 =====
+        const canJump = player.grounded || player.jumpCount < player.maxJumps;
+
+        if (shouldJump && this.autoPlayJumpCooldown <= 0 && canJump) {
+            input._pointerPressedCurrentFrame = true;
+            input.pointerDown = true;
+            // 地面ジャンプは即座に、空中ジャンプは少し待って高度を稼ぐ
+            if (player.grounded) {
+                this.autoPlayJumpCooldown = 0.03; // 地面: ほぼ即時
+            } else {
+                // 空中: 落下速度に応じてタイミング調整
+                // 速く落ちてるなら即ジャンプ、ゆっくりなら少し待つ
+                this.autoPlayJumpCooldown = player.vy > 300 ? 0.05 : 0.2;
+            }
+        } else if (shouldGlide && !player.grounded && player.vy > 0) {
+            input.pointerDown = true; // グライド維持
+        } else if (!shouldJump && !shouldGlide) {
+            input.pointerDown = false;
+        }
+    }
+
+    toggleAutoPlay() {
+        this.isAutoPlay = !this.isAutoPlay;
+        console.log(`[Debug] AutoPlay: ${this.isAutoPlay ? 'ON' : 'OFF'}`);
+        this.updateAutoPlayButton();
+        if (this.game.domEffects) {
+            this.game.domEffects.spawn(
+                this.isAutoPlay ? '🤖 AUTO PLAY: ON' : '🤖 AUTO PLAY: OFF',
+                this.game.width / 2, this.game.height / 2,
+                { color: this.isAutoPlay ? '#2ecc71' : '#e74c3c', size: 40, bold: true, screenSpace: true, life: 90 }
+            );
+        }
+    }
+
+    updateAutoPlayButton() {
+        if (!this.elements.autoPlay) return;
+        if (this.isAutoPlay) {
+            this.elements.autoPlay.style.background = '#2ecc71';
+            this.elements.autoPlay.innerText = '🤖 AUTO: ON';
+        } else {
+            this.elements.autoPlay.style.background = '#6c5ce7';
+            this.elements.autoPlay.innerText = '🤖 オートプレイ';
+        }
+    }
+
+    toggleGodMode() {
+        this.isGodMode = !this.isGodMode;
+        console.log(`[Debug] GodMode: ${this.isGodMode ? 'ON' : 'OFF'}`);
+        this.updateGodModeButton();
+        if (this.game.domEffects) {
+            this.game.domEffects.spawn(
+                this.isGodMode ? '🛡️ GOD MODE: ON' : '🛡️ GOD MODE: OFF',
+                this.game.width / 2, this.game.height / 2,
+                { color: this.isGodMode ? '#9b59b6' : '#f1c40f', size: 40, bold: true, screenSpace: true, life: 90 }
+            );
+        }
+        if (this.game.player) this.game.player.invincible = this.isGodMode;
+    }
+
+    updateGodModeButton() {
+        if (!this.elements.god) return;
+        if (this.isGodMode) {
+            this.elements.god.style.background = '#9b59b6';
+            this.elements.god.innerText = '🛡️ 無敵: ON';
+        } else {
+            this.elements.god.style.background = '#fdcb6e';
+            this.elements.god.innerText = '🛡️ 無敵モード';
+        }
+    }
+
+    // ===== Full Auto Debug =====
+
+    toggleFullAuto() {
+        this.isFullAuto = !this.isFullAuto;
+        console.log(`[FullAuto] ${this.isFullAuto ? 'ON' : 'OFF'}`);
+
+        if (this.isFullAuto) {
+            if (!this.isAutoPlay) this.toggleAutoPlay();
+            if (!this.isGodMode) this.toggleGodMode();
+
+            // デバッグメニューを閉じて画面を見やすくする
+            if (this.elements.menu) this.elements.menu.style.display = 'none';
+
+            this._savedScore = this.game.score;
+            this._fullAutoStartTime = Date.now();
+            this._fullAutoErrors = 0;
+            this.fullAutoLog = [];
+            this._stateTransitions = [];
+            this._lastTrackedState = null;
+            this._asyncBusy = false;
+            this._bossSkillLog = {};
+            this._lastBossState = null;
+            this._bossSkillAnomalies = [];
+
+            this._errorHandler = (e) => {
+                this._fullAutoErrors++;
+                this.fullAutoLog.push({ type: 'error', time: Date.now(), message: e.message || String(e) });
+            };
+            this._rejectionHandler = (e) => {
+                this._fullAutoErrors++;
+                this.fullAutoLog.push({ type: 'rejection', time: Date.now(), message: e.reason?.message || String(e.reason) });
+            };
+            window.addEventListener('error', this._errorHandler);
+            window.addEventListener('unhandledrejection', this._rejectionHandler);
+        } else {
+            if (this._errorHandler) { window.removeEventListener('error', this._errorHandler); this._errorHandler = null; }
+            if (this._rejectionHandler) { window.removeEventListener('unhandledrejection', this._rejectionHandler); this._rejectionHandler = null; }
+            // デバッグメニュー復帰
+            if (this.elements.menu) this.elements.menu.style.display = '';
+
+            if (this.fullAutoLog.length > 0) console.log('[FullAuto] Telemetry Log:', JSON.stringify(this.fullAutoLog, null, 2));
+            if (this._stateTransitions.length > 0) console.log('[FullAuto] State Transitions:', this._stateTransitions);
+            if (Object.keys(this._bossSkillLog).length > 0) console.log('[FullAuto] Boss Skill Log:', JSON.stringify(this._bossSkillLog, null, 2));
+            if (this._bossSkillAnomalies.length > 0) console.warn('[FullAuto] Boss Skill ANOMALIES:', this._bossSkillAnomalies);
+        }
+
+        this.updateFullAutoButton();
+        if (this.game.domEffects) {
+            this.game.domEffects.spawn(
+                this.isFullAuto ? '🔄 FULL AUTO: ON' : '🔄 FULL AUTO: OFF',
+                this.game.width / 2, this.game.height / 2,
+                { color: this.isFullAuto ? '#2ecc71' : '#e17055', size: 40, bold: true, screenSpace: true, life: 90 }
+            );
+        }
+    }
+
+    updateFullAutoButton() {
+        if (!this.elements.fullAuto) return;
+        if (this.isFullAuto) {
+            this.elements.fullAuto.style.background = '#2ecc71';
+            this.elements.fullAuto.innerText = '🔄 FULL AUTO: ON';
+        } else {
+            this.elements.fullAuto.style.background = '#e17055';
+            this.elements.fullAuto.innerText = '🔄 フルオート';
+        }
+    }
+
+    updateFullAuto(dt) {
+        const game = this.game;
+
+        // 状態遷移トラッキング
+        const currentState = game.gameWon ? `${game.state}(WON)` : game.state;
+        if (currentState !== this._lastTrackedState) {
+            this._stateTransitions.push({ state: currentState, time: Date.now(), stage: game.stage });
+            this._lastTrackedState = currentState;
+            console.log(`[FullAuto] State: ${currentState} (Stage ${game.stage})`);
+        }
+
+        if (game.state === 'WAIT_FOR_INPUT') { window.dispatchEvent(new Event('click')); return; }
+
+        if (game.state === 'HOME') {
+            if (!this._asyncBusy) {
+                this._asyncBusy = true;
+                game.startGame().then(() => { this._asyncBusy = false; }).catch(e => { console.error('[FullAuto] startGame failed:', e); this._asyncBusy = false; });
+            }
+            return;
+        }
+
+        if (game.state === 'STAGE_INTRO') { game.introTimer = 3.0; return; }
+
+        // 会話自動スキップ (全状態共通)
+        if (game.dialogueManager && game.dialogueManager.active) {
+            this._dialogueAdvanceTimer += dt;
+            if (this._dialogueAdvanceTimer >= 0.15) {
+                this._dialogueAdvanceTimer = 0;
+                game.dialogueManager.onInteract();
+            }
+            return;
+        }
+
+        if (game.state === 'PLAYING') {
+            // 落下ループ検知: 短時間に多数のRESPAWNが発生した場合はボスまでワープ
+            if (!this._respawnCount) this._respawnCount = 0;
+            if (!this._lastRespawnCheck) this._lastRespawnCheck = Date.now();
+
+            // 30秒ごとにリセット
+            if (Date.now() - this._lastRespawnCheck > 30000) {
+                this._respawnCount = 0;
+                this._lastRespawnCheck = Date.now();
+            }
+            return;
+        }
+
+        // RESPAWNING: カウント追跡 → 多すぎたらボスワープ
+        if (game.state === 'RESPAWNING') {
+            this._respawnCount = (this._respawnCount || 0) + 1;
+            if (this._respawnCount > 30) {
+                console.log('[FullAuto] Too many respawns, warping to boss...');
+                this._respawnCount = 0;
+                // 既存のwarpToBossを利用 (状態をPLAYINGにしてからワープ)
+                game.state = 'PLAYING';
+                if (game.player) {
+                    game.player.vx = 0;
+                    game.player.vy = 0;
+                    game.damageCooldown = 3.0;
+                }
+                this.warpToBoss();
+            }
+            return;
+        }
+
+        if (game.state === 'LOADING_STAGE') return; // 非同期ロード待ち
+
+        if (game.state === 'BOSS_BATTLE') {
+            const boss = game.boss;
+            const bossSection = game.bossEncounter;
+            if (!boss || boss.defeated) {
+                // ボス撃破時: スキル検証レポート出力
+                if (boss && boss.defeated && !this._bossReportDone) {
+                    this._bossReportDone = true;
+                    this._reportBossSkills(game.stage);
+                }
+                return;
+            }
+            this._bossReportDone = false;
+            if (bossSection && (bossSection.phase === 'WARNING' || bossSection.phase === 'APPEAR')) return;
+            if (game.isPaused) return;
+
+            // ===== ボススキル検証ログ =====
+            this._trackBossSkill(game.stage, boss);
+
+            // バリア未破壊: 自然にキャロット収集してバリア破壊を待つ（強制破壊しない）
+            if (bossSection && bossSection.phase === 'FIGHT' && !bossSection.isVulnPhase) {
+                // オートプレイがキャロット収集 → 自然にスコア蓄積 → バリア破壊
+                return;
+            }
+
+            // バリア破壊後: 全スキル発動確認してからHP削減
+            if (!boss.isInvulnerable && boss.hp > 0) {
+                const primarySkills = this._getPrimarySkills(game.stage);
+                const stageKey = `stage${game.stage}`;
+                const log = this._bossSkillLog[stageKey] || [];
+                const usedSkills = new Set(log.map(e => e.skill));
+
+                const allFired = primarySkills.every(s => usedSkills.has(s));
+
+                if (!allFired) {
+                    if (!this._bossWaitStart) this._bossWaitStart = Date.now();
+                    const waited = (Date.now() - this._bossWaitStart) / 1000;
+                    if (waited > 90) {
+                        // 90秒タイムアウト: 確率の低いスキルは諦めて撃破
+                        const missing = primarySkills.filter(s => !usedSkills.has(s));
+                        console.warn(`[FullAuto] Timeout (${waited.toFixed(0)}s). Missing: [${missing.join(', ')}] — proceeding with HP drain`);
+                        this._bossSkillAnomalies.push(`Stage ${game.stage}: Skills not fired after ${waited.toFixed(0)}s: [${missing.join(', ')}]`);
+                    } else {
+                        return; // スキル待ち
+                    }
+                } else if (!this._allSkillsConfirmed) {
+                    this._allSkillsConfirmed = true;
+                    this._bossWaitStart = null;
+                    console.log(`[FullAuto] ✓ All ${primarySkills.length} boss skills confirmed for Stage ${game.stage}! Starting HP drain.`);
+                }
+
+                this._bossHpTimer += dt;
+                if (this._bossHpTimer >= 0.3) {
+                    this._bossHpTimer = 0;
+                    boss.hp -= 1;
+                    boss.flashTime = 0.3;
+                    console.log(`[FullAuto] Boss HP: ${boss.hp}/${boss.maxHp}`);
+                    if (boss.hp <= 0) {
+                        boss.hp = 0;
+                        if (typeof boss.die === 'function') boss.die();
+                        else boss.defeated = true;
+                        this._allSkillsConfirmed = false;
+                        this._bossWaitStart = null;
+                    }
+                }
+            }
+            return;
+        }
+
+        if (game.gameWon && game.state !== 'ENDING') {
+            this._resultSkipTimer += dt;
+            if (game.resultSection && game.resultSection.phase === 'WAIT') {
+                if (this._resultSkipTimer >= 0.5 && !this._asyncBusy) {
+                    this._resultSkipTimer = 0;
+                    this._asyncBusy = true;
+                    game.resultSection.reset();
+                    game.nextStage().then(() => { this._asyncBusy = false; }).catch(e => { console.error('[FullAuto] nextStage failed:', e); this._asyncBusy = false; });
+                }
+            } else if (game.resultSection) {
+                game.resultSection.timer += dt * 3;
+            }
+            return;
+        }
+
+        if (game.state === 'ENDING') {
+            this._endingAdvanceTimer += dt;
+            if (this._endingAdvanceTimer >= 0.5) {
+                this._endingAdvanceTimer = 0;
+                game.input._pointerPressedCurrentFrame = true;
+                game.input.pointerDown = true;
+            }
+            if (game.endingSection && game.endingSection.state === 'FINISHED') {
+                console.log('[FullAuto] Ending finished. Full auto complete!');
+                this.toggleFullAuto();
+            }
+            return;
+        }
+    }
+
+    // ボスの攻撃状態を追跡
+    _trackBossSkill(stage, boss) {
+        const stageKey = `stage${stage}`;
+        if (!this._bossSkillLog[stageKey]) this._bossSkillLog[stageKey] = [];
+
+        const bossState = boss.state;
+        // 攻撃状態のみ記録 (IDLE, BATTLE, HURT, DEAD, WAIT は除外)
+        const nonAttackStates = ['IDLE', 'BATTLE', 'HURT', 'DEAD', 'WAIT', 'BATTLE_MOVE', 'ATTACK'];
+        if (nonAttackStates.includes(bossState)) {
+            this._lastBossState = bossState;
+            return;
+        }
+
+        // 新しい攻撃状態への遷移を検知
+        if (bossState !== this._lastBossState) {
+            this._lastBossState = bossState;
+            const entry = { skill: bossState, time: Date.now(), hp: boss.hp, maxHp: boss.maxHp };
+            this._bossSkillLog[stageKey].push(entry);
+            console.log(`[BossSkill] Stage ${stage}: ${bossState} (HP: ${boss.hp}/${boss.maxHp})`);
+        }
+    }
+
+    // ボス撃破時にスキル検証レポートを出力
+    _reportBossSkills(stage) {
+        const stageKey = `stage${stage}`;
+        const log = this._bossSkillLog[stageKey] || [];
+
+        // StageConfigから期待されるスキルを取得
+        const expectedSkills = this._getExpectedSkills(stage);
+
+        // 実際に使用されたスキルを集計
+        const usedSkills = {};
+        for (const entry of log) {
+            usedSkills[entry.skill] = (usedSkills[entry.skill] || 0) + 1;
+        }
+
+        console.log(`\n===== [BossSkill Report] Stage ${stage} =====`);
+        console.log(`Expected skills: [${expectedSkills.join(', ')}]`);
+        console.log(`Used skills:`, usedSkills);
+        console.log(`Total attacks: ${log.length}`);
+
+        // 異常検知: 期待されるスキルが一度も使われていない
+        const missingSkills = expectedSkills.filter(s => !usedSkills[s]);
+        if (missingSkills.length > 0) {
+            const msg = `Stage ${stage}: Missing expected skills: [${missingSkills.join(', ')}]`;
+            console.warn(`[BossSkill ANOMALY] ${msg}`);
+            this._bossSkillAnomalies.push(msg);
+        }
+
+        // 異常検知: 定義にないスキルが使われている
+        const unexpectedSkills = Object.keys(usedSkills).filter(s => !expectedSkills.includes(s));
+        if (unexpectedSkills.length > 0) {
+            const msg = `Stage ${stage}: Unexpected skills used: [${unexpectedSkills.join(', ')}]`;
+            console.warn(`[BossSkill ANOMALY] ${msg}`);
+            this._bossSkillAnomalies.push(msg);
+        }
+
+        // 正常
+        if (missingSkills.length === 0 && unexpectedSkills.length === 0) {
+            console.log(`[BossSkill] Stage ${stage}: All skills OK ✓`);
+        }
+
+        console.log(`==========================================\n`);
+    }
+
+    // StageConfigからボスのトリガースキル (attackPoolに定義された親スキル) を取得
+    _getPrimarySkills(stage) {
+        const configs = {
+            1: ['SPIN_PREP'],                 // SPIN_DASH等はSPIN_PREPから自動遷移
+            2: ['CAST_WAVE', 'CAST_FLOOR'],
+            3: ['TOY_MARCH', 'TOY_BOUNCE'],
+            4: ['VITAL_CHECK_PREP', 'VACCINE_RAIN', 'TOY_BOUNCE', 'PILL_BARRAGE'],
+            5: ['JUDGMENT_RAY', 'GOD_LASER', 'SOUL_SCYTHE']
+        };
+        return configs[stage] || [];
+    }
+
+    // StageConfigからボスの全スキル (サブ状態含む) を取得
+    _getExpectedSkills(stage) {
+        const stageConfigs = {
+            1: ['SPIN_PREP', 'SPIN_DASH', 'SPIN_OFFSCREEN', 'SPIN_RECOVER'],
+            2: ['CAST_WAVE', 'CAST_FLOOR'],
+            3: ['TOY_MARCH', 'TOY_BOUNCE'],
+            4: ['VITAL_CHECK_PREP', 'VITAL_CHECK_FIRE', 'VACCINE_RAIN', 'TOY_BOUNCE', 'PILL_BARRAGE'],
+            5: ['JUDGMENT_RAY', 'GOD_LASER', 'SOUL_SCYTHE']
+        };
+        return stageConfigs[stage] || [];
+    }
+
+    updateTelemetry(dt) {
+        this._telemetryTimer += dt;
+        if (this._telemetryTimer < 0.5) return;
+        this._telemetryTimer = 0;
+
+        const game = this.game;
+        this.fullAutoLog.push({
+            timestamp: Date.now(), state: game.state, stage: game.stage,
+            fps: this._fpsValue,
+            particles: (game.env ? game.env.particles.length : 0) + (game.player ? game.player.particles.length : 0),
+            enemies: game.enemies ? game.enemies.length : 0,
+            domEffects: game.domEffects ? game.domEffects.effects.length : 0,
+            memory: (performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576 * 10) / 10 : null),
+            playerX: game.player ? Math.round(game.player.x) : 0
+        });
+        if (this.fullAutoLog.length > 600) this.fullAutoLog.shift();
+    }
+
+    drawTelemetry() {
+        const ctx = this.ctx;
+        const game = this.game;
+        const x = game.width - 280;
+        const y = 10;
+        const lineH = 18;
+        const pad = 10;
+
+        const elapsed = Math.floor((Date.now() - this._fullAutoStartTime) / 1000);
+        const min = String(Math.floor(elapsed / 60)).padStart(2, '0');
+        const sec = String(elapsed % 60).padStart(2, '0');
+
+        const particleCount = (game.env ? game.env.particles.length : 0) + (game.player ? game.player.particles.length : 0);
+        const maxParticles = ('ontouchstart' in window) ? 70 : 300;
+        const memoryMB = performance.memory ? (performance.memory.usedJSHeapSize / 1048576).toFixed(1) : 'N/A';
+        const domFxCount = game.domEffects ? game.domEffects.effects.length : 0;
+        const maxDomFx = ('ontouchstart' in window) ? 10 : 50;
+
+        const lines = [
+            'FULL AUTO DEBUG',
+            `FPS: ${this._fpsValue}  Stage: ${game.stage}`,
+            `State: ${game.state}${game.gameWon ? ' (WON)' : ''}`,
+            `Particles: ${particleCount}/${maxParticles}`,
+            `DOM Effects: ${domFxCount}/${maxDomFx}`,
+            `Memory: ${memoryMB} MB`,
+            `Elapsed: ${min}:${sec}`,
+            `Errors: ${this._fullAutoErrors}`,
+            `Skill Anomalies: ${this._bossSkillAnomalies.length}`
+        ];
+
+        const boxH = lines.length * lineH + pad * 2;
+        const boxW = 260;
+
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+        ctx.fillRect(x, y, boxW, boxH);
+        ctx.strokeStyle = '#2ecc71';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x, y, boxW, boxH);
+
+        ctx.font = '14px monospace';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+
+        for (let i = 0; i < lines.length; i++) {
+            ctx.fillStyle = i === 0 ? '#2ecc71' : '#ffffff';
+            ctx.font = i === 0 ? 'bold 14px monospace' : '13px monospace';
+            if (i >= lines.length - 2 && (this._fullAutoErrors > 0 || this._bossSkillAnomalies.length > 0)) {
+                if (i === lines.length - 2 && this._fullAutoErrors > 0) ctx.fillStyle = '#e74c3c';
+                if (i === lines.length - 1 && this._bossSkillAnomalies.length > 0) ctx.fillStyle = '#e74c3c';
+            }
+            if (i === 1 && this._fpsValue < 30) ctx.fillStyle = '#f39c12';
+            ctx.fillText(lines[i], x + pad, y + pad + i * lineH);
+        }
         ctx.restore();
     }
 }

@@ -24,7 +24,8 @@ export class Environment {
             this.spawn();
         }
 
-        for (let i = this.particles.length - 1; i >= 0; i--) {
+        let writeIndex = 0;
+        for (let i = 0; i < this.particles.length; i++) {
             const p = this.particles[i];
 
             // Physics
@@ -67,10 +68,12 @@ export class Environment {
                 if (p.x < 0) p.x = this.width;
             }
 
-            if (p.life <= 0 || (this.particles.length > MAX_PARTICLES && i < this.particles.length - MAX_PARTICLES)) {
-                this.particles.splice(i, 1);
+            // Keep alive particles, compact in-place (O(n) instead of O(n²) splice)
+            if (p.life > 0) {
+                this.particles[writeIndex++] = p;
             }
         }
+        this.particles.length = writeIndex;
     }
 
     spawn() {

@@ -224,7 +224,7 @@ export class ResultSection {
                 if (this.rankScale < 1.0) this.rankScale = 1.0;
                 this.rankAlpha = t4;
 
-                if (t4 === 1.0 && !this.shook) {
+                if (t4 >= 1.0 && !this.shook) {
                     this.game.vfx.shake(5, 0.2);
                     this.shook = true;
                 }

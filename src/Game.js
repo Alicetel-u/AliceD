@@ -336,9 +336,7 @@ export class Game {
                 }
                 // -------------------------
 
-                // Count down timers based on dt
-                if (this.damageCooldown > 0) this.damageCooldown -= dt;
-                if (this.knockbackTimer > 0) this.knockbackTimer -= dt;
+                // bossDefeatTimer (damageCooldown/knockbackTimer are decremented in System section)
                 if (this.bossDefeatTimer > 0) {
                     this.bossDefeatTimer -= dt;
                     if (this.bossDefeatTimer <= 0) {
@@ -350,16 +348,6 @@ export class Game {
                 if (this.state === 'RESPAWNING') {
                     this.updateRespawnAnimation(dt);
                     return;
-                }
-
-                // Knockback Recovery logic moved to System section
-
-                // Gameplay section remaining timers
-                if (this.bossDefeatTimer > 0) {
-                    this.bossDefeatTimer -= dt;
-                    if (this.bossDefeatTimer <= 0) {
-                        this.timeScale = 1.0; // Reset slow-mo
-                    }
                 }
 
                 // Check Boss Transition
@@ -405,7 +393,8 @@ export class Game {
             // Draw moved to WorldRenderer
         });
 
-        this.sections.register('BossEncounter', new BossSection(this));
+        this.bossEncounter = new BossSection(this);
+        this.sections.register('BossEncounter', this.bossEncounter);
 
         this.sections.register('Camera', {
             update: (dt) => {
@@ -766,10 +755,6 @@ export class Game {
             this.ctx.restore();
             return;
         }
-
-        // ステージUI（ナビゲーション、警告など）の描画
-        this.stageUI.draw();
-
 
 
 
@@ -1246,6 +1231,10 @@ export class Game {
                 this.audio.playTitleBGM();
                 // Click to Startの入力がそのままHome画面のタップ判定にならないようにリセット
                 this.input.reset();
+                // 初回遷移後はリスナー解除（毎入力でのオーバーヘッド防止）
+                window.removeEventListener('keydown', activateAudio);
+                window.removeEventListener('click', activateAudio);
+                window.removeEventListener('touchstart', activateAudio);
                 return;
             }
         };
@@ -1438,6 +1427,44 @@ export class Game {
         for (let gx = 0; gx < cols; gx++) {
             if (heights[gx] !== null) {
                 this.fillGround(grid, gx, heights[gx], rows);
+            }
+        }
+
+        // Pass 1.5: 通行可能性検証 — 壁/天井で塞がれた箇所を修正
+        // プレイヤーは高さ2タイル分の空間が必要。地面の上2タイルが空きであることを保証する。
+        for (let gx = 1; gx < this.preBossLength; gx++) {
+            const h = heights[gx];
+            const prevH = heights[gx - 1];
+            if (h === null || prevH === null) continue;
+
+            // 急な上り坂: 前の地面高さから見て、次の地面が2タイル以上高い場合
+            // (Y座標は小さい = 高い)
+            if (prevH - h >= 2) {
+                // 前の位置の走行ライン(prevH-1, prevH-2)が次の列で壁に塞がれる
+                // → 段差を緩やかにする（最大1タイル上昇に制限）
+                const maxRise = prevH - 1;
+                if (h < maxRise) {
+                    // 高すぎる地面を削って通路を確保
+                    const newH = maxRise;
+                    // 古い地面を消す
+                    for (let gy = h; gy < newH; gy++) {
+                        if (gy >= 0 && gy < rows) grid[gy][gx] = '.';
+                    }
+                    heights[gx] = newH;
+                    // 新しい地面を再描画
+                    this.fillGround(grid, gx, newH, rows);
+                }
+            }
+
+            // プレイヤーの頭上空間確保: 地面の上2タイルが空きであることを保証
+            const groundY = heights[gx];
+            if (groundY !== null && groundY >= 2) {
+                for (let clearY = 1; clearY <= 3; clearY++) {
+                    const cy = groundY - clearY;
+                    if (cy >= 0 && (grid[cy][gx] === '#' || grid[cy][gx] === 'D')) {
+                        grid[cy][gx] = '.';
+                    }
+                }
             }
         }
 
@@ -1915,6 +1942,10 @@ export class Game {
     loop(timestamp) {
         if (!this.running) return;
 
+        // 初回フレームはdt=0として扱い、巨大なdtを防止
+        if (this.lastTime === 0) {
+            this.lastTime = timestamp;
+        }
         const dt = ((timestamp - this.lastTime) / 1000) * this.timeScale;
         this.lastTime = timestamp;
         const cappedDt = Math.min(dt, 0.1);
@@ -2313,8 +2344,6 @@ export class Game {
         if (Math.random() * 100 < stats.DEF) {
             // Guarded!
             this.damageCooldown = 1.0;
-            // Guarded!
-            this.damageCooldown = 1.0;
             this.domEffects.spawn("GUARD!",
                 this.player.x,
                 this.player.y - 40,
@@ -2440,16 +2469,17 @@ export class Game {
         const p = this.player;
         const b = this.boss;
 
-        // 1. Check Projectile vs Player
-        b.projectiles.forEach((proj, index) => {
+        // 1. Check Projectile vs Player (逆方向イテレーションでspliceのインデックスずれ防止)
+        for (let i = b.projectiles.length - 1; i >= 0; i--) {
+            const proj = b.projectiles[i];
             const dx = proj.x - (p.x + p.width / 2);
             const dy = proj.y - (p.y + p.height / 2);
             const dist = Math.sqrt(dx * dx + dy * dy);
             if (dist < proj.size + 20) {
                 this.takeDamage();
-                b.projectiles.splice(index, 1);
+                b.projectiles.splice(i, 1);
             }
-        });
+        }
 
         // 2. Check Player vs Boss Body
         if (

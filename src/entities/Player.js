@@ -751,11 +751,19 @@ export class Player {
     }
 
     handleParticles(dt) {
-        for (let i = this.particles.length - 1; i >= 0; i--) {
+        // タッチデバイスではパーティクル上限を厳しく制限
+        const maxParticles = this.isTouchDevice ? 20 : 100;
+        while (this.particles.length > maxParticles) {
+            this.particles.shift();
+        }
+
+        let writeIdx = 0;
+        for (let i = 0; i < this.particles.length; i++) {
             this.particles[i].update(dt);
-            if (this.particles[i].life <= 0) {
-                this.particles.splice(i, 1);
+            if (this.particles[i].life > 0) {
+                this.particles[writeIdx++] = this.particles[i];
             }
         }
+        this.particles.length = writeIdx;
     }
 }

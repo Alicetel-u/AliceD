@@ -6,11 +6,21 @@
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>うさぎと電子少女</title>
+
+  <!-- iOS Safari Standalone Mode -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="AliceD">
+  <link rel="apple-touch-icon" href="./assets/img/portraits/alicetalk1.webp">
+
+  <!-- Web App Manifest -->
+  <link rel="manifest" href="./manifest.json">
+
   <link rel="icon" type="image/webp" href="./assets/img/portraits/alicetalk1.webp" />
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap"
     rel="stylesheet">
-  <script type="module" crossorigin src="/AliceD/assets/index-DWoxVXGK.js"></script>
-  <link rel="stylesheet" crossorigin href="/AliceD/assets/index-COadvAa_.css">
+  <script type="module" crossorigin src="/AliceD/assets/index-BnC_bziv.js"></script>
+  <link rel="stylesheet" crossorigin href="/AliceD/assets/index-Dx_uHj_w.css">
 </head>
 
 <body>
@@ -304,6 +314,9 @@
         </div>
         <button id="btn-debug-boss-damage" class="game-btn debug-btn damage-btn">⚔️ ボスHP -5</button>
         <button id="btn-debug-barrier-break" class="game-btn debug-btn barrier-btn">💥 バリア破壊+100</button>
+        <button id="btn-debug-autoplay" class="game-btn debug-btn" style="background: #6c5ce7;">🤖 オートプレイ</button>
+        <button id="btn-debug-godmode" class="game-btn debug-btn" style="background: #fdcb6e;">🛡️ 無敵モード</button>
+        <button id="btn-debug-fullauto" class="game-btn debug-btn" style="background: #e17055;">🔄 フルオート</button>
       </div>
     </div>
     <div id="loading-screen" class="visible">
@@ -340,7 +353,7 @@
         <div class="toggle-knob"></div>
       </div>
     </div>
-    
+
     <!-- Music Room Trigger Button (DOM Version for Mobile) -->
     <div id="home-music-btn" class="hidden">
       <span>♫ MUSIC ROOM</span>
