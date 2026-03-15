@@ -1253,18 +1253,7 @@ ${json}
         }
     }
 
-    toggleGodMode() {
-        this.isGodMode = !this.isGodMode;
-        if (this.elements.god) {
-            if (this.isGodMode) {
-                this.elements.god.innerText = "🛡️ 無敵モード: ON";
-                this.elements.god.style.background = "#9b59b6"; // Purple
-            } else {
-                this.elements.god.innerText = "🛡️ 無敵モード: OFF";
-                this.elements.god.style.background = "#7f8c8d"; // Gray
-            }
-        }
-    }
+    // toggleGodMode は末尾に統合済み（domEffects通知+player.invincible付き）
 
     update(dt) {
         if (!this.enabled) return;

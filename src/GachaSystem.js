@@ -86,8 +86,13 @@ export class GachaSystem {
         const toggleBtn = document.getElementById('collection-toggle');
         if (toggleBtn) toggleBtn.onclick = (e) => { e.stopPropagation(); this.openManual(); };
         this.canClose = false;
-        window.addEventListener('click', () => { if (this.canClose) this.close(); });
-        window.addEventListener('keydown', () => { if (this.canClose) this.close(); });
+        // リスナーを参照保持して重複防止（constructorは1回だけ呼ばれる想定だが安全のため）
+        if (!this._closeClickHandler) {
+            this._closeClickHandler = () => { if (this.canClose) this.close(); };
+            this._closeKeyHandler = () => { if (this.canClose) this.close(); };
+            window.addEventListener('click', this._closeClickHandler);
+            window.addEventListener('keydown', this._closeKeyHandler);
+        }
     }
 
     openManual() {

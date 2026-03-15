@@ -10,15 +10,18 @@ export class Input {
         this.pointerY = 0;
         this.blocked = false; // Input block flag
 
+        // AbortControllerで一括リスナー解除を可能にする
+        this._abortController = new AbortController();
+        const signal = this._abortController.signal;
+
         window.addEventListener('keydown', (e) => {
             if (this.blocked) return;
             this.keys[e.code] = true;
-        });
+        }, { signal });
 
         window.addEventListener('keyup', (e) => {
-            // Always allow keyup to clear state? Or just rely on setBlocked clearing it.
             this.keys[e.code] = false;
-        });
+        }, { signal });
 
         const updatePointerPos = (e) => {
             const canvas = document.getElementById('game-canvas');
@@ -50,12 +53,19 @@ export class Input {
             this.pointerDown = false;
         };
 
-        window.addEventListener('mousedown', onDown);
-        window.addEventListener('touchstart', onDown, { passive: false });
-        window.addEventListener('mousemove', updatePointerPos);
-        window.addEventListener('touchmove', updatePointerPos, { passive: false });
-        window.addEventListener('mouseup', onUp);
-        window.addEventListener('touchend', onUp);
+        window.addEventListener('mousedown', onDown, { signal });
+        window.addEventListener('touchstart', onDown, { passive: false, signal });
+        window.addEventListener('mousemove', updatePointerPos, { signal });
+        window.addEventListener('touchmove', updatePointerPos, { passive: false, signal });
+        window.addEventListener('mouseup', onUp, { signal });
+        window.addEventListener('touchend', onUp, { signal });
+    }
+
+    destroy() {
+        if (this._abortController) {
+            this._abortController.abort();
+            this._abortController = null;
+        }
     }
 
     setBlocked(value) {

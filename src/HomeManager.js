@@ -61,9 +61,10 @@ export class HomeManager {
 
     setupUI() {
         // Gacha Button Action
+        // onclick で上書き方式にして重複防止
         const gachaBtn = document.getElementById('btn-home-gacha');
         if (gachaBtn) {
-            gachaBtn.addEventListener('click', (e) => {
+            gachaBtn.onclick = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 if (this.game.score >= 10) {
@@ -71,28 +72,28 @@ export class HomeManager {
                 } else {
                     alert('ニンジンが足りません！ (必要: 10)');
                 }
-            });
+            };
         }
 
         // Easy Mode Toggle Action
         const easyModeBtn = document.getElementById('home-easy-mode');
         if (easyModeBtn) {
-            easyModeBtn.addEventListener('click', (e) => {
+            easyModeBtn.onclick = (e) => {
                 e.preventDefault();
                 this.game.easyMode = !this.game.easyMode;
                 localStorage.setItem('aliceD_easyMode', this.game.easyMode);
                 if (this.game.audio && this.game.audio.playClick) this.game.audio.playClick();
-            });
+            };
         }
 
         // Music Room Button Action (DOM Version)
         const musicBtn = document.getElementById('home-music-btn');
         if (musicBtn) {
-            musicBtn.addEventListener('click', (e) => {
+            musicBtn.onclick = (e) => {
                 e.preventDefault();
                 this.openMusicRoom();
                 if (this.game.audio && this.game.audio.playClick) this.game.audio.playClick();
-            });
+            };
         }
     }
 

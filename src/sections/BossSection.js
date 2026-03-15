@@ -15,6 +15,9 @@ export class BossSection {
             this.isWhiteOut = false; // Reset transition flag
             this.bossScoreRecorded = false; // Reset score recording flag
 
+            // ボス撃破演出用タイマーをクリア（ステージスキップ等で残留防止）
+            if (this._defeatTimer) { clearTimeout(this._defeatTimer); this._defeatTimer = null; }
+
             // Cleanup BGM Overlay if active
             const overlay = document.getElementById('bgm-overlay');
             if (overlay) overlay.classList.add('hidden');
@@ -230,7 +233,8 @@ export class BossSection {
                     (this.game.stage === 5 && (this.game.dialogueManager.hasDialogue(defeatKey + '_KANON') || this.game.dialogueManager.hasDialogue(defeatKey)))) {
 
                     // Wait for slow-mo explosion (1.5s) THEN start dialogue
-                    setTimeout(() => {
+                    this._defeatTimer = setTimeout(() => {
+                        this._defeatTimer = null;
                         this.game.isPaused = true;
                         this.game.startDialogue(defeatKey, () => {
                             this.game.isPaused = false;
@@ -239,7 +243,10 @@ export class BossSection {
                     }, 1500);
                 } else {
                     // Fallback if no dialogue found
-                    setTimeout(finishLevel, 1500);
+                    this._defeatTimer = setTimeout(() => {
+                        this._defeatTimer = null;
+                        finishLevel();
+                    }, 1500);
                 }
             }
         }
