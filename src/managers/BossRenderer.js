@@ -15,6 +15,7 @@ export class BossRenderer {
         this.hpBarFill = null;
         this.container = null;
         this.isReady = false;
+        this._projPool = []; // Graphicsオブジェクトプール
     }
 
     init() {
@@ -92,18 +93,30 @@ export class BossRenderer {
         this.hpBarFill.clear();
         this.hpBarFill.rect(bx, by, barW * (boss.hp / boss.maxHp), barH).fill(0xff4757);
 
-        // 3. 弾の更新 (簡易的な再生成。将来的にスプライトプールへの移行を検討)
-        this.projectilesLayer.removeChildren();
-        boss.projectiles.forEach(proj => {
-            const px = proj.x;
-            const py = proj.y;
-            const size = proj.size;
-            const pulse = (Math.sin(Date.now() / 50 + proj.seed) * 0.3 + 0.7);
+        // 3. 弾の更新 (Graphicsプール方式 — 毎フレームnew防止)
+        const projCount = boss.projectiles.length;
 
-            const pGfx = new PIXI.Graphics();
-            pGfx.circle(px, py, size * 1.2).fill({ color: 0x4facfe, alpha: 0.6 * pulse });
-            pGfx.circle(px, py, size * 0.6).fill(0xffffff);
-            this.projectilesLayer.addChild(pGfx);
-        });
+        // プール拡張: 足りない分だけ生成
+        while (this._projPool.length < projCount) {
+            const g = new PIXI.Graphics();
+            g.visible = false;
+            this.projectilesLayer.addChild(g);
+            this._projPool.push(g);
+        }
+
+        // 使用分を更新、余剰分を非表示
+        for (let i = 0; i < this._projPool.length; i++) {
+            const g = this._projPool[i];
+            if (i < projCount) {
+                const proj = boss.projectiles[i];
+                const pulse = (Math.sin(Date.now() / 50 + proj.seed) * 0.3 + 0.7);
+                g.clear();
+                g.circle(proj.x, proj.y, proj.size * 1.2).fill({ color: 0x4facfe, alpha: 0.6 * pulse });
+                g.circle(proj.x, proj.y, proj.size * 0.6).fill(0xffffff);
+                g.visible = true;
+            } else {
+                g.visible = false;
+            }
+        }
     }
 }

@@ -1242,6 +1242,27 @@ export class Game {
         window.addEventListener('click', activateAudio);
         window.addEventListener('touchstart', activateAudio);
 
+        // バックグラウンドタブ対応: タブ非表示時にゲームを一時停止
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                this._wasRunning = this.running;
+                // BGMを一時停止（モバイルでバッテリー節約）
+                if (this.audio.bgmAudio && !this.audio.bgmAudio.paused) {
+                    this.audio.bgmAudio.pause();
+                    this._bgmWasPaused = false;
+                } else {
+                    this._bgmWasPaused = true;
+                }
+            } else {
+                // 復帰時: lastTimeをリセットして巨大dtを防止
+                this.lastTime = 0;
+                // BGM復帰
+                if (!this._bgmWasPaused && this.audio.bgmAudio) {
+                    this.audio.bgmAudio.play().catch(() => {});
+                }
+            }
+        });
+
         // Mute Button Listener
         const muteBtn = document.getElementById('mute-btn');
         if (muteBtn) {
@@ -2806,8 +2827,7 @@ export class Game {
                 }
             }
 
-            if (groundY !== -1) {
-                // Fill up to 12 blocks high (Ground & Air)
+            if (groundY !== -1 && this.level.entities.length < 500) {
                 for (let h = 1; h <= 12; h++) {
                     const targetY = groundY - h;
                     if (targetY >= 0) {
@@ -2824,8 +2844,10 @@ export class Game {
                             Math.floor(e.y / this.level.tileSize) === targetY
                         );
 
-                        if (!occupied && Math.random() < 0.2) { // 20% chance (Doubled from 10%)
-                            // Add new carrot entity
+                        // entities上限チェック (モバイルでのメモリ圧迫防止)
+                        if (this.level.entities.length >= 500) break;
+
+                        if (!occupied && Math.random() < 0.2) {
                             this.level.entities.push({
                                 type: 'C',
                                 x: c * this.level.tileSize,
