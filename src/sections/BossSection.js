@@ -17,6 +17,8 @@ export class BossSection {
 
             // ボス撃破演出用タイマーをクリア（ステージスキップ等で残留防止）
             if (this._defeatTimer) { clearTimeout(this._defeatTimer); this._defeatTimer = null; }
+            // CAST_FLOORのカメラY固定を解除
+            if (this.game.camera) this.game.camera.lockY = null;
 
             // Cleanup BGM Overlay if active
             const overlay = document.getElementById('bgm-overlay');

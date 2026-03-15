@@ -557,6 +557,11 @@ export class Boss {
             this.projectiles = []; // Clear projectiles on defeat
             this.waves = []; // Clear waves
             this.floorHazard.active = false;
+            this.floorHazard.warning = false;
+            this.pills = [];
+            this.toyPresents = [];
+            this.vitalLasers = [];
+            // camera.lockY は外部からリセット（BossSection/nextStageで対応）
         }
         return true;
     }

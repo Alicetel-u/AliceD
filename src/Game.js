@@ -775,6 +775,9 @@ export class Game {
         this.bossVictoryProcessed = false;
         this.knockbackTimer = 0;
         this.timeScale = 1.0;
+        this.stopScroll = false; // ボス戦のカメラ固定を解除
+        this.camera.lockY = null; // CAST_FLOORのY固定を解除
+        this.camera.minX = 0; // ボス戦の左戻り防止を解除
 
         this.results = null;
         this.stageScoreGained = 0;
