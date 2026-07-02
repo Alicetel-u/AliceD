@@ -1,4 +1,4 @@
-node_modules/
+﻿node_modules/
 dist/
 .DS_Store
 .env
@@ -6,3 +6,5 @@ dist/
 .vscode/
 *.log
 test-fullauto.mjs
+vite-*.out
+vite-*.err

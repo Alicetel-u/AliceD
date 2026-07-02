@@ -21,6 +21,9 @@ export class EndingSection {
         this.state = 'IDLE'; // IDLE, PLAYING, FINISHED
         this.finTimer = 0;
         this.fadeAlpha = 0; // Global fade in/out transition
+        this.pendingEndingId = null;
+        this.startDelayTimer = 0;
+        this.startDelayDuration = 0;
 
         this.particles = [];
         this.initParticles();
@@ -51,7 +54,20 @@ export class EndingSection {
         });
     }
 
-    start(endingId) {
+    start(endingId, options = {}) {
+        const delay = options.delay || 0;
+        if (delay > 0) {
+            this.pendingEndingId = endingId;
+            this.startDelayTimer = 0;
+            this.startDelayDuration = delay;
+            this.state = 'PENDING';
+            this.game.state = 'ENDING';
+            return;
+        }
+
+        this.pendingEndingId = null;
+        this.startDelayTimer = 0;
+        this.startDelayDuration = 0;
         this.data = EndingData[endingId];
         if (!this.data) {
             this.game.state = 'HOME';
@@ -81,6 +97,16 @@ export class EndingSection {
     }
 
     update(dt) {
+        if (this.state === 'PENDING') {
+            this.startDelayTimer += dt;
+            if (this.startDelayTimer >= this.startDelayDuration) {
+                const nextEndingId = this.pendingEndingId;
+                this.pendingEndingId = null;
+                this.start(nextEndingId);
+            }
+            return;
+        }
+
         if (this.state !== 'PLAYING') return;
 
         const scene = this.data[this.currentSceneIndex];
@@ -149,6 +175,19 @@ export class EndingSection {
     }
 
     draw() {
+        if (this.state === 'PENDING') {
+            const ctx = this.game.ctx;
+            const w = this.game.width;
+            const h = this.game.height;
+            const progress = this.startDelayDuration > 0 ? Math.min(1, this.startDelayTimer / this.startDelayDuration) : 1;
+            ctx.save();
+            ctx.fillStyle = '#000';
+            ctx.globalAlpha = 0.35 + progress * 0.65;
+            ctx.fillRect(0, 0, w, h);
+            ctx.restore();
+            return;
+        }
+
         if (this.state !== 'PLAYING') return;
         const scene = this.data[this.currentSceneIndex];
         if (!scene) return;

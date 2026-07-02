@@ -371,7 +371,7 @@ export class ResultSection {
         const messages = [
             { icon: "⏱️", text: `クリアタイム\n${this.data.timeStr}`, color: "#00cec9" }, // Blue/Cyan for time
             { icon: "💖", text: this.data.healthMsg, color: this.c_pink },
-            { icon: "🥕", text: this.data.timeMsg, color: "#FFA500" } // Orange for carrots
+            { icon: "C", text: this.data.timeMsg, color: "#FFA500", iconImageKey: "carrot", forceOpaque: true } // Orange for carrots
         ];
 
         // Adjust card size to fit screen
@@ -384,10 +384,10 @@ export class ResultSection {
         messages.forEach((msg, idx) => {
             if (this.cardAlpha[idx] > 0) {
                 ctx.save();
-                ctx.globalAlpha = this.cardAlpha[idx];
+                ctx.globalAlpha = msg.forceOpaque ? 1.0 : this.cardAlpha[idx];
                 ctx.translate(0, -this.cardY[idx]);
 
-                this.drawMessageCard(ctx, startX, cardY, cardW, cardH, msg.icon, msg.text, msg.color);
+                this.drawMessageCard(ctx, startX, cardY, cardW, cardH, msg.icon, msg.text, msg.color, msg.iconImageKey, msg.forceOpaque);
                 cardY += cardH + 20;
 
                 ctx.restore();
@@ -567,11 +567,16 @@ export class ResultSection {
         ctx.restore();
     }
 
-    drawMessageCard(ctx, x, y, w, h, icon, text, color) {
+    drawMessageCard(ctx, x, y, w, h, icon, text, color, iconImageKey = null, forceOpaque = false) {
         // Card background with gradient
         const cardGrad = ctx.createLinearGradient(x, y, x, y + h);
-        cardGrad.addColorStop(0, 'rgba(40, 30, 60, 0.95)');
-        cardGrad.addColorStop(1, 'rgba(25, 20, 45, 0.95)');
+        if (forceOpaque) {
+            cardGrad.addColorStop(0, 'rgba(78, 42, 18, 1.0)');
+            cardGrad.addColorStop(1, 'rgba(43, 28, 20, 1.0)');
+        } else {
+            cardGrad.addColorStop(0, 'rgba(40, 30, 60, 0.95)');
+            cardGrad.addColorStop(1, 'rgba(25, 20, 45, 0.95)');
+        }
         ctx.fillStyle = cardGrad;
 
         ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
@@ -580,6 +585,12 @@ export class ResultSection {
         ctx.fill();
         ctx.shadowBlur = 0;
 
+        if (forceOpaque) {
+            ctx.fillStyle = 'rgba(255, 165, 0, 0.18)';
+            this.roundRect(ctx, x + 6, y + 6, w - 12, h - 12, 10);
+            ctx.fill();
+        }
+
         // Border with color accent
         ctx.strokeStyle = color;
         ctx.lineWidth = 3;
@@ -587,11 +598,21 @@ export class ResultSection {
         ctx.stroke();
 
         // Icon
-        ctx.font = '50px sans-serif';
-        ctx.fillStyle = color;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(icon, x + 25, y + h / 2);
+        const iconImg = iconImageKey ? this.game.assets.getImage(iconImageKey) : null;
+        if (iconImg) {
+            const iconSize = 64;
+            ctx.save();
+            ctx.shadowColor = '#FFA500';
+            ctx.shadowBlur = forceOpaque ? 18 : 0;
+            ctx.drawImage(iconImg, x + 15, y + (h - iconSize) / 2, iconSize, iconSize);
+            ctx.restore();
+        } else {
+            ctx.font = '50px sans-serif';
+            ctx.fillStyle = color;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(icon, x + 25, y + h / 2);
+        }
 
         // Text with word wrap
         ctx.font = 'bold 24px "Zen Maru Gothic", sans-serif';

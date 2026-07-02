@@ -113,7 +113,10 @@ export const StageConfig = {
             cutin: "boss_toy_king_cutin", hp: 7, bgm: "BOSS_TOY",
             ai: {
                 attackInterval: 4.5,
-                attackPool: ['TOY_MARCH', 'TOY_BOUNCE']
+                attackPool: [
+                    { state: 'TOY_MARCH', weight: 0.50 },
+                    { state: 'TOY_BOUNCE', weight: 0.50 }
+                ]
             },
             bgmName: "TOYBOX CARNIVAL -Plastic Nightmare-"
         },
@@ -145,10 +148,9 @@ export const StageConfig = {
             ai: {
                 attackInterval: 2.5,
                 attackPool: [
-                    { state: 'VITAL_CHECK_PREP', weight: 0.45 },
-                    { state: 'VACCINE_RAIN', weight: 0.25 },
-                    { state: 'TOY_BOUNCE', weight: 0.20 },
-                    { state: 'PILL_BARRAGE', weight: 0.10 }
+                    { state: 'VITAL_CHECK_PREP', weight: 0.50 },
+                    { state: 'VACCINE_RAIN', weight: 0.30 },
+                    { state: 'PILL_BARRAGE', weight: 0.20 }
                 ]
             },
             bgmName: "EMERGENCY CALL -Code Red-"

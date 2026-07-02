@@ -13,6 +13,10 @@ export class DialogueManager {
         this.autoHideTimer = 0;
         this.autoAdvanceTimer = 0;
         this.onComplete = null;
+        this.initialInputLock = 0;
+        this.lineInputLock = 0;
+        this.perLineInputLock = 0;
+        this.autoAdvanceDelay = 2.0;
 
         // DOM Cache
         this.overlay = document.getElementById('dialogue-overlay');
@@ -40,7 +44,7 @@ export class DialogueManager {
         return !!DialogueData[id];
     }
 
-    startDialogue(idOrData, onComplete = null) {
+    startDialogue(idOrData, onComplete = null, options = {}) {
         let data = idOrData;
         this.currentDialogueId = null;
 
@@ -71,6 +75,9 @@ export class DialogueManager {
 
         this.onComplete = onComplete;
         this.active = true;
+        this.initialInputLock = options.initialInputLock ?? 0.6;
+        this.perLineInputLock = options.perLineInputLock ?? 0;
+        this.autoAdvanceDelay = options.autoAdvanceDelay ?? 2.0;
         this.dialogueQueue = [...data];
         this.overlay.classList.remove('hidden');
         // this.game.isPaused = true; // Removed per user request
@@ -91,6 +98,7 @@ export class DialogueManager {
 
         this.currentDialogue = this.dialogueQueue.shift();
         this.charIndex = 0;
+        this.lineInputLock = this.perLineInputLock;
         this.textBox.innerHTML = '';
         this.nextIndicator.style.display = 'none';
 
@@ -153,6 +161,13 @@ export class DialogueManager {
     update(dt) {
         if (!this.active || !this.currentDialogue) return;
 
+        if (this.initialInputLock > 0) {
+            this.initialInputLock = Math.max(0, this.initialInputLock - dt);
+        }
+        if (this.lineInputLock > 0) {
+            this.lineInputLock = Math.max(0, this.lineInputLock - dt);
+        }
+
         if (this.isTyping) {
             this.timer += dt * 1000;
             const fullText = this.currentDialogue.text;
@@ -174,7 +189,7 @@ export class DialogueManager {
         } else {
             // Auto Advance Logic (Enabled)
             this.autoAdvanceTimer += dt;
-            if (this.autoAdvanceTimer > 2.0) { // 2s wait per line
+            if (this.autoAdvanceTimer > this.autoAdvanceDelay) {
                 this.autoAdvanceTimer = 0;
                 this.onInteract();
             }
@@ -183,6 +198,8 @@ export class DialogueManager {
 
     onInteract() {
         if (!this.active) return;
+
+        if (this.initialInputLock > 0 || this.lineInputLock > 0) return;
 
         if (this.isTyping) {
             // Skip typing

@@ -39,6 +39,7 @@ import { BossRenderer } from './managers/BossRenderer.js';
 import { EffectRenderer } from './managers/EffectRenderer.js';
 import { EntityRenderer } from './managers/EntityRenderer.js';
 import { DomEffectManager } from './managers/DomEffectManager.js';
+import { TipsManager } from './managers/TipsManager.js';
 
 // ... existing imports
 
@@ -93,6 +94,7 @@ export class Game {
         this.audio = new AudioManager();
         this.characterManager = new CharacterManager();
         this.dialogueManager = new DialogueManager(this);
+        this.tipsManager = new TipsManager(this);
 
         this.player = null;
         this.boss = null;
@@ -267,6 +269,11 @@ export class Game {
         });
 
         // World Renderer: 中央集権的な描画システム (背景 -> マップ -> キャラ -> エフェクト)
+        this.sections.register('TipsSystem', {
+            update: (dt) => this.tipsManager.update(dt)
+        });
+
+
         this.sections.register('WorldRenderer', {
             // PixiJS Renderers Update Loop
             update: (dt) => {
@@ -430,6 +437,10 @@ export class Game {
                 this.drawGameUI();
             }
         });
+
+        this.sections.register('TipsOverlay', {
+            draw: () => this.tipsManager.draw()
+        });
     }
 
     // --- Centralized World Renderer ---
@@ -586,7 +597,12 @@ export class Game {
             loadingScreen.classList.add('hidden');
         }
 
+        if (this.tipsManager) this.tipsManager.resetRuntime();
+
+
         this.state = 'STAGE_INTRO';
+
+
         this.introTimer = 0;
     }
 
@@ -1061,6 +1077,8 @@ export class Game {
             'boss_reaper': 'boss_reaper.png',
             'boss_god': 'boss_god.png',
             'stage3_custom_bg': 'stage3backgroundp.JPG',
+            'tips_jump': 'tips_jump.png',
+            'tips_glide': 'tips_glide.png',
             // Ending Assets (Managed in assets/img/ending/)
             // (Use direct filename support for aliceendX.webp mappings below)
             // Editor Direct Filename Support (Map to ending folder)
@@ -1153,6 +1171,7 @@ export class Game {
         // --- CORE ASSETS (Always loaded at start) ---
         const coreAssets = [
             'enemy_cloud', 'tiles', 'carrot', 'bg_sky', 'bg_mountains', 'bg_hills',
+            'tips_jump', 'tips_glide',
             'golden_carrot', 'fuwamoko',
             'aliceend1.webp', 'aliceend2.webp', 'aliceend3.webp', 'aliceend4.webp', 'aliceend5.webp',
             'kanonend1.webp', 'kanonend2.webp', 'kanonend3.webp'
@@ -1949,8 +1968,8 @@ export class Game {
         }
     }
 
-    startDialogue(id, onComplete) {
-        this.dialogueManager.startDialogue(id, onComplete);
+    startDialogue(id, onComplete, options = {}) {
+        this.dialogueManager.startDialogue(id, onComplete, options);
     }
 
     showReadyGo() {
@@ -2865,7 +2884,7 @@ export class Game {
         // Ensure entities are sorted by X for the rendering optimization loop in Level.js
         this.level.entities.sort((a, b) => a.x - b.x);
     }
-    startDialogue(key, onComplete) {
+    startDialogue(key, onComplete, options = {}) {
         // Character specific dialogue check
         const currentChar = this.characterManager.getCurrentCharacter();
         if (currentChar && (currentChar.id === 'kanon' || currentChar.name === 'カノン')) {
@@ -2875,7 +2894,7 @@ export class Game {
             }
         }
 
-        this.dialogueManager.startDialogue(key, onComplete);
+        this.dialogueManager.startDialogue(key, onComplete, options);
     }
 
     showReadyGo() {

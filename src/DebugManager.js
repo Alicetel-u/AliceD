@@ -181,6 +181,7 @@ export class DebugManager {
                         this.game.state = 'PLAYING'; // Fake state
                         this.game.gameWon = true;
                         this.game.stageScoreGained = 12345; // Test Score
+                        this.game.stageCarrots = 42; // Test carrot count
                         if (this.game.resultSection) this.game.resultSection.reset();
                         return;
                     }
@@ -1207,6 +1208,8 @@ ${json}
         this.game.stageDamageCount = Math.floor(Math.random() * 5);
         this.game.stageStartTime = Date.now() - 125000; // 2m 5s ago
         this.game.lives = 3;
+        this.game.stageScoreGained = 180;
+        this.game.stageCarrots = 42;
 
         // Force Result trigger in next update
         // Note: Game.js update checks for gameWon and triggers ResultSection update

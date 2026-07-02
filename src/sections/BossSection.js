@@ -215,16 +215,8 @@ export class BossSection {
                 );
 
                 const finishLevel = () => {
-                    if (this.game.stage === 5) {
-                        // Stage 5: Skip whiteout, go directly to ending to avoid visual clash
-                        this.game.state = 'ENDING';
-                        const char = this.game.characterManager.getCurrentCharacter();
-                        const endingId = (char && char.id === 'kanon') ? 'KANON_TRUE' : 'ALICE_TRUE';
-                        this.game.endingSection.start(endingId);
-                    } else {
-                        this.isWhiteOut = true;
-                        this.whiteOutAlpha = 0;
-                    }
+                    this.isWhiteOut = true;
+                    this.whiteOutAlpha = 0;
                 };
 
                 const defeatKey = `STAGE${this.game.stage}_BOSS_DEFEAT`;
@@ -240,7 +232,11 @@ export class BossSection {
                         this.game.isPaused = true;
                         this.game.startDialogue(defeatKey, () => {
                             this.game.isPaused = false;
-                            finishLevel(); // Whiteout -> Ending triggered here
+                            finishLevel();
+                        }, {
+                            initialInputLock: 1.0,
+                            perLineInputLock: 1.0,
+                            autoAdvanceDelay: 3.5
                         });
                     }, 1500);
                 } else {
