@@ -68,7 +68,9 @@ export class EntityRenderer {
         this.processList(this.game.clouds, activeEntities, 'cloud_platform'); // Cloud Platform
         this.processList(this.game.rings, activeEntities, 'ring');
         this.processList(this.game.enemies, activeEntities, 'enemy');
-        this.processList(this.game.level.entities.filter(e => !e.collected && ['C', 'S', 'G', 'R'].includes(e.type)), activeEntities, 'collectible');
+        // Avoid allocating a filtered copy of the full level entity list every frame.
+        this.processList(this.game.level.entities, activeEntities, 'collectible',
+            e => !e.collected && ['C', 'S', 'G', 'R'].includes(e.type));
 
         // 2. Cleanup stale sprites
         for (const [entity, sprite] of this.sprites.entries()) {
@@ -80,14 +82,17 @@ export class EntityRenderer {
         }
     }
 
-    processList(list, activeSet, defaultType) {
+    processList(list, activeSet, defaultType, predicate = null) {
         if (!list) return;
         list.forEach(entity => {
-            // Cull off-screen entities loosely
-            // Skip things that are way off screen to save Sprite creation/update
-            // But be careful not to cull things that should be visible
-            // const dx = entity.x - this.game.camera.x;
-            // if (dx < -200 || dx > this.game.width + 200) return; 
+            if (predicate && !predicate(entity)) return;
+
+            // Only WebGL-render objects near the viewport. Logic updates remain
+            // untouched; this merely prevents hundreds of off-screen Sprites.
+            const dx = entity.x - this.game.camera.x;
+            const dy = entity.y - this.game.camera.y;
+            if (dx < -256 || dx > this.game.width + 256 ||
+                dy < -256 || dy > this.game.height + 256) return;
 
             activeSet.add(entity);
             let sprite = this.sprites.get(entity);
