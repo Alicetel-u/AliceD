@@ -670,11 +670,14 @@ export class Player {
         const animConfig = this.characterConfig || this.animator.config;
         const currentState = this.animator.state;
 
+        const stateConfig = animConfig.states && animConfig.states[currentState];
         let sprite;
-        if (animConfig.type === 'SEPARATE') {
+        if (stateConfig && stateConfig.spriteKey) {
+            sprite = assets.images[stateConfig.spriteKey] || assets.getImage('player');
+        } else if (animConfig.type === 'SEPARATE') {
             const spriteKey = `player_${currentState}`;
             // Try specific state sprite, fallback to base 'player'
-            sprite = assets.getImage(spriteKey) || assets.getImage('player');
+            sprite = assets.images[spriteKey] || assets.getImage('player');
         } else {
             sprite = assets.getImage('player');
         }
@@ -694,7 +697,6 @@ export class Player {
 
         // Apply per-state scale adjustment if defined in CharacterManager
         // This allows normalizing sizes across different sprite sheets (e.g. aligning head/feet)
-        const stateConfig = animConfig.states && animConfig.states[currentState];
         if (stateConfig && typeof stateConfig.scale === 'number') {
             renderSize *= stateConfig.scale;
         }
