@@ -22,15 +22,27 @@ export class EntityRenderer {
     init() {
         if (!this.pixi || !this.pixi.isReady) return;
 
+        // initLevel() runs once per stage. Reuse the renderer/container instead
+        // of stacking a new Container and procedural textures every transition.
+        if (this.isReady && this.container) {
+            this.resetStage();
+            return;
+        }
+
         this.container = new PIXI.Container();
         this.container.label = 'entities_dynamic';
-        // Insert into the entities layer (or world layer if preferred)
-        // Ideally above tiles, below player?
-        // Let's put it in the 'world' layer, but after tiles.
         this.pixi.layers.world.addChild(this.container);
 
         this.generateTextures();
         this.isReady = true;
+    }
+
+    resetStage() {
+        for (const sprite of this.sprites.values()) {
+            if (sprite.parent) sprite.parent.removeChild(sprite);
+            sprite.destroy({ children: true, texture: false });
+        }
+        this.sprites.clear();
     }
 
     generateTextures() {
@@ -43,6 +55,7 @@ export class EntityRenderer {
             g.poly([new PIXI.Point(44, 34), new PIXI.Point(104, 64), new PIXI.Point(44, 94)]).fill(0xffffff);
 
             this.textures['ring'] = this.pixi.app.renderer.generateTexture(g);
+            g.destroy();
         }
 
         // 2. Spring Texture (Procedural fallback if no asset)
@@ -51,6 +64,7 @@ export class EntityRenderer {
             g.rect(0, 16, 64, 48).fill(0xe67e22); // Box
             g.rect(0, 0, 64, 16).fill(0xf1c40f);  // Top plate
             this.textures['spring'] = this.pixi.app.renderer.generateTexture(g);
+            g.destroy();
         }
     }
 
