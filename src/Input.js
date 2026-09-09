@@ -2,6 +2,11 @@ export class Input {
     constructor() {
         this.keys = {};
         this.prevKeys = {};
+        // Edge-triggered key presses captured by DOM events and consumed once
+        // per game frame. The previous implementation copied keys -> prevKeys
+        // at frame start, making isPressed() false before gameplay could read it.
+        this._pressedKeysPending = new Set();
+        this._pressedKeysFrame = new Set();
 
         // Mouse/Touch states
         this.pointerDown = false;
@@ -16,6 +21,9 @@ export class Input {
 
         window.addEventListener('keydown', (e) => {
             if (this.blocked) return;
+            if (!this.keys[e.code]) {
+                this._pressedKeysPending.add(e.code);
+            }
             this.keys[e.code] = true;
         }, { signal });
 
@@ -80,12 +88,17 @@ export class Input {
 
     update() {
         if (this.blocked) {
-            // Ensure states are clear
+            this._pressedKeysFrame.clear();
             return;
         }
-        this.prevKeys = { ...this.keys };
-        this.pointerPressed = this._pointerPressedCurrentFrame;
+
+        // Publish DOM edge events for this frame, then clear the pending set.
+        this._pressedKeysFrame = new Set(this._pressedKeysPending);
+        this._pressedKeysPending.clear();
+
+        this.pointerPressed = !!this._pointerPressedCurrentFrame;
         this._pointerPressedCurrentFrame = false;
+        this.prevKeys = { ...this.keys };
     }
 
     reset() {
@@ -94,6 +107,8 @@ export class Input {
         this.pointerDown = false;
         this.pointerPressed = false;
         this._pointerPressedCurrentFrame = false;
+        this._pressedKeysPending.clear();
+        this._pressedKeysFrame.clear();
     }
 
     isDown(code) {
@@ -101,19 +116,16 @@ export class Input {
     }
 
     isPressed(code) {
-        return !!this.keys[code] && !this.prevKeys[code];
+        return this._pressedKeysFrame.has(code);
     }
 
     isAnyPressed() {
-        return this.pointerPressed || Object.keys(this.keys).some(k => this.keys[k] && !this.prevKeys[k]);
+        return this.pointerPressed || this._pressedKeysFrame.size > 0;
     }
 
     // 特定のキーを除外してキー入力を判定
     isAnyPressedExcept(excludeKeys = []) {
-        const keyPressed = Object.keys(this.keys).some(k => {
-            if (excludeKeys.includes(k)) return false;
-            return this.keys[k] && !this.prevKeys[k];
-        });
+        const keyPressed = [...this._pressedKeysFrame].some(k => !excludeKeys.includes(k));
         return this.pointerPressed || keyPressed;
     }
 }
