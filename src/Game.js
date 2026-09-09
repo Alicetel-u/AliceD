@@ -1355,6 +1355,15 @@ export class Game {
         }
 
         await this.assets.loadImages(imagesToLoad);
+
+        if (this.player && selectedCharacter.animation) {
+            const animationConfig =
+                this.assets.usedFallback('player') && selectedCharacter.fallbackAnimation
+                    ? selectedCharacter.fallbackAnimation
+                    : selectedCharacter.animation;
+            animationConfig.id = selectedCharacter.id;
+            this.player.setCharacterConfig(animationConfig);
+        }
     }
 
     initLevel() {
@@ -1934,9 +1943,15 @@ export class Game {
         this.player = new Player(this.spawnX, this.spawnY, this.tileSize, bonusStats, speechLines, charStats);
         this.player.game = this;
         if (selectedCharacter_obj.animation) {
+            // If the requested sprite could not be loaded, keep the old sprite and its matching layout.
+            const animationConfig =
+                this.assets.usedFallback('player') && selectedCharacter_obj.fallbackAnimation
+                    ? selectedCharacter_obj.fallbackAnimation
+                    : selectedCharacter_obj.animation;
+
             // Inject ID for specific resizing logic (e.g. Kanon run)
-            selectedCharacter_obj.animation.id = selectedCharacter_obj.id;
-            this.player.setCharacterConfig(selectedCharacter_obj.animation);
+            animationConfig.id = selectedCharacter_obj.id;
+            this.player.setCharacterConfig(animationConfig);
         }
 
         // Force Camera Reset to Spawn Point immediately
