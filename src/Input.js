@@ -80,9 +80,12 @@ export class Input {
         this.blocked = value;
         if (value) {
             this.keys = {};
+            this.prevKeys = {};
             this.pointerDown = false;
             this.pointerPressed = false;
             this._pointerPressedCurrentFrame = false;
+            this._pressedKeysPending.clear();
+            this._pressedKeysFrame.clear();
         }
     }
 
