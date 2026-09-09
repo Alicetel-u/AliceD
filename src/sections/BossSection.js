@@ -316,12 +316,17 @@ export class BossSection {
 
                     // キャラクターによる分岐
                     const char = this.game.characterManager.getCurrentCharacter();
-                    if (char && char.id === 'kanon') {
-                        this.game.endingSection.start('KANON_TRUE');
-                    } else {
-                        // アリスの場合、またはデフォルト
-                        this.game.endingSection.start('ALICE_TRUE');
-                    }
+                    const endingId = (char && char.id === 'kanon') ? 'KANON_TRUE' : 'ALICE_TRUE';
+
+                    // Ending artwork is intentionally lazy-loaded so mobile
+                    // devices do not carry every ending image through stages 1-5.
+                    this.game.loadEndingAssets(endingId)
+                        .catch(error => {
+                            console.warn('Ending asset preload failed; continuing with fallbacks.', error);
+                        })
+                        .finally(() => {
+                            this.game.endingSection.start(endingId);
+                        });
                 } else {
                     this.game.gameWon = true;
                     this.game.audio.playWin();
