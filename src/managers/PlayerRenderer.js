@@ -10,6 +10,9 @@ export class PlayerRenderer {
         this.pixi = game.pixi;
         this.sprite = null;
         this.isReady = false;
+        // Source -> bounded per-frame texture cache. Avoid allocating a new
+        // Pixi Texture every animation frame.
+        this._frameTextures = new WeakMap();
     }
 
     init() {
@@ -100,15 +103,24 @@ export class PlayerRenderer {
 
         const frameRect = new PIXI.Rectangle(frameX, frameY, frameW, frameH);
 
-        // テクスチャの更新 (フレームやソースが変わった場合のみ)
-        if (!this.sprite.texture ||
-            !this.sprite.texture.frame.equals(frameRect) ||
-            this.sprite.texture.source !== texture.source) {
-
-            this.sprite.texture = new PIXI.Texture({
+        // Reuse one derived texture per source/frame instead of allocating
+        // a fresh Texture object on every animation change.
+        let sourceCache = this._frameTextures.get(texture.source);
+        if (!sourceCache) {
+            sourceCache = new Map();
+            this._frameTextures.set(texture.source, sourceCache);
+        }
+        const frameKey = `${frameX}:${frameY}:${frameW}:${frameH}`;
+        let frameTexture = sourceCache.get(frameKey);
+        if (!frameTexture) {
+            frameTexture = new PIXI.Texture({
                 source: texture.source,
                 frame: frameRect
             });
+            sourceCache.set(frameKey, frameTexture);
+        }
+        if (this.sprite.texture !== frameTexture) {
+            this.sprite.texture = frameTexture;
         }
 
         // 3. 座標とスケールの設定
