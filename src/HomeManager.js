@@ -411,6 +411,12 @@ export class HomeManager {
     }
 
     async selectAndStart(charId) {
+        // Prevent rapid double-taps from starting overlapping asset loads and
+        // duplicate initLevel() calls on mobile.
+        if (this._startingGame) return;
+        this._startingGame = true;
+
+        try {
         // --- 1. 即座にロード画面を表示（止まった感を無くす） ---
         const loadingScreen = document.getElementById('loading-screen');
         if (loadingScreen) {
@@ -436,6 +442,13 @@ export class HomeManager {
         // --- 3. ゲーム開始 ---
         // ※startGame内部でもロード画面の制御が行われるため、以降の遷移はそちらに任せる
         await this.game.startGame();
+        } catch (error) {
+            console.error('[HomeManager] Failed to start game:', error);
+            const loadingScreen = document.getElementById('loading-screen');
+            if (loadingScreen) loadingScreen.classList.add('hidden');
+        } finally {
+            this._startingGame = false;
+        }
     }
 
     drawBackground() {
