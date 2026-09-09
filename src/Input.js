@@ -95,8 +95,12 @@ export class Input {
             return;
         }
 
-        // Publish DOM edge events for this frame, then clear the pending set.
-        this._pressedKeysFrame = new Set(this._pressedKeysPending);
+        // Publish DOM edge events for this frame without allocating a new Set
+        // every frame.
+        this._pressedKeysFrame.clear();
+        for (const code of this._pressedKeysPending) {
+            this._pressedKeysFrame.add(code);
+        }
         this._pressedKeysPending.clear();
 
         this.pointerPressed = !!this._pointerPressedCurrentFrame;
