@@ -1287,6 +1287,11 @@ export class Game {
         if (selectedCharacter.spriteFiles) {
             ['idle', 'run', 'jump', 'glide'].forEach(motion => {
                 if (selectedCharacter.spriteFiles[motion]) {
+                    // If the idle sheet is exactly the base player image, do not
+                    // decode the same PNG twice under two cache keys.
+                    if (motion === 'idle' && selectedCharacter.spriteFiles[motion] === selectedCharacter.spriteFile) {
+                        return;
+                    }
                     imagesToLoad.push({
                         name: `player_${motion}`,
                         src: `./assets/img/${selectedCharacter.spriteFiles[motion]}`,
@@ -1418,7 +1423,7 @@ export class Game {
 
         // モーション別のスプライトファイルがある場合は追加で読み込む
         if (selectedCharacter.spriteFiles) {
-            if (selectedCharacter.spriteFiles.idle) {
+            if (selectedCharacter.spriteFiles.idle && selectedCharacter.spriteFiles.idle !== selectedCharacter.spriteFile) {
                 imagesToLoad.push({ name: 'player_idle', src: `./assets/img/${selectedCharacter.spriteFiles.idle}`, transparencyKey: charTransparency });
             }
             if (selectedCharacter.spriteFiles.run) {
