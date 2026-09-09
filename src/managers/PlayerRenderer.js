@@ -50,14 +50,20 @@ export class PlayerRenderer {
         // 2. フレーム矩形の計算 (SpriteAnimator と同期)
         const sheetCols = stateConfig.sheetCols || config.cols || 1;
         const animCols = stateConfig.cols || sheetCols;
-        const maxFrames = stateConfig.frames || config.maxFrames || 1;
+        const frameSequence = Array.isArray(stateConfig.frameSequence) && stateConfig.frameSequence.length
+            ? stateConfig.frameSequence
+            : null;
+        const maxFrames = frameSequence ? frameSequence.length : (stateConfig.frames || config.maxFrames || 1);
 
         let sheetRows = stateConfig.sheetRows || config.rows || 1;
         if (config.type !== 'SHEET' && stateConfig.rows) {
             sheetRows = stateConfig.rows;
         }
 
-        const currentFrame = anim.frame % maxFrames;
+        const animationFrame = anim.frame % maxFrames;
+        const currentFrame = frameSequence
+            ? frameSequence[animationFrame % frameSequence.length]
+            : animationFrame;
 
         // Pixi v8: baseTexture -> source
         const sw = texture.source.width / sheetCols;
