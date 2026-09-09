@@ -2684,9 +2684,9 @@ export class Game {
                         this.stageScoreGained += 50;
                         this.updateScoreUI();
                         this.timeScale = 0.2;
-                        this.camera.shake(50, 20);
+                        this.camera.shake(0.8, 20);
                         this.audio.playWin ? this.audio.playWin() : this.audio.playCollect();
-                        this.bossDefeatTimer = 180;
+                        this.bossDefeatTimer = 3.0;
                         this.spawnBossExplosion(b.x, b.y);
                     }
                     return;
@@ -2839,7 +2839,7 @@ export class Game {
         this.timeScale = 0.1;
         setTimeout(() => { this.timeScale = 1.0; }, 2000); // 2 seconds of slow-mo (real time)
 
-        this.camera.shake(60, 1.0); // Strong 1-sec shake
+        this.camera.shake(1.0, 30); // Strong 1-sec shake
 
         // 2. Initial Shockwave
         this.env.particles.push({
