@@ -76,17 +76,42 @@ export const SheetLayouts = {
             glide: { row: 2, frames: 4, colOffset: 4 } // ジャンプ行の後半を使用
         }
     },
-    // モーション別 4x4 シート (待機/走る/ジャンプ/滑空を別ファイルで持つ)
+    // モーション別 4x4 / 16コマ。
+    // AI生成シートの微妙な配置差は autoAlign で実行時に吸収する。
     SEPARATE_4X4: {
         type: 'SEPARATE',
         cols: 4,
         rows: 4,
         maxFrames: 16,
         states: {
-            idle: { frames: 16, cols: 4, rows: 4, frameInterval: 10 },
-            run: { frames: 16, cols: 4, rows: 4, frameInterval: 5 },
-            jump: { frames: 16, cols: 4, rows: 4, frameInterval: 5 },
-            glide: { frames: 16, cols: 4, rows: 4, frameInterval: 6 }
+            // Idle: ゆっくり呼吸するテンポ。ループ。
+            idle: {
+                frames: 16, cols: 4, rows: 4,
+                frameInterval: 8,
+                loop: true,
+                autoAlign: { x: true, y: true, alphaThreshold: 24, maxOffset: 10 }
+            },
+            // Run: 16コマを15fps相当で再生。移動速度に負けない滑らかさを優先。
+            run: {
+                frames: 16, cols: 4, rows: 4,
+                frameInterval: 4,
+                loop: true,
+                autoAlign: { x: true, y: true, alphaThreshold: 24, maxOffset: 14 }
+            },
+            // Jump: 空中で最初からループし直さず、16コマを1回再生して最終姿勢を保持。
+            jump: {
+                frames: 16, cols: 4, rows: 4,
+                frameInterval: 5,
+                loop: false,
+                autoAlign: { x: true, y: true, alphaThreshold: 24, maxOffset: 16 }
+            },
+            // Glide: フード/服の揺れが見える程度のテンポで持続ループ。
+            glide: {
+                frames: 16, cols: 4, rows: 4,
+                frameInterval: 6,
+                loop: true,
+                autoAlign: { x: true, y: true, alphaThreshold: 24, maxOffset: 14 }
+            }
         }
     }
 };
@@ -146,7 +171,9 @@ export const CHARACTERS = [
         animation: {
             ...SheetLayouts.SEPARATE_4X4,
             frameInterval: 6,
-            bleed: 2.0,
+            // 新4x4シートはセル境界が明確なので旧シート向けの切り落とし補正は不要。
+            bleed: 0,
+            leftGuard: 0,
             visualOffsetY: 0,
             renderEffect: {
                 shadowBlur: 4,
