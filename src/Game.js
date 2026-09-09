@@ -1093,6 +1093,9 @@ export class Game {
             'boss_reaper': 'boss_reaper.png',
             'boss_god': 'boss_god.png',
             'stage3_custom_bg': 'stage3backgroundp.JPG',
+            'toy_block_primary': 'toy_block_primary.png',
+            'toy_block_secondary': 'toy_block_secondary.png',
+            'toy_box_crate': 'toy_box_crate.png',
             'tips_jump': 'tips_jump.png',
             'tips_glide': 'tips_glide.png',
             // Ending Assets (Managed in assets/img/ending/)
