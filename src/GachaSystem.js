@@ -45,7 +45,16 @@ export class GachaSystem {
 
         // Load collection
         const saved = localStorage.getItem('rabbit_dash_collection');
-        this.collection = saved ? JSON.parse(saved) : {};
+        try {
+            this.collection = saved ? JSON.parse(saved) : {};
+            if (!this.collection || typeof this.collection !== 'object' || Array.isArray(this.collection)) {
+                this.collection = {};
+            }
+        } catch (error) {
+            console.warn('[GachaSystem] Invalid saved collection; resetting it.', error);
+            this.collection = {};
+            localStorage.removeItem('rabbit_dash_collection');
+        }
 
         this.stats = { SPD: 0, JUMP: 0, CRIT: 0, DEF: 0 };
         this._iconDataUrls = new Map();
