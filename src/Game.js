@@ -1397,21 +1397,21 @@ export class Game {
 
         // モーション別のスプライトアセットを一旦クリア（他キャラの残骸を防ぐ）
         const motionSpriteNames = ['player_idle', 'player_run', 'player_jump', 'player_glide'];
-        motionSpriteNames.forEach(name => this.assets.deleteImage(name));
+        motionSpriteNames.forEach(name => this.assets.deleteImage(name, true));
 
         // モーション別のスプライトファイルがある場合は追加で読み込む
         if (selectedCharacter.spriteFiles) {
             if (selectedCharacter.spriteFiles.idle) {
-                imagesToLoad.push({ name: 'player_idle', src: `./assets/img/${selectedCharacter.spriteFiles.idle}`, transparencyKey: 'AUTO' });
+                imagesToLoad.push({ name: 'player_idle', src: `./assets/img/${selectedCharacter.spriteFiles.idle}`, transparencyKey: charTransparency });
             }
             if (selectedCharacter.spriteFiles.run) {
-                imagesToLoad.push({ name: 'player_run', src: `./assets/img/${selectedCharacter.spriteFiles.run}`, transparencyKey: 'AUTO' });
+                imagesToLoad.push({ name: 'player_run', src: `./assets/img/${selectedCharacter.spriteFiles.run}`, transparencyKey: charTransparency });
             }
             if (selectedCharacter.spriteFiles.jump) {
-                imagesToLoad.push({ name: 'player_jump', src: `./assets/img/${selectedCharacter.spriteFiles.jump}`, transparencyKey: 'AUTO' });
+                imagesToLoad.push({ name: 'player_jump', src: `./assets/img/${selectedCharacter.spriteFiles.jump}`, transparencyKey: charTransparency });
             }
             if (selectedCharacter.spriteFiles.glide) {
-                imagesToLoad.push({ name: 'player_glide', src: `./assets/img/${selectedCharacter.spriteFiles.glide}`, transparencyKey: 'AUTO' });
+                imagesToLoad.push({ name: 'player_glide', src: `./assets/img/${selectedCharacter.spriteFiles.glide}`, transparencyKey: charTransparency });
             }
         }
 
