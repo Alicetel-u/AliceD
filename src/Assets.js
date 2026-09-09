@@ -1,6 +1,9 @@
+import * as PIXI from 'pixi.js';
+
 export class Assets {
   constructor() {
     this.images = {};
+    this.textures = {};
     this.placeholders = {};
     this.loadMeta = {};
   }
@@ -143,6 +146,22 @@ export class Assets {
       this.images[name] = this.createPlaceholder(name);
     }
     return this.images[name];
+  }
+
+  getTexture(name) {
+    if (this.textures[name]) return this.textures[name];
+
+    const image = this.getImage(name);
+    if (!image) return null;
+
+    try {
+      const texture = PIXI.Texture.from(image);
+      this.textures[name] = texture;
+      return texture;
+    } catch (e) {
+      console.warn(`Failed to create texture for ${name}`, e);
+      return null;
+    }
   }
 
   deleteImage(name, releaseMemory = false) {
