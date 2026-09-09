@@ -54,7 +54,7 @@ export class SpriteAnimator {
         const animCols = stateConfig.cols || sheetCols;
         const maxFrames = stateConfig.frames || this.config.maxFrames || 1;
 
-        let sheetRows = this.config.rows || 1;
+        let sheetRows = stateConfig.sheetRows || this.config.rows || 1;
         if (this.config.type !== 'SHEET' && stateConfig.rows) {
             sheetRows = stateConfig.rows;
         }
@@ -161,7 +161,7 @@ export class SpriteAnimator {
 
         const stateConfig = this.config.states[this.state] || {};
         const cols = stateConfig.cols || this.config.cols || 1;
-        const rows = stateConfig.rows || this.config.rows || 1;
+        const rows = stateConfig.sheetRows || stateConfig.rows || this.config.rows || 1;
 
         const frameW = image.naturalWidth / cols;
         const frameH = image.naturalHeight / rows;
