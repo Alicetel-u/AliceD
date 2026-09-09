@@ -38,9 +38,20 @@ export const SheetLayouts = {
         rows: 4,
         maxFrames: 8,
         states: {
-            idle:  { row: 0, cols: 8, frames: 8, scale: 1.0, frameInterval: 12 },
-            run:   { row: 1, cols: 8, frames: 8, scale: 1.0, frameInterval: 5 },
-            jump:  { row: 2, cols: 8, frames: 8, scale: 1.0, frameInterval: 6 },
+            idle:  {
+                row: 0, cols: 8, frames: 8, scale: 1.0, frameInterval: 12,
+                sourceOffsetY: 12
+            },
+            run:   {
+                row: 1, cols: 8, frames: 8, scale: 1.0, frameInterval: 5,
+                sourceOffsetX: 3,
+                sourceOffsetY: 10,
+                sourceFrameOffsets: { 7: { x: -3 } }
+            },
+            jump:  {
+                row: 2, cols: 8, frames: 8, scale: 1.0, frameInterval: 6,
+                sourceOffsetY: 10
+            },
             glide: { row: 3, cols: 8, frames: 8, scale: 1.0, frameInterval: 8 }
         }
     },
