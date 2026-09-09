@@ -91,6 +91,10 @@ export class Game {
         this.level = new Level(this.tileSize); // 64px tiles base
         this.parallax = new ParallaxBackground(this.width, this.height, this.pixi);
         this.env = new Environment(this.width, this.height);
+        // Track dynamic assets so old stage images can be released before the
+        // next stage is decoded. This keeps mobile peak memory bounded.
+        this._stageAssetNames = new Set();
+        this._pinnedAssetNames = new Set();
         this.audio = new AudioManager();
         this.characterManager = new CharacterManager();
         this.dialogueManager = new DialogueManager(this);
@@ -809,6 +813,18 @@ export class Game {
             if (info) info.textContent = `PREPARING STAGE ${this.stage}...`;
         }
 
+        // Drop transient stage-1 runtime data before decoding stage-2 images.
+        // This reduces the transition peak on memory-constrained mobile browsers.
+        if (this.env && this.env.particles) this.env.particles.length = 0;
+        if (this.player && this.player.particles) this.player.particles.length = 0;
+        if (this.boss && this.boss.projectiles) this.boss.projectiles.length = 0;
+        if (this.domEffects) this.domEffects.clear();
+        if (this.resultSection) {
+            if (this.resultSection.sparkles) this.resultSection.sparkles.length = 0;
+            if (this.resultSection.floatingStars) this.resultSection.floatingStars.length = 0;
+        }
+        if (this.parallax) this.parallax.clear();
+
         // 次のステージの素材を動的にロード
         await this.loadStageAssets(this.stage);
 
@@ -1067,7 +1083,7 @@ export class Game {
             'boss_nurse_cutin': 'boss_nurse_cutin.png',
             'boss_sister_s': 'boss_sister_s.png',
             'boss_sister_k': 'boss_sister_k.png',
-            'boss_sister_cutin': 'sisterScut.png',
+            'boss_sister_cutin': 'sisterScut.webp',
             'boss_god_cutin': 'stage5bosscut.png',
             'boss_mochitsuki': 'boss_mochitsuki.png',
             'boss_weak': 'boss_mochitsuki_weak.png',
@@ -1145,6 +1161,12 @@ export class Game {
             if (stage.boss.cutin) assetSet.add(stage.boss.cutin);
         }
 
+        // Release assets that belonged only to the previous stage BEFORE
+        // decoding the next stage. Previously stage 1 + stage 2 images were
+        // resident together at the exact transition where mobile memory peaks.
+        this.releaseStageAssets(assetSet);
+        this._stageAssetNames = new Set(assetSet);
+
         const imagesToLoad = [];
         assetSet.forEach(name => {
             if (!this.assets.images[name]) {
@@ -1162,6 +1184,40 @@ export class Game {
         }
     }
 
+    releaseStageAssets(keepSet = new Set()) {
+        if (!this._stageAssetNames) return;
+
+        for (const name of this._stageAssetNames) {
+            if (keepSet.has(name)) continue;
+            if (this._pinnedAssetNames && this._pinnedAssetNames.has(name)) continue;
+            this.assets.deleteImage(name, true);
+        }
+    }
+
+    async loadEndingAssets(endingId) {
+        const isKanon = typeof endingId === 'string' && endingId.startsWith('KANON');
+        const names = isKanon
+            ? ['kanonend1.webp', 'kanonend2.webp', 'kanonend3.webp']
+            : ['aliceend1.webp', 'aliceend2.webp', 'aliceend3.webp', 'aliceend4.webp', 'aliceend5.webp'];
+
+        // Stage 5 visuals are no longer needed once the ending begins.
+        // Free them before decoding the ending artwork to avoid another peak.
+        this.releaseStageAssets(new Set());
+        this._stageAssetNames = new Set();
+
+        const imagesToLoad = names
+            .filter(name => !this.assets.images[name])
+            .map(name => ({
+                name,
+                src: this.resolveAssetPath(name),
+                transparencyKey: null
+            }));
+
+        if (imagesToLoad.length > 0) {
+            await this.assets.loadImages(imagesToLoad);
+        }
+    }
+
     async start() {
         // Initialize Boot Manager
         this.bootManager.init();
@@ -1172,9 +1228,7 @@ export class Game {
         const coreAssets = [
             'enemy_cloud', 'tiles', 'carrot', 'bg_sky', 'bg_mountains', 'bg_hills',
             'tips_jump', 'tips_glide',
-            'golden_carrot', 'fuwamoko',
-            'aliceend1.webp', 'aliceend2.webp', 'aliceend3.webp', 'aliceend4.webp', 'aliceend5.webp',
-            'kanonend1.webp', 'kanonend2.webp', 'kanonend3.webp'
+            'golden_carrot', 'fuwamoko'
         ];
 
         const imagesToLoad = [];
@@ -1228,6 +1282,10 @@ export class Game {
 
         // Add Main Title Background
         imagesToLoad.push({ name: 'bg_title', src: './assets/img/title.png' });
+
+        // Only these boot assets stay resident across stage transitions.
+        // Ending artwork is intentionally lazy-loaded at the actual ending.
+        this._pinnedAssetNames = new Set(imagesToLoad.map(item => item.name));
 
         // Logic handled by BootManager
         const loadingPromise = this.assets.loadImages(imagesToLoad);
