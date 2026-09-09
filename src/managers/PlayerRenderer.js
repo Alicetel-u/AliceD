@@ -67,14 +67,22 @@ export class PlayerRenderer {
         const row = (stateConfig.row || 0) + relRow;
 
         const bleed = config.bleed !== undefined ? config.bleed : 1.0;
-        const leftGuard = 2.0;
+        const leftGuard = config.leftGuard !== undefined ? config.leftGuard : 2.0;
         const trimLeft = (stateConfig.trimLeft || 0);
         const trimRight = (stateConfig.trimRight || 0);
         const trimTop = (stateConfig.trimTop || 0);
         const trimBottom = (stateConfig.trimBottom || 0);
 
-        const frameX = Math.round(col * sw) + bleed + leftGuard + trimLeft;
-        const frameY = Math.round(row * sh) + bleed + trimTop;
+        let sourceOffsetX = stateConfig.sourceOffsetX || 0;
+        let sourceOffsetY = stateConfig.sourceOffsetY || 0;
+        if (stateConfig.sourceFrameOffsets && stateConfig.sourceFrameOffsets[currentFrame]) {
+            const sourceFrameOffset = stateConfig.sourceFrameOffsets[currentFrame];
+            if (sourceFrameOffset.x !== undefined) sourceOffsetX += sourceFrameOffset.x;
+            if (sourceFrameOffset.y !== undefined) sourceOffsetY += sourceFrameOffset.y;
+        }
+
+        const frameX = Math.round(col * sw) + sourceOffsetX + bleed + leftGuard + trimLeft;
+        const frameY = Math.round(row * sh) + sourceOffsetY + bleed + trimTop;
         const frameW = Math.max(1, Math.round(sw) - (bleed * 2) - leftGuard - trimLeft - trimRight);
         const frameH = Math.max(1, Math.round(sh) - (bleed * 2) - trimTop - trimBottom);
 

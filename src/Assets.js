@@ -2,6 +2,7 @@ export class Assets {
   constructor() {
     this.images = {};
     this.placeholders = {};
+    this.loadMeta = {};
   }
 
   async loadImages(sources, onProgress = null) {
@@ -10,12 +11,13 @@ export class Assets {
 
     const promises = sources.map(source => {
       return new Promise((resolve) => {
-        const tryLoad = (src, attempt = 1) => {
+        const tryLoad = (src, attempt = 1, usingFallback = false) => {
           const img = new Image();
           img.crossOrigin = "anonymous";
           img.src = src;
 
           img.onload = () => {
+            this.loadMeta[source.name] = { src, usedFallback: usingFallback, placeholder: false };
             try {
               if (source.transparencyKey) {
                 this.images[source.name] = this.processTransparency(img, source.transparencyKey);
@@ -44,9 +46,17 @@ export class Assets {
               }
 
               if (nextSrc !== src) {
-                tryLoad(nextSrc, 2);
+                tryLoad(nextSrc, 2, usingFallback);
                 return;
               }
+            }
+
+            // Character assets may define an explicit fallback file.
+            // This keeps the game playable while a replacement sprite is being deployed.
+            if (!usingFallback && source.fallbackSrc) {
+              console.warn(`Failed to load ${source.src}; trying fallback ${source.fallbackSrc}`);
+              tryLoad(source.fallbackSrc, 1, true);
+              return;
             }
 
             console.error(`Failed to load image: ${source.src}. Generating placeholder.`);
@@ -120,6 +130,10 @@ export class Assets {
     }
     ctx.putImageData(imageData, 0, 0);
     return canvas; // Return context's canvas directly to avoid async toDataURL reload
+  }
+
+  usedFallback(name) {
+    return this.loadMeta[name]?.usedFallback === true;
   }
 
   getImage(name) {
