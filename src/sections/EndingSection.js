@@ -127,6 +127,7 @@ export class EndingSection {
                 // Return to Title (HOME state)
                 this.state = 'FINISHED';
                 this.game.state = 'HOME';
+                if (this.game.releaseEndingAssets) this.game.releaseEndingAssets();
                 this.game.audio.playBGM('TITLE');
 
                 // Reset game if needed for clean state
