@@ -16,12 +16,16 @@ export class SpriteAnimator {
         // Per-image frame alignment data. WeakMap keeps memory bounded when
         // character assets are swapped at runtime.
         this.alignmentCache = new WeakMap();
+        // Cached isolated frame canvases used to remove stray edge pixels
+        // without changing the apparent sprite size.
+        this.frameCanvasCache = new WeakMap();
     }
 
     setConfig(config) {
         this.config = config;
         this.validatedImages.clear(); // 設定が変わったら再検証
         this.alignmentCache = new WeakMap();
+        this.frameCanvasCache = new WeakMap();
     }
 
     setState(state) {
@@ -185,17 +189,85 @@ export class SpriteAnimator {
             if (fOff.y !== undefined) offY += fOff.y * scaleY;
         }
 
-        // Draw centered at the bottom pivot
-        ctx.drawImage(
+        // Draw centered at the bottom pivot.
+        // For generated sprite sheets we can isolate a cell into its own canvas
+        // and clear only known-bad edge strips. This prevents stray fragments
+        // from flickering while keeping the sprite's visual size unchanged.
+        const isolatedFrame = this.getIsolatedFrame(
             image,
-            srcX, srcY, srcW, srcH,
-            -width / 2 + offX, -height + offY,
-            width, height
+            stateConfig,
+            sheetCols,
+            sheetRows,
+            animCols,
+            currentFrame
         );
+
+        if (isolatedFrame) {
+            ctx.drawImage(
+                isolatedFrame,
+                0, 0, isolatedFrame.width, isolatedFrame.height,
+                -width / 2 + offX, -height + offY,
+                width, height
+            );
+        } else {
+            ctx.drawImage(
+                image,
+                srcX, srcY, srcW, srcH,
+                -width / 2 + offX, -height + offY,
+                width, height
+            );
+        }
 
         ctx.restore();
 
         return height;
+    }
+
+    getIsolatedFrame(image, stateConfig, sheetCols, sheetRows, animCols, currentFrame) {
+        const edges = stateConfig.clearEdges;
+        if (!edges) return null;
+
+        const key = [
+            sheetCols, sheetRows, animCols, currentFrame,
+            edges.top || 0, edges.right || 0, edges.bottom || 0, edges.left || 0
+        ].join(':');
+
+        let imageCache = this.frameCanvasCache.get(image);
+        if (!imageCache) {
+            imageCache = new Map();
+            this.frameCanvasCache.set(image, imageCache);
+        }
+        if (imageCache.has(key)) return imageCache.get(key);
+
+        const frameW = Math.round(image.width / sheetCols);
+        const frameH = Math.round(image.height / sheetRows);
+        const relCol = currentFrame % animCols;
+        const relRow = Math.floor(currentFrame / animCols);
+        const col = (stateConfig.colOffset || 0) + relCol;
+        const row = (stateConfig.row || 0) + relRow;
+        const sx = Math.round(col * (image.width / sheetCols));
+        const sy = Math.round(row * (image.height / sheetRows));
+
+        const canvas = document.createElement('canvas');
+        canvas.width = frameW;
+        canvas.height = frameH;
+        const frameCtx = canvas.getContext('2d');
+        frameCtx.imageSmoothingEnabled = false;
+        frameCtx.clearRect(0, 0, frameW, frameH);
+        frameCtx.drawImage(image, sx, sy, frameW, frameH, 0, 0, frameW, frameH);
+
+        const top = Math.max(0, Math.min(frameH, edges.top || 0));
+        const right = Math.max(0, Math.min(frameW, edges.right || 0));
+        const bottom = Math.max(0, Math.min(frameH, edges.bottom || 0));
+        const left = Math.max(0, Math.min(frameW, edges.left || 0));
+
+        if (top > 0) frameCtx.clearRect(0, 0, frameW, top);
+        if (bottom > 0) frameCtx.clearRect(0, frameH - bottom, frameW, bottom);
+        if (left > 0) frameCtx.clearRect(0, 0, left, frameH);
+        if (right > 0) frameCtx.clearRect(frameW - right, 0, right, frameH);
+
+        imageCache.set(key, canvas);
+        return canvas;
     }
 
     getAutoAlignment(image, stateConfig, sheetCols, sheetRows, animCols, maxFrames, currentFrame) {
