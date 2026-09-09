@@ -2,6 +2,7 @@ export class Assets {
   constructor() {
     this.images = {};
     this.placeholders = {};
+    this.loadMeta = {};
   }
 
   async loadImages(sources, onProgress = null) {
@@ -16,6 +17,7 @@ export class Assets {
           img.src = src;
 
           img.onload = () => {
+            this.loadMeta[source.name] = { src, usedFallback: usingFallback, placeholder: false };
             try {
               if (source.transparencyKey) {
                 this.images[source.name] = this.processTransparency(img, source.transparencyKey);
@@ -128,6 +130,10 @@ export class Assets {
     }
     ctx.putImageData(imageData, 0, 0);
     return canvas; // Return context's canvas directly to avoid async toDataURL reload
+  }
+
+  usedFallback(name) {
+    return this.loadMeta[name]?.usedFallback === true;
   }
 
   getImage(name) {
