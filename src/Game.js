@@ -2082,6 +2082,12 @@ export class Game {
             this.sections.run('System', 'update', cappedDt);
             this.endingSection.update(cappedDt);
             this.endingSection.draw();
+        } else if (this.state === 'LOADING_STAGE') {
+            // Do not keep updating/drawing the previous stage while large images
+            // for the next stage are decoding. Besides wasting CPU, drawing here
+            // can recreate placeholders for assets we just released.
+            this.ctx.fillStyle = '#000';
+            this.ctx.fillRect(0, 0, this.width, this.height);
         } else if (this.state === 'STAGE_INTRO') {
             // STAGE INTRO: Pause World, run System/Draw
             this.sections.run('System', 'update', cappedDt);
