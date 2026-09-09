@@ -118,7 +118,7 @@ export class GachaSystem {
         if (!this.canClose) return;
         this.canClose = false;
         this.modal.classList.add('hidden');
-        if (this.game.state !== 'HOME' && !this.game.running) {
+        if (!this.game.running) {
             this.game.running = true;
             this.game.lastTime = performance.now();
             requestAnimationFrame((t) => this.game.loop(t));
