@@ -1283,16 +1283,20 @@ ${json}
 
         // 全体のデバッグツールの表示状態を反映 (isVisibleが唯一のソース)
         if (this.elements.container) {
-            this.elements.container.style.display = this.isVisible ? 'block' : 'none';
+            const display = this.isVisible ? 'block' : 'none';
+            if (this.elements.container.style.display !== display) {
+                this.elements.container.style.display = display;
+            }
         }
 
         // Title Screen Debug Button (Debug Room Entry) Visibility
         if (this.elements.debugRoomEntry) {
-            if (this.isVisible) {
-                this.elements.debugRoomEntry.style.display = 'flex';
-                this.elements.debugRoomEntry.style.zIndex = "10000"; // 確実に上に
-            } else {
-                this.elements.debugRoomEntry.style.display = 'none';
+            const display = this.isVisible ? 'flex' : 'none';
+            if (this.elements.debugRoomEntry.style.display !== display) {
+                this.elements.debugRoomEntry.style.display = display;
+            }
+            if (this.isVisible && this.elements.debugRoomEntry.style.zIndex !== "10000") {
+                this.elements.debugRoomEntry.style.zIndex = "10000";
             }
         }
     }
