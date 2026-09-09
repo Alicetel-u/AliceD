@@ -75,6 +75,19 @@ export const SheetLayouts = {
             jump: { row: 2, frames: 4 },
             glide: { row: 2, frames: 4, colOffset: 4 } // ジャンプ行の後半を使用
         }
+    },
+    // モーション別 4x4 シート (待機/走る/ジャンプ/滑空を別ファイルで持つ)
+    SEPARATE_4X4: {
+        type: 'SEPARATE',
+        cols: 4,
+        rows: 4,
+        maxFrames: 16,
+        states: {
+            idle: { frames: 16, cols: 4, rows: 4, frameInterval: 10 },
+            run: { frames: 16, cols: 4, rows: 4, frameInterval: 5 },
+            jump: { frames: 16, cols: 4, rows: 4, frameInterval: 5 },
+            glide: { frames: 16, cols: 4, rows: 4, frameInterval: 6 }
+        }
     }
 };
 
@@ -113,10 +126,13 @@ export const CHARACTERS = [
     {
         id: 'kanon',
         name: 'KANON',
-        spriteFile: 'KANONmotion_v2.png',
-        spriteFallbackFile: 'KANONmotion.png', // V2 asset未配置時も旧スプライトで安全に起動
+        spriteFile: 'kanon_idle.png',
+        spriteFallbackFile: 'KANONmotion.png',
         spriteFiles: {
-            run: 'KANON_run_8x1_2048x256.png'
+            idle: 'kanon_idle.png',
+            run: 'kanon_run.png',
+            jump: 'kanon_jump.png',
+            glide: 'kanon_glide.png'
         },
         titleImage: 'title_kanon.png',
         transparencyKey: null,
@@ -127,25 +143,10 @@ export const CHARACTERS = [
             backgroundColor: 'rgba(255, 182, 193, 0.15)'
         },
         stats: { speed: 1.0, jump: 1.0 },
-        // V2は整数グリッドの8x4。旧シート向けの大きなtrim/bleed補正は使わない
         animation: {
-            type: 'SHEET',
-            ...SheetLayouts.KANON_STRIP_V2,
-            frameInterval: 8,
-            bleed: 0,
-            leftGuard: 0,
-            visualOffsetY: 0,
-            renderEffect: {
-                shadowBlur: 2,
-                shadowColor: 'rgba(0, 0, 0, 0.45)'
-            }
-        },
-        // 新画像がまだ配信されていない場合だけ旧KANONmotion.png用設定へ戻す
-        fallbackAnimation: {
-            type: 'SHEET',
-            ...SheetLayouts.KANON_QUADRANT,
+            ...SheetLayouts.SEPARATE_4X4,
             frameInterval: 6,
-            bleed: 4.0,
+            bleed: 2.0,
             visualOffsetY: 0,
             renderEffect: {
                 shadowBlur: 4,
