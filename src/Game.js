@@ -94,6 +94,7 @@ export class Game {
         // Track dynamic assets so old stage images can be released before the
         // next stage is decoded. This keeps mobile peak memory bounded.
         this._stageAssetNames = new Set();
+        this._endingAssetNames = new Set();
         this._pinnedAssetNames = new Set();
         this.audio = new AudioManager();
         this.characterManager = new CharacterManager();
@@ -548,6 +549,9 @@ export class Game {
     }
 
     async startGame() {
+        // Safeguard replay sessions after an ending.
+        this.releaseEndingAssets();
+
         if (!this.audio.initialized) {
             await this.audio.init();
         }
@@ -1202,6 +1206,7 @@ export class Game {
         const names = isKanon
             ? ['kanonend1.webp', 'kanonend2.webp', 'kanonend3.webp']
             : ['aliceend1.webp', 'aliceend2.webp', 'aliceend3.webp', 'aliceend4.webp', 'aliceend5.webp'];
+        this._endingAssetNames = new Set(names);
 
         // Stage 5 visuals are no longer needed once the ending begins.
         // Free them before decoding the ending artwork to avoid another peak.
@@ -1219,6 +1224,14 @@ export class Game {
         if (imagesToLoad.length > 0) {
             await this.assets.loadImages(imagesToLoad);
         }
+    }
+
+    releaseEndingAssets() {
+        if (!this._endingAssetNames) return;
+        for (const name of this._endingAssetNames) {
+            this.assets.deleteImage(name, true);
+        }
+        this._endingAssetNames.clear();
     }
 
     async start() {
