@@ -36,7 +36,10 @@ export class SpriteAnimator {
         // 現在の状態の設定を取得
         const stateConfig = this.config.states[this.state] || this.config.states.idle || {};
         const frameInterval = stateConfig.frameInterval || this.config.frameInterval || 10;
-        const maxFrames = stateConfig.frames || this.config.maxFrames || 1;
+        const frameSequence = Array.isArray(stateConfig.frameSequence) && stateConfig.frameSequence.length
+            ? stateConfig.frameSequence
+            : null;
+        const maxFrames = frameSequence ? frameSequence.length : (stateConfig.frames || this.config.maxFrames || 1);
 
         this.frameTimer += dt * 60; // 60fps base
 
@@ -68,7 +71,10 @@ export class SpriteAnimator {
         // Determine layout for current state
         const sheetCols = stateConfig.sheetCols || this.config.cols || 1;
         const animCols = stateConfig.cols || sheetCols;
-        const maxFrames = stateConfig.frames || this.config.maxFrames || 1;
+        const frameSequence = Array.isArray(stateConfig.frameSequence) && stateConfig.frameSequence.length
+            ? stateConfig.frameSequence
+            : null;
+        const maxFrames = frameSequence ? frameSequence.length : (stateConfig.frames || this.config.maxFrames || 1);
 
         let sheetRows = stateConfig.sheetRows || this.config.rows || 1;
         if (this.config.type !== 'SHEET' && stateConfig.rows) {
@@ -76,7 +82,10 @@ export class SpriteAnimator {
         }
 
         // Frame calculation
-        const currentFrame = this.frame % maxFrames;
+        const animationFrame = this.frame % maxFrames;
+        const currentFrame = frameSequence
+            ? frameSequence[animationFrame % frameSequence.length]
+            : animationFrame;
 
         // Sprite sheet calculation: precise floats
         const sw = image.width / sheetCols;
