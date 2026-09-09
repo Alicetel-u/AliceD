@@ -101,7 +101,7 @@ export const SheetLayouts = {
                 frameInterval: 5,
                 loop: true,
                 autoAlign: { x: true, y: true, alphaThreshold: 56, maxOffset: 6 },
-                trimTop: 6
+                clearEdges: { top: 16 }
             },
             // Jump: 空中で最初からループし直さず、16コマを1回再生して最終姿勢を保持。
             jump: {
@@ -109,7 +109,7 @@ export const SheetLayouts = {
                 frameInterval: 5,
                 loop: false,
                 autoAlign: { x: true, y: true, alphaThreshold: 56, maxOffset: 6 },
-                trimTop: 6
+                clearEdges: { top: 16 }
             },
             // Glide: 右/下方向の薄いはみ出しを拾わないよう、補正をかなり弱める。
             glide: {
