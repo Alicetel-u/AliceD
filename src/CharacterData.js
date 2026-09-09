@@ -43,10 +43,19 @@ export const SheetLayouts = {
                 sourceOffsetY: 12
             },
             run:   {
-                row: 0, cols: 8, frames: 8, scale: 1.0, frameInterval: 5,
+                row: 0, cols: 8, frames: 8, scale: 1.0, frameInterval: 4,
                 spriteKey: 'player_run',
                 sheetCols: 8,
-                sheetRows: 1
+                sheetRows: 1,
+                // The strip already has identical foot baselines, so keep Y untouched.
+                // Tiny X-only corrections reduce torso/head wobble without changing the art.
+                frameOffsets: {
+                    0: { x: -1 },
+                    2: { x: 2 },
+                    3: { x: -1 },
+                    4: { x: -1 },
+                    6: { x: 1 }
+                }
             },
             jump:  {
                 row: 2, cols: 8, frames: 8, scale: 1.0, frameInterval: 6,
