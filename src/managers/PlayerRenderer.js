@@ -67,7 +67,7 @@ export class PlayerRenderer {
         const row = (stateConfig.row || 0) + relRow;
 
         const bleed = config.bleed !== undefined ? config.bleed : 1.0;
-        const leftGuard = 2.0;
+        const leftGuard = config.leftGuard !== undefined ? config.leftGuard : 2.0;
         const trimLeft = (stateConfig.trimLeft || 0);
         const trimRight = (stateConfig.trimRight || 0);
         const trimTop = (stateConfig.trimTop || 0);
