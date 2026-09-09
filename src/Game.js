@@ -1181,7 +1181,12 @@ export class Game {
         const charTransparency = selectedCharacter.transparencyKey !== undefined ? selectedCharacter.transparencyKey : 'AUTO';
 
         // Player Basic
-        imagesToLoad.push({ name: 'player', src: `./assets/img/${selectedCharacter.spriteFile}`, transparencyKey: charTransparency });
+        imagesToLoad.push({
+            name: 'player',
+            src: `./assets/img/${selectedCharacter.spriteFile}`,
+            fallbackSrc: selectedCharacter.spriteFallbackFile ? `./assets/img/${selectedCharacter.spriteFallbackFile}` : null,
+            transparencyKey: charTransparency
+        });
 
         // Core Common
         coreAssets.forEach(name => {
@@ -1312,8 +1317,14 @@ export class Game {
 
     async reloadCharacterSprite() {
         const selectedCharacter = this.characterManager.getCurrentCharacter();
+        const charTransparency = selectedCharacter.transparencyKey !== undefined ? selectedCharacter.transparencyKey : 'AUTO';
         const imagesToLoad = [
-            { name: 'player', src: `./assets/img/${selectedCharacter.spriteFile}`, transparencyKey: 'AUTO' }
+            {
+                name: 'player',
+                src: `./assets/img/${selectedCharacter.spriteFile}`,
+                fallbackSrc: selectedCharacter.spriteFallbackFile ? `./assets/img/${selectedCharacter.spriteFallbackFile}` : null,
+                transparencyKey: charTransparency
+            }
         ];
 
         // タイトル画像も再読み込み
