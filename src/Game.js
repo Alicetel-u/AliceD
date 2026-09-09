@@ -1395,6 +1395,10 @@ export class Game {
             imagesToLoad.push({ name: 'title', src: './assets/img/title.webp' });
         }
 
+        // Release the previous character's decoded images before loading
+        // replacements so character swaps do not briefly hold both sets.
+        this.assets.deleteImage('player', true);
+
         // モーション別のスプライトアセットを一旦クリア（他キャラの残骸を防ぐ）
         const motionSpriteNames = ['player_idle', 'player_run', 'player_jump', 'player_glide'];
         motionSpriteNames.forEach(name => this.assets.deleteImage(name, true));
