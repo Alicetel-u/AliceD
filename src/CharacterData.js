@@ -43,10 +43,10 @@ export const SheetLayouts = {
                 sourceOffsetY: 12
             },
             run:   {
-                row: 1, cols: 8, frames: 8, scale: 1.0, frameInterval: 5,
-                sourceOffsetX: 3,
-                sourceOffsetY: 10,
-                sourceFrameOffsets: { 7: { x: -3 } }
+                row: 0, cols: 8, frames: 8, scale: 1.0, frameInterval: 5,
+                spriteKey: 'player_run',
+                sheetCols: 8,
+                sheetRows: 1
             },
             jump:  {
                 row: 2, cols: 8, frames: 8, scale: 1.0, frameInterval: 6,
@@ -106,6 +106,9 @@ export const CHARACTERS = [
         name: 'KANON',
         spriteFile: 'KANONmotion_v2.png',
         spriteFallbackFile: 'KANONmotion.png', // V2 asset未配置時も旧スプライトで安全に起動
+        spriteFiles: {
+            run: 'KANON_run_8x1_2048x256.png'
+        },
         titleImage: 'title_kanon.png',
         transparencyKey: null,
         description: 'クールで知的な電子少女',
