@@ -10,7 +10,7 @@ export class Assets {
 
     const promises = sources.map(source => {
       return new Promise((resolve) => {
-        const tryLoad = (src, attempt = 1) => {
+        const tryLoad = (src, attempt = 1, usingFallback = false) => {
           const img = new Image();
           img.crossOrigin = "anonymous";
           img.src = src;
@@ -44,9 +44,17 @@ export class Assets {
               }
 
               if (nextSrc !== src) {
-                tryLoad(nextSrc, 2);
+                tryLoad(nextSrc, 2, usingFallback);
                 return;
               }
+            }
+
+            // Character assets may define an explicit fallback file.
+            // This keeps the game playable while a replacement sprite is being deployed.
+            if (!usingFallback && source.fallbackSrc) {
+              console.warn(`Failed to load ${source.src}; trying fallback ${source.fallbackSrc}`);
+              tryLoad(source.fallbackSrc, 1, true);
+              return;
             }
 
             console.error(`Failed to load image: ${source.src}. Generating placeholder.`);
