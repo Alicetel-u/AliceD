@@ -117,6 +117,18 @@ export const CHARACTERS = [
                 shadowColor: 'rgba(0, 0, 0, 0.45)'
             }
         },
+        // 新画像がまだ配信されていない場合だけ旧KANONmotion.png用設定へ戻す
+        fallbackAnimation: {
+            type: 'SHEET',
+            ...SheetLayouts.KANON_QUADRANT,
+            frameInterval: 6,
+            bleed: 4.0,
+            visualOffsetY: 0,
+            renderEffect: {
+                shadowBlur: 4,
+                shadowColor: '#000000'
+            }
+        },
         speechLines: [
             "……行くわよ。準備はいい？",
             "効率的に進めましょう。",
