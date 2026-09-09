@@ -111,10 +111,12 @@ export const SheetLayouts = {
                 autoAlign: { x: true, y: true, alphaThreshold: 56, maxOffset: 6 },
                 clearEdges: { top: 16 }
             },
-            // Glide: 右/下方向の薄いはみ出しを拾わないよう、補正をかなり弱める。
+            // Glide: 脚の不自然なカクつきを避けるため、安定した滑空姿勢を1枚固定で使用。
+            // 滑空中はキャラクター自身を動かさず、ゲーム側の移動だけでスーッと飛ばす。
             glide: {
                 frames: 16, cols: 4, rows: 4,
-                frameInterval: 6,
+                frameSequence: [5],
+                frameInterval: 12,
                 loop: true,
                 autoAlign: { x: true, y: true, alphaThreshold: 72, maxOffset: 4 },
                 clearEdges: { right: 16, bottom: 16 }
