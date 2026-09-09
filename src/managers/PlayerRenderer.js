@@ -30,13 +30,16 @@ export class PlayerRenderer {
         const stateConfig = config.states[anim.state] || config.states.idle || {};
 
         // 1. 使用するテクスチャの決定
-        let textureKey;
-        if (config.type === 'SEPARATE') {
-            textureKey = `player_${anim.state}`;
-            if (!this.game.assets.textures[textureKey]) {
+        let textureKey = stateConfig.spriteKey || null;
+        if (!textureKey) {
+            if (config.type === 'SEPARATE') {
+                textureKey = `player_${anim.state}`;
+            } else {
                 textureKey = 'player';
             }
-        } else {
+        }
+
+        if (this.game.assets.textures && !this.game.assets.textures[textureKey]) {
             textureKey = 'player';
         }
 
@@ -49,7 +52,7 @@ export class PlayerRenderer {
         const animCols = stateConfig.cols || sheetCols;
         const maxFrames = stateConfig.frames || config.maxFrames || 1;
 
-        let sheetRows = config.rows || 1;
+        let sheetRows = stateConfig.sheetRows || config.rows || 1;
         if (config.type !== 'SHEET' && stateConfig.rows) {
             sheetRows = stateConfig.rows;
         }
