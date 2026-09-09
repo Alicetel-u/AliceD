@@ -36,7 +36,7 @@ export class AudioManager {
         if (type === 'TITLE') {
             src = './assets/audio/title3.mp3';
         } else if (type === 'BOSS') {
-            src = './assets/audio/huwamoko_last_jump.mp3';
+            src = './assets/audio/rabbit_war.mp3';
         } else if (type === 'BOSS_WAR') {
             src = './assets/audio/rabbit_war.mp3';
         } else if (type === 'GAME') {
