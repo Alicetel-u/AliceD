@@ -48,6 +48,7 @@ export class GachaSystem {
         this.collection = saved ? JSON.parse(saved) : {};
 
         this.stats = { SPD: 0, JUMP: 0, CRIT: 0, DEF: 0 };
+        this._iconDataUrls = new Map();
         this.setupUI();
         this.updateStats();
         this.updateUI();
@@ -171,8 +172,29 @@ export class GachaSystem {
     }
 
     getIconHtml(item, size = 32) {
+        // Emoji icons are already self-contained and should not be treated as
+        // asset keys.
+        if (!/^[A-Za-z0-9_./-]+$/.test(item.icon)) return item.icon;
+
         const asset = this.game.assets.getImage(item.icon);
-        if (asset) return `<img src="${asset.src}" style="width: ${size}px; height: ${size}px; object-fit: contain;">`;
+        if (!asset) return item.icon;
+
+        let src = asset.src || '';
+        if (!src && typeof HTMLCanvasElement !== 'undefined' && asset instanceof HTMLCanvasElement) {
+            if (!this._iconDataUrls.has(item.icon)) {
+                try {
+                    this._iconDataUrls.set(item.icon, asset.toDataURL('image/png'));
+                } catch (e) {
+                    console.warn(`Failed to serialize gacha icon ${item.icon}`, e);
+                    this._iconDataUrls.set(item.icon, '');
+                }
+            }
+            src = this._iconDataUrls.get(item.icon);
+        }
+
+        if (src) {
+            return `<img src="${src}" style="width: ${size}px; height: ${size}px; object-fit: contain;">`;
+        }
         return item.icon;
     }
 
