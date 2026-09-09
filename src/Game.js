@@ -1146,9 +1146,15 @@ export class Game {
 
         if (stage.theme) {
             if (stage.theme.backgroundImage) assetSet.add(stage.theme.backgroundImage);
-            if (stage.theme.groundTile) assetSet.add(stage.theme.groundTile);
-            if (stage.theme.dirtTile) assetSet.add(stage.theme.dirtTile);
-            if (stage.theme.platformTile) assetSet.add(stage.theme.platformTile);
+
+            // Stage 3's Canvas renderer draws toy blocks procedurally, so these
+            // texture images are only needed when the Pixi/WebGL renderer is active.
+            const needsThemeTileImages = stage.id !== 3 || (this.pixi && this.pixi.isReady);
+            if (needsThemeTileImages) {
+                if (stage.theme.groundTile) assetSet.add(stage.theme.groundTile);
+                if (stage.theme.dirtTile) assetSet.add(stage.theme.dirtTile);
+                if (stage.theme.platformTile) assetSet.add(stage.theme.platformTile);
+            }
             if (stage.theme.backgroundLayers) {
                 stage.theme.backgroundLayers.forEach(layer => {
                     if (layer.image) assetSet.add(layer.image);
