@@ -115,8 +115,18 @@ export class SpriteAnimator {
         const trimTop = (stateConfig.trimTop || 0);
         const trimBottom = (stateConfig.trimBottom || 0);
 
-        const srcX = baseSX + bleed + leftGuard + trimLeft;
-        const srcY = baseSY + bleed + trimTop;
+        // Optional source-window offsets. Useful when an otherwise regular sheet
+        // has artwork sitting a few pixels across a nominal cell boundary.
+        let sourceOffsetX = stateConfig.sourceOffsetX || 0;
+        let sourceOffsetY = stateConfig.sourceOffsetY || 0;
+        if (stateConfig.sourceFrameOffsets && stateConfig.sourceFrameOffsets[currentFrame]) {
+            const sourceFrameOffset = stateConfig.sourceFrameOffsets[currentFrame];
+            if (sourceFrameOffset.x !== undefined) sourceOffsetX += sourceFrameOffset.x;
+            if (sourceFrameOffset.y !== undefined) sourceOffsetY += sourceFrameOffset.y;
+        }
+
+        const srcX = baseSX + sourceOffsetX + bleed + leftGuard + trimLeft;
+        const srcY = baseSY + sourceOffsetY + bleed + trimTop;
         const srcW = Math.max(1, baseSW - (bleed * 2) - leftGuard - trimLeft - trimRight);
         const srcH = Math.max(1, baseSH - (bleed * 2) - trimTop - trimBottom);
 
