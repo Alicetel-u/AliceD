@@ -227,8 +227,11 @@ export class SpriteAnimator {
         const edges = stateConfig.clearEdges;
         if (!edges) return null;
 
+        // Keep only one reusable frame canvas per image/layout instead of caching
+        // every animation frame. A 4x4 2048px sheet has ~1 MB RGBA per cell,
+        // so caching 16 cells for several states quickly exhausts mobile memory.
         const key = [
-            sheetCols, sheetRows, animCols, currentFrame,
+            sheetCols, sheetRows, animCols,
             edges.top || 0, edges.right || 0, edges.bottom || 0, edges.left || 0
         ].join(':');
 
@@ -237,37 +240,47 @@ export class SpriteAnimator {
             imageCache = new Map();
             this.frameCanvasCache.set(image, imageCache);
         }
-        if (imageCache.has(key)) return imageCache.get(key);
 
         const frameW = Math.round(image.width / sheetCols);
         const frameH = Math.round(image.height / sheetRows);
-        const relCol = currentFrame % animCols;
-        const relRow = Math.floor(currentFrame / animCols);
-        const col = (stateConfig.colOffset || 0) + relCol;
-        const row = (stateConfig.row || 0) + relRow;
-        const sx = Math.round(col * (image.width / sheetCols));
-        const sy = Math.round(row * (image.height / sheetRows));
+        let cached = imageCache.get(key);
 
-        const canvas = document.createElement('canvas');
-        canvas.width = frameW;
-        canvas.height = frameH;
-        const frameCtx = canvas.getContext('2d');
-        frameCtx.imageSmoothingEnabled = false;
-        frameCtx.clearRect(0, 0, frameW, frameH);
-        frameCtx.drawImage(image, sx, sy, frameW, frameH, 0, 0, frameW, frameH);
+        if (!cached || cached.canvas.width !== frameW || cached.canvas.height !== frameH) {
+            const canvas = document.createElement('canvas');
+            canvas.width = frameW;
+            canvas.height = frameH;
+            const frameCtx = canvas.getContext('2d');
+            frameCtx.imageSmoothingEnabled = false;
+            cached = { canvas, frameCtx, currentFrame: -1 };
+            imageCache.set(key, cached);
+        }
 
-        const top = Math.max(0, Math.min(frameH, edges.top || 0));
-        const right = Math.max(0, Math.min(frameW, edges.right || 0));
-        const bottom = Math.max(0, Math.min(frameH, edges.bottom || 0));
-        const left = Math.max(0, Math.min(frameW, edges.left || 0));
+        if (cached.currentFrame !== currentFrame) {
+            const relCol = currentFrame % animCols;
+            const relRow = Math.floor(currentFrame / animCols);
+            const col = (stateConfig.colOffset || 0) + relCol;
+            const row = (stateConfig.row || 0) + relRow;
+            const sx = Math.round(col * (image.width / sheetCols));
+            const sy = Math.round(row * (image.height / sheetRows));
 
-        if (top > 0) frameCtx.clearRect(0, 0, frameW, top);
-        if (bottom > 0) frameCtx.clearRect(0, frameH - bottom, frameW, bottom);
-        if (left > 0) frameCtx.clearRect(0, 0, left, frameH);
-        if (right > 0) frameCtx.clearRect(frameW - right, 0, right, frameH);
+            const { canvas, frameCtx } = cached;
+            frameCtx.clearRect(0, 0, frameW, frameH);
+            frameCtx.drawImage(image, sx, sy, frameW, frameH, 0, 0, frameW, frameH);
 
-        imageCache.set(key, canvas);
-        return canvas;
+            const top = Math.max(0, Math.min(frameH, edges.top || 0));
+            const right = Math.max(0, Math.min(frameW, edges.right || 0));
+            const bottom = Math.max(0, Math.min(frameH, edges.bottom || 0));
+            const left = Math.max(0, Math.min(frameW, edges.left || 0));
+
+            if (top > 0) frameCtx.clearRect(0, 0, frameW, top);
+            if (bottom > 0) frameCtx.clearRect(0, frameH - bottom, frameW, bottom);
+            if (left > 0) frameCtx.clearRect(0, 0, left, frameH);
+            if (right > 0) frameCtx.clearRect(frameW - right, 0, right, frameH);
+
+            cached.currentFrame = currentFrame;
+        }
+
+        return cached.canvas;
     }
 
     getAutoAlignment(image, stateConfig, sheetCols, sheetRows, animCols, maxFrames, currentFrame) {
@@ -281,10 +294,16 @@ export class SpriteAnimator {
         const maxOffset = alignConfig.maxOffset ?? 14;
         const alignX = alignConfig.x !== false;
         const alignY = alignConfig.y !== false;
+        const frameSequence = Array.isArray(stateConfig.frameSequence) && stateConfig.frameSequence.length
+            ? [...new Set(stateConfig.frameSequence)]
+            : null;
+        const frameIndices = frameSequence || Array.from({ length: maxFrames }, (_, i) => i);
+
         const key = [
             sheetCols, sheetRows, animCols, maxFrames,
             stateConfig.row || 0, stateConfig.colOffset || 0,
-            threshold, maxOffset, alignX ? 1 : 0, alignY ? 1 : 0
+            threshold, maxOffset, alignX ? 1 : 0, alignY ? 1 : 0,
+            frameIndices.join(',')
         ].join(':');
 
         let imageCache = this.alignmentCache.get(image);
@@ -295,18 +314,19 @@ export class SpriteAnimator {
 
         if (!imageCache.has(key)) {
             try {
-                const canvas = document.createElement('canvas');
-                canvas.width = image.width;
-                canvas.height = image.height;
-                const scanCtx = canvas.getContext('2d', { willReadFrequently: true });
-                scanCtx.drawImage(image, 0, 0);
-
-                const pixels = scanCtx.getImageData(0, 0, canvas.width, canvas.height).data;
+                // Scan one sprite cell at a time. The old implementation copied
+                // the entire sprite sheet to a second full-size canvas and then
+                // allocated a full-sheet ImageData buffer. On mobile that creates
+                // a large temporary memory spike for every newly encountered state.
                 const frameW = image.width / sheetCols;
                 const frameH = image.height / sheetRows;
+                const scratch = document.createElement('canvas');
+                scratch.width = Math.max(1, Math.ceil(frameW));
+                scratch.height = Math.max(1, Math.ceil(frameH));
+                const scanCtx = scratch.getContext('2d', { willReadFrequently: true });
                 const frames = [];
 
-                for (let frame = 0; frame < maxFrames; frame++) {
+                for (const frame of frameIndices) {
                     const relCol = frame % animCols;
                     const relRow = Math.floor(frame / animCols);
                     const col = (stateConfig.colOffset || 0) + relCol;
@@ -314,25 +334,30 @@ export class SpriteAnimator {
 
                     const x0 = Math.max(0, Math.round(col * frameW));
                     const y0 = Math.max(0, Math.round(row * frameH));
-                    const x1 = Math.min(canvas.width, Math.round((col + 1) * frameW));
-                    const y1 = Math.min(canvas.height, Math.round((row + 1) * frameH));
+                    const x1 = Math.min(image.width, Math.round((col + 1) * frameW));
+                    const y1 = Math.min(image.height, Math.round((row + 1) * frameH));
+                    const w = Math.max(1, x1 - x0);
+                    const h = Math.max(1, y1 - y0);
 
-                    const colCounts = new Uint16Array(Math.max(1, x1 - x0));
-                    const rowCounts = new Uint16Array(Math.max(1, y1 - y0));
+                    scanCtx.clearRect(0, 0, scratch.width, scratch.height);
+                    scanCtx.drawImage(image, x0, y0, w, h, 0, 0, w, h);
+                    const pixels = scanCtx.getImageData(0, 0, w, h).data;
 
-                    for (let py = y0; py < y1; py++) {
-                        const rowBase = py * canvas.width * 4;
-                        for (let px = x0; px < x1; px++) {
+                    const colCounts = new Uint16Array(w);
+                    const rowCounts = new Uint16Array(h);
+
+                    for (let py = 0; py < h; py++) {
+                        const rowBase = py * w * 4;
+                        for (let px = 0; px < w; px++) {
                             if (pixels[rowBase + px * 4 + 3] > threshold) {
-                                colCounts[px - x0]++;
-                                rowCounts[py - y0]++;
+                                colCounts[px]++;
+                                rowCounts[py]++;
                             }
                         }
                     }
 
-                    // Ignore isolated sparkles/noise and use the main silhouette.
-                    const minColPixels = Math.max(2, Math.floor((y1 - y0) * 0.01));
-                    const minRowPixels = Math.max(2, Math.floor((x1 - x0) * 0.01));
+                    const minColPixels = Math.max(2, Math.floor(h * 0.01));
+                    const minRowPixels = Math.max(2, Math.floor(w * 0.01));
 
                     let left = -1;
                     let right = -1;
@@ -353,11 +378,14 @@ export class SpriteAnimator {
                     }
 
                     if (left === -1 || top === -1) {
-                        frames.push(null);
+                        frames.push({ index: frame, metric: null });
                     } else {
                         frames.push({
-                            centerX: (left + right) / 2,
-                            bottom
+                            index: frame,
+                            metric: {
+                                centerX: (left + right) / 2,
+                                bottom
+                            }
                         });
                     }
                 }
@@ -371,19 +399,24 @@ export class SpriteAnimator {
                         : (sorted[mid - 1] + sorted[mid]) / 2;
                 };
 
-                const targetCenter = median(frames.filter(Boolean).map(f => f.centerX));
-                const targetBottom = median(frames.filter(Boolean).map(f => f.bottom));
+                const metrics = frames.filter(f => f.metric).map(f => f.metric);
+                const targetCenter = median(metrics.map(f => f.centerX));
+                const targetBottom = median(metrics.map(f => f.bottom));
+                const offsets = [];
 
-                const offsets = frames.map(frame => {
-                    if (!frame) return { x: 0, y: 0 };
+                for (const entry of frames) {
+                    if (!entry.metric) {
+                        offsets[entry.index] = { x: 0, y: 0 };
+                        continue;
+                    }
                     const x = alignX
-                        ? Math.max(-maxOffset, Math.min(maxOffset, targetCenter - frame.centerX))
+                        ? Math.max(-maxOffset, Math.min(maxOffset, targetCenter - entry.metric.centerX))
                         : 0;
                     const y = alignY
-                        ? Math.max(-maxOffset, Math.min(maxOffset, targetBottom - frame.bottom))
+                        ? Math.max(-maxOffset, Math.min(maxOffset, targetBottom - entry.metric.bottom))
                         : 0;
-                    return { x, y };
-                });
+                    offsets[entry.index] = { x, y };
+                }
 
                 imageCache.set(key, offsets);
             } catch (error) {
