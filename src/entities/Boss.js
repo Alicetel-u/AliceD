@@ -465,12 +465,14 @@ export class Boss {
 
 
     updateProjectiles(dt) {
-        this.projectiles.forEach((proj, index) => {
+        // Iterate backwards so removing one projectile cannot skip the next one.
+        for (let i = this.projectiles.length - 1; i >= 0; i--) {
+            const proj = this.projectiles[i];
             proj.x += proj.vx * dt;
             proj.y += proj.vy * dt;
             proj.life -= dt;
-            if (proj.life <= 0) this.projectiles.splice(index, 1);
-        });
+            if (proj.life <= 0) this.projectiles.splice(i, 1);
+        }
     }
 
     checkProjectileCollisions(player, env) {
