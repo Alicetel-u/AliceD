@@ -89,7 +89,8 @@ export const SheetLayouts = {
                 frames: 16, cols: 4, rows: 4,
                 frameInterval: 8,
                 loop: true,
-                autoAlign: { x: true, y: true, alphaThreshold: 56, maxOffset: 6 }
+                autoAlign: { x: true, y: true, alphaThreshold: 56, maxOffset: 6 },
+                trimTop: 6
             },
             // Run: 16コマを15fps相当で再生。移動速度に負けない滑らかさを優先。
             run: {
@@ -99,21 +100,25 @@ export const SheetLayouts = {
                 frameSequence: [0, 1, 2, 3, 5, 6, 7, 8, 9, 11, 12, 13],
                 frameInterval: 5,
                 loop: true,
-                autoAlign: { x: true, y: true, alphaThreshold: 56, maxOffset: 6 }
+                autoAlign: { x: true, y: true, alphaThreshold: 56, maxOffset: 6 },
+                trimTop: 6
             },
             // Jump: 空中で最初からループし直さず、16コマを1回再生して最終姿勢を保持。
             jump: {
                 frames: 16, cols: 4, rows: 4,
                 frameInterval: 5,
                 loop: false,
-                autoAlign: { x: true, y: true, alphaThreshold: 56, maxOffset: 6 }
+                autoAlign: { x: true, y: true, alphaThreshold: 56, maxOffset: 6 },
+                trimTop: 6
             },
             // Glide: 右/下方向の薄いはみ出しを拾わないよう、補正をかなり弱める。
             glide: {
                 frames: 16, cols: 4, rows: 4,
                 frameInterval: 6,
                 loop: true,
-                autoAlign: { x: true, y: true, alphaThreshold: 72, maxOffset: 4 }
+                autoAlign: { x: true, y: true, alphaThreshold: 72, maxOffset: 4 },
+                trimRight: 8,
+                trimBottom: 8
             }
         }
     }
