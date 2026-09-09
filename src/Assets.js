@@ -145,9 +145,43 @@ export class Assets {
     return this.images[name];
   }
 
-  deleteImage(name) {
-    if (this.images[name]) {
-      delete this.images[name];
+  deleteImage(name, releaseMemory = false) {
+    const image = this.images[name];
+
+    // Removing the map entry alone leaves large decoded image/canvas buffers
+    // alive until the browser eventually collects them. During a stage
+    // transition that delay can push mobile browsers over their memory limit.
+    if (releaseMemory && image) {
+      try {
+        if (typeof HTMLImageElement !== 'undefined' && image instanceof HTMLImageElement) {
+          image.onload = null;
+          image.onerror = null;
+          image.removeAttribute('src');
+        } else if (typeof HTMLCanvasElement !== 'undefined' && image instanceof HTMLCanvasElement) {
+          // Explicitly release the backing store of processed transparency canvases.
+          image.width = 1;
+          image.height = 1;
+        }
+      } catch (e) {
+        console.warn(`Failed to release image memory for ${name}`, e);
+      }
+    }
+
+    delete this.images[name];
+    delete this.loadMeta[name];
+
+    // Some builds attach a Pixi texture cache to Assets. If present, destroy
+    // only the derived texture, never a shared source owned elsewhere.
+    if (this.textures && this.textures[name]) {
+      try {
+        const texture = this.textures[name];
+        if (releaseMemory && texture && typeof texture.destroy === 'function') {
+          texture.destroy(false);
+        }
+      } catch (e) {
+        console.warn(`Failed to release texture for ${name}`, e);
+      }
+      delete this.textures[name];
     }
   }
 }
