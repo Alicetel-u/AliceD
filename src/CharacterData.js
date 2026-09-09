@@ -90,7 +90,7 @@ export const SheetLayouts = {
                 frameInterval: 8,
                 loop: true,
                 autoAlign: { x: true, y: true, alphaThreshold: 56, maxOffset: 6 },
-                trimTop: 6
+                clearEdges: { top: 16 }
             },
             // Run: 16コマを15fps相当で再生。移動速度に負けない滑らかさを優先。
             run: {
@@ -117,8 +117,7 @@ export const SheetLayouts = {
                 frameInterval: 6,
                 loop: true,
                 autoAlign: { x: true, y: true, alphaThreshold: 72, maxOffset: 4 },
-                trimRight: 8,
-                trimBottom: 8
+                clearEdges: { right: 16, bottom: 16 }
             }
         }
     }
