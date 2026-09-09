@@ -549,8 +549,12 @@ export class Game {
     }
 
     async startGame() {
-        // Safeguard replay sessions after an ending.
+        // Safeguard replay/restart sessions: remove references to the previous
+        // run before decoding stage 1 again.
         this.releaseEndingAssets();
+        if (this.parallax) this.parallax.clear();
+        if (this.env && this.env.particles) this.env.particles.length = 0;
+        if (this.domEffects) this.domEffects.clear();
 
         if (!this.audio.initialized) {
             await this.audio.init();
