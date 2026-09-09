@@ -101,7 +101,7 @@ export class SpriteAnimator {
         // Professional Anti-Artifact Hack (v2):
         // Deepen the left-cut to eliminate persistent neighbor noise on the left edge.
         const bleed = this.config.bleed !== undefined ? this.config.bleed : 1.0;
-        const leftGuard = 2.0; // Extra guard pixels specifically for the left edge artifact
+        const leftGuard = this.config.leftGuard !== undefined ? this.config.leftGuard : 2.0; // V2 sheets can disable the legacy left-edge guard
 
         // 1. Calculate base integer positions
         const baseSX = Math.round(col * sw);
