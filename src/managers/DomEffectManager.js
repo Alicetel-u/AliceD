@@ -41,6 +41,14 @@ export class DomEffectManager {
     spawn(text, x, y, opts = {}) {
         if (!this.container) return;
 
+        const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const smallScreen = Math.min(screen.width, screen.height) <= 768;
+        const maxEffects = (hasTouch && smallScreen) ? 32 : 96;
+        while (this.effects.length >= maxEffects) {
+            const oldest = this.effects.shift();
+            if (oldest && oldest.el) oldest.el.remove();
+        }
+
         const el = document.createElement('div');
         el.textContent = text;
 
