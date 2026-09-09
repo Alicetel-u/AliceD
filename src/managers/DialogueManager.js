@@ -83,8 +83,8 @@ export class DialogueManager {
         // this.game.isPaused = true; // Removed per user request
 
         // Pause BGM volume slightly?
-        if (this.game.audio && this.game.audio.bgm) {
-            this.game.audio.bgm.volume = 0.3;
+        if (this.game.audio && this.game.audio.bgmAudio) {
+            this.game.audio.bgmAudio.volume = Math.min(this.game.audio.volume ?? 0.3, 0.18);
         }
 
         this.showNextLine();
@@ -230,8 +230,8 @@ export class DialogueManager {
         */
 
         // Restore Volume
-        if (this.game.audio && this.game.audio.bgm) {
-            this.game.audio.bgm.volume = 0.8; // Default volume
+        if (this.game.audio && this.game.audio.bgmAudio) {
+            this.game.audio.bgmAudio.volume = this.game.audio.volume ?? 0.3;
         }
 
         if (this.onComplete) {
