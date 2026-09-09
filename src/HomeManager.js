@@ -67,10 +67,14 @@ export class HomeManager {
             gachaBtn.onclick = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                if (this.game.score >= 10) {
+                const cost = this.game.gacha.cost || 10;
+                if (this.game.score >= cost) {
+                    this.game.score -= cost;
+                    this.game.updateScoreUI();
+                    this.game.saveProgress();
                     this.game.gacha.triggerSingleGacha();
                 } else {
-                    alert('ニンジンが足りません！ (必要: 10)');
+                    alert(`ニンジンが足りません！ (必要: ${cost})`);
                 }
             };
         }
