@@ -94,7 +94,10 @@ export const SheetLayouts = {
             // Run: 16コマを15fps相当で再生。移動速度に負けない滑らかさを優先。
             run: {
                 frames: 16, cols: 4, rows: 4,
-                frameInterval: 4,
+                // 16枚は残しつつ、似たポーズの連続を飛ばして
+                // 「開く→中間→閉じる→開く」が読み取りやすい12段階で再生。
+                frameSequence: [0, 1, 2, 3, 5, 6, 7, 8, 9, 11, 12, 13],
+                frameInterval: 5,
                 loop: true,
                 autoAlign: { x: true, y: true, alphaThreshold: 24, maxOffset: 14 }
             },
