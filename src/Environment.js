@@ -99,6 +99,17 @@ export class Environment {
     }
 
     draw(ctx, camera) {
+        // Effects can be spawned by later update sections after Environment.update()
+        // has already run. Enforce the budget again immediately before drawing
+        // so a boss explosion cannot create a one-frame mobile spike.
+        const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const smallScreen = Math.min(screen.width, screen.height) <= 768;
+        const isMobile = hasTouch && smallScreen;
+        const maxParticles = isMobile ? 50 : 300;
+        if (this.particles.length > maxParticles) {
+            this.particles.splice(0, this.particles.length - maxParticles);
+        }
+
         const pCount = this.particles.length;
         if (pCount === 0) return;
 
