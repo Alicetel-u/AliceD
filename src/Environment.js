@@ -19,6 +19,13 @@ export class Environment {
         const isMobile = hasTouch && smallScreen;
         const MAX_PARTICLES = isMobile ? 50 : 300;
 
+        // The limit above used to be declaration-only, so boss explosions and
+        // repeated combat effects could grow this array far beyond the intended
+        // mobile budget. Keep the newest effects and discard older particles.
+        if (this.particles.length > MAX_PARTICLES) {
+            this.particles.splice(0, this.particles.length - MAX_PARTICLES);
+        }
+
         // Spawn ambient particles
         if (this.particles.length < 30 && Math.random() < 0.05 * dtFrames) {
             this.spawn();
