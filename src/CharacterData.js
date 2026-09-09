@@ -31,6 +31,19 @@ export const SheetLayouts = {
             }  // 右下
         }
     },
+    // カノンV2: 1行=1モーションの素直な8x4レイアウト
+    // Row 0: idle / Row 1: run / Row 2: jump / Row 3: glide
+    KANON_STRIP_V2: {
+        cols: 8,
+        rows: 4,
+        maxFrames: 8,
+        states: {
+            idle:  { row: 0, cols: 8, frames: 8, scale: 1.0, frameInterval: 12 },
+            run:   { row: 1, cols: 8, frames: 8, scale: 1.0, frameInterval: 5 },
+            jump:  { row: 2, cols: 8, frames: 8, scale: 1.0, frameInterval: 6 },
+            glide: { row: 3, cols: 8, frames: 8, scale: 1.0, frameInterval: 8 }
+        }
+    },
     // 標準的なアリスのような1枚シート (行ごとに状態が分かれているタイプ)
     STANDARD_STRIP: {
         cols: 8,
@@ -80,7 +93,8 @@ export const CHARACTERS = [
     {
         id: 'kanon',
         name: 'KANON',
-        spriteFile: 'KANONmotion.png',
+        spriteFile: 'KANONmotion_v2.png',
+        spriteFallbackFile: 'KANONmotion.png', // V2 asset未配置時も旧スプライトで安全に起動
         titleImage: 'title_kanon.png',
         transparencyKey: null,
         description: 'クールで知的な電子少女',
@@ -90,16 +104,17 @@ export const CHARACTERS = [
             backgroundColor: 'rgba(255, 182, 193, 0.15)'
         },
         stats: { speed: 1.0, jump: 1.0 },
-        // ここで定義したレイアウトを使用
+        // V2は整数グリッドの8x4。旧シート向けの大きなtrim/bleed補正は使わない
         animation: {
             type: 'SHEET',
-            ...SheetLayouts.KANON_QUADRANT,
-            frameInterval: 6,
-            bleed: 4.0, // Aggressive bleed to guarantee no edge noise from non-integer height (147.5px)
-            visualOffsetY: 0, // カノンのスプライトは余白が少ない（または異なる）ため
+            ...SheetLayouts.KANON_STRIP_V2,
+            frameInterval: 8,
+            bleed: 0,
+            leftGuard: 0,
+            visualOffsetY: 0,
             renderEffect: {
-                shadowBlur: 4,   // より太い淵取り
-                shadowColor: '#000000' // 黒い淵取り
+                shadowBlur: 2,
+                shadowColor: 'rgba(0, 0, 0, 0.45)'
             }
         },
         speechLines: [
